@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"c:/Users/cleme/projets claude/index.html\")",
+      "Bash(start \"\" \"c:/Users/cleme/projets claude/jeu_serpent/index.html\")",
+      "Bash(start \"\" \"c:/Users/cleme/projets claude/bataille_boule_neige/index.html\")",
+      "Bash(start \"\" \"c:/Users/cleme/projets claude/bataille_boule_neige/index.html?play=solo\")",
+      "Bash(ipconfig)",
+      "Bash(python -m http.server 8080 --bind 0.0.0.0)",
+      "Bash(npx -v)",
+      "Bash(where npx:*)",
+      "Bash(where php:*)",
+      "Bash(where python3:*)",
+      "Bash(python3 -m http.server 8080 --bind 0.0.0.0)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}

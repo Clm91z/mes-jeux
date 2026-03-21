@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Snake">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Snake Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            color: #eee;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: auto;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            color: #e94560;
+            text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+            letter-spacing: 4px;
+        }
+
+        /* Écrans */
+        #name-screen, #game-over-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: #16213e;
+            padding: 40px 50px;
+            border-radius: 16px;
+            border: 2px solid #0f3460;
+            box-shadow: 0 0 40px rgba(15, 52, 96, 0.5);
+        }
+
+        #name-screen h2, #game-over-screen h2 {
+            font-size: 1.5rem;
+            color: #e94560;
+        }
+
+        #name-screen input {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #eee;
+            text-align: center;
+            outline: none;
+            width: 260px;
+            transition: border-color 0.3s;
+        }
+
+        #name-screen input:focus {
+            border-color: #e94560;
+        }
+
+        button {
+            padding: 12px 32px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: #eee;
+        }
+
+        .btn-multi {
+            background: linear-gradient(135deg, #e94560, #0f3460);
+            color: #fff;
+        }
+
+        /* Zone de jeu */
+        #game-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #info-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 0 4px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        #info-bar span {
+            background: #16213e;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+
+        .player-name { color: #e94560; font-weight: bold; }
+        .player2-name { color: #f0a500; font-weight: bold; }
+        .score-value { color: #4ecca3; font-weight: bold; }
+        .score2-value { color: #f0a500; font-weight: bold; }
+
+        canvas {
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            background: #16213e;
+            box-shadow: 0 0 30px rgba(15, 52, 96, 0.4);
+        }
+
+        #bonus-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(233, 69, 96, 0.6);
+            transition: transform 0.4s ease;
+            z-index: 100;
+        }
+
+        #bonus-notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Tim overlay */
+        #zgeg-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        #zgeg-overlay .zgeg-text {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #e94560;
+            text-align: center;
+            text-shadow: 0 0 40px rgba(233,69,96,0.8), 0 0 80px rgba(233,69,96,0.4);
+            animation: zgeg-pulse 0.5s ease infinite alternate;
+            padding: 0 20px;
+            line-height: 1.3;
+        }
+
+        @keyframes zgeg-pulse {
+            from { transform: scale(1) rotate(-1deg); }
+            to { transform: scale(1.05) rotate(1deg); }
+        }
+
+        #zgeg-overlay button {
+            font-size: 1.2rem;
+            padding: 14px 40px;
+        }
+
+        /* Game Over */
+        #game-over-screen { display: none; }
+
+        .final-score { font-size: 2rem; color: #4ecca3; font-weight: bold; }
+        .final-score2 { font-size: 1.5rem; color: #f0a500; font-weight: bold; }
+        .record-info { font-size: 1rem; color: #aaa; }
+        .record-info strong { color: #e94560; }
+
+        .new-record {
+            color: #ffd700 !important;
+            font-size: 1.2rem;
+            animation: pulse 0.6s ease infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+
+        .go-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Classement */
+        #leaderboard { margin-top: 8px; width: 100%; }
+        #leaderboard h3 { text-align: center; margin-bottom: 10px; color: #e94560; font-size: 1.1rem; }
+        #leaderboard table { width: 100%; border-collapse: collapse; }
+        #leaderboard th, #leaderboard td { padding: 6px 14px; text-align: center; }
+        #leaderboard th { color: #aaa; font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid #0f3460; }
+        #leaderboard td { font-size: 0.95rem; }
+        #leaderboard tbody tr:nth-child(1) td:first-child::before { content: "🥇 "; }
+        #leaderboard tbody tr:nth-child(2) td:first-child::before { content: "🥈 "; }
+        #leaderboard tbody tr:nth-child(3) td:first-child::before { content: "🥉 "; }
+
+        #instructions { font-size: 0.85rem; color: #666; text-align: center; line-height: 1.6; }
+
+        .mode-choice { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+        #p2-name-row {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #p2-name-row input {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #f0a500;
+            text-align: center;
+            outline: none;
+            width: 260px;
+            transition: border-color 0.3s;
+        }
+
+        #p2-name-row input:focus { border-color: #f0a500; }
+        #p2-name-row label { color: #f0a500; font-weight: bold; }
+
+        .winner-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Skin selector */
+        #skin-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: #16213e;
+            padding: 40px 50px;
+            border-radius: 16px;
+            border: 2px solid #0f3460;
+            box-shadow: 0 0 40px rgba(15, 52, 96, 0.5);
+        }
+
+        #skin-screen h2 {
+            font-size: 1.5rem;
+            color: #e94560;
+        }
+
+        .skin-section-label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+
+        .skin-grid {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .skin-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            background: #1a1a2e;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .skin-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .skin-card.selected {
+            border-color: #e94560;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .skin-card.selected-p2 {
+            border-color: #f0a500;
+            box-shadow: 0 0 15px rgba(240, 165, 0, 0.4);
+        }
+
+        .skin-card canvas {
+            border: none;
+            border-radius: 6px;
+            background: #16213e;
+            box-shadow: none;
+        }
+
+        .skin-card .skin-name {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 600;
+        }
+
+        #skin-p2-section {
+            display: none;
+        }
+
+        /* Map selector */
+        .map-grid {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .map-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            background: #1a1a2e;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .map-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .map-card.selected-map {
+            border-color: #e94560;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .map-card canvas {
+            border: none;
+            border-radius: 6px;
+            box-shadow: none;
+        }
+
+        .map-card .map-name {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 600;
+        }
+
+        .map-card .map-desc {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        /* Mobile controls */
+        #mobile-controls {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            margin-top: 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: 52px 52px 52px;
+            grid-template-rows: 52px 52px 52px;
+            gap: 4px;
+        }
+
+        .dpad-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            border: 2px solid #0f3460;
+            background: #16213e;
+            color: #eee;
+            font-size: 1.4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.1s;
+        }
+
+        .dpad-btn:active {
+            background: #e94560;
+        }
+
+        .dpad-empty {
+            width: 52px;
+            height: 52px;
+        }
+
+        #mobile-controls-p2 {
+            display: none;
+            margin-top: 6px;
+        }
+
+        #mobile-controls-p2 .dpad-btn {
+            border-color: #f0a500;
+        }
+
+        #mobile-controls-p2 .dpad-btn:active {
+            background: #f0a500;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        /* Responsive mobile */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            #name-screen, #game-over-screen, #skin-screen {
+                padding: 20px 16px;
+                max-width: 95vw;
+            }
+            canvas#game-canvas {
+                max-width: 92vw !important;
+                max-height: 50vh !important;
+            }
+            #info-bar { font-size: 0.8rem; }
+            #info-bar span { padding: 4px 8px; font-size: 0.75rem; }
+            button { padding: 10px 20px; font-size: 0.95rem; }
+            .skin-card { padding: 8px; }
+            .skin-card canvas { width: 60px; height: 42px; }
+            .map-card { padding: 8px; }
+            .map-card canvas { width: 70px; height: 46px; }
+            .dpad-btn { width: 46px; height: 46px; font-size: 1.2rem; }
+            .dpad { grid-template-columns: 46px 46px 46px; grid-template-rows: 46px 46px 46px; }
+            .dpad-empty { width: 46px; height: 46px; }
+            #mobile-controls { display: flex; }
+        }
+
+        @media (max-width: 400px) {
+            .dpad-btn { width: 40px; height: 40px; font-size: 1rem; }
+            .dpad { grid-template-columns: 40px 40px 40px; grid-template-rows: 40px 40px 40px; }
+            .dpad-empty { width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>SNAKE</h1>
+
+        <!-- Écran de saisie du nom -->
+        <div id="name-screen">
+            <h2>Entrez votre nom</h2>
+            <input type="text" id="player-name-input" placeholder="Votre prénom..." maxlength="20" autofocus>
+            <div id="p2-name-row">
+                <label>Joueur 2</label>
+                <input type="text" id="player2-name-input" placeholder="Prénom joueur 2..." maxlength="20">
+            </div>
+            <div class="mode-choice">
+                <button class="btn-primary" id="start-btn">Solo</button>
+                <button class="btn-multi" id="start-multi-btn">Multijoueur</button>
+            </div>
+            <div id="leaderboard-home"></div>
+        </div>
+
+        <!-- Écran choix de skin & map -->
+        <div id="skin-screen">
+            <h2>Choisis ta map</h2>
+            <div class="map-grid" id="map-grid"></div>
+
+            <h2 style="margin-top:10px">Choisis ton skin</h2>
+            <div class="skin-section-label" style="color:#4ecca3" id="skin-p1-label">Joueur 1</div>
+            <div class="skin-grid" id="skin-grid-p1"></div>
+            <div id="skin-p2-section">
+                <div class="skin-section-label" style="color:#f0a500; text-align:center; margin-bottom:10px;">Joueur 2</div>
+                <div class="skin-grid" id="skin-grid-p2"></div>
+            </div>
+            <button class="btn-primary" id="skin-confirm-btn">C'est parti !</button>
+        </div>
+
+        <!-- Zone de jeu -->
+        <div id="game-area">
+            <div id="info-bar">
+                <span>J1 : <span class="player-name" id="display-name"></span> - <span class="score-value" id="display-score">0</span></span>
+                <span id="p2-info" style="display:none">J2 : <span class="player2-name" id="display-name2"></span> - <span class="score2-value" id="display-score2">0</span></span>
+                <span>Record : <span class="score-value" id="display-record">0</span></span>
+            </div>
+            <canvas id="game-canvas" width="500" height="500"></canvas>
+            <p id="instructions">Flèches directionnelles pour se déplacer</p>
+            <div id="mobile-controls">
+                <div class="controls-row">
+                    <div>
+                        <div class="controls-label" id="mobile-p1-label">J1</div>
+                        <div class="dpad" id="dpad-p1">
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="up" data-player="1">&#9650;</div>
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="left" data-player="1">&#9664;</div>
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="right" data-player="1">&#9654;</div>
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="down" data-player="1">&#9660;</div>
+                            <div class="dpad-empty"></div>
+                        </div>
+                    </div>
+                    <div id="mobile-controls-p2">
+                        <div class="controls-label">J2</div>
+                        <div class="dpad" id="dpad-p2">
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="up" data-player="2">&#9650;</div>
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="left" data-player="2">&#9664;</div>
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="right" data-player="2">&#9654;</div>
+                            <div class="dpad-empty"></div>
+                            <div class="dpad-btn" data-dir="down" data-player="2">&#9660;</div>
+                            <div class="dpad-empty"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran Game Over -->
+        <div id="game-over-screen">
+            <h2>Partie terminée !</h2>
+            <div class="winner-text" id="winner-text" style="display:none"></div>
+            <div class="final-score" id="final-score"></div>
+            <div class="final-score2" id="final-score2" style="display:none"></div>
+            <div class="record-info" id="record-info"></div>
+            <div class="go-buttons">
+                <button class="btn-primary" id="replay-btn">Rejouer</button>
+                <button class="btn-multi" id="change-skin-btn">Changer skin / map</button>
+                <button class="btn-secondary" id="change-name-btn">Changer de nom</button>
+            </div>
+            <div id="leaderboard"></div>
+        </div>
+    </div>
+
+    <!-- Tim overlay -->
+    <div id="zgeg-overlay">
+        <div class="zgeg-text">TOI TU DOIS AVOIR<br>UNE TETE DE ZGEG</div>
+        <button class="btn-primary" id="zgeg-ok-btn">OK j'assume</button>
+    </div>
+
+    <div id="bonus-notification"></div>
+
+    <script>
+    (() => {
+        // --- Constantes ---
+        const TILE = 20;
+        const SOLO_SIZE = 500;
+        const MULTI_SIZE = 1000;
+        const BASE_SPEED = 120;
+        let CANVAS_SIZE = SOLO_SIZE;
+        let COLS = SOLO_SIZE / TILE;
+        let ROWS = SOLO_SIZE / TILE;
+        const POINTS_PER_FOOD = 1;
+        const STORAGE_KEY = 'snake_leaderboard';
+
+        const TIM_NAMES = ['tim', 'timo', 'timothe'];
+
+        // --- Skins ---
+        const SKINS = [
+            {
+                id: 'classique',
+                name: 'Classique',
+                head: '#4ecca3',
+                body: (r) => `rgba(78, 204, 163, ${r})`,
+                eyeColor: '#1a1a2e',
+                pattern: null
+            },
+            {
+                id: 'feu',
+                name: 'Feu',
+                head: '#ff4500',
+                body: (r) => `rgba(255, 140, 0, ${r})`,
+                eyeColor: '#fff',
+                pattern: null
+            },
+            {
+                id: 'ocean',
+                name: 'Océan',
+                head: '#00bfff',
+                body: (r) => `rgba(0, 100, 200, ${r})`,
+                eyeColor: '#fff',
+                pattern: null
+            },
+            {
+                id: 'neon',
+                name: 'Néon',
+                head: '#ff00ff',
+                body: (r) => `rgba(180, 0, 255, ${r})`,
+                eyeColor: '#0ff',
+                pattern: 'glow'
+            },
+            {
+                id: 'or',
+                name: 'Or',
+                head: '#ffd700',
+                body: (r) => `rgba(218, 165, 32, ${r})`,
+                eyeColor: '#1a1a2e',
+                pattern: null
+            },
+            {
+                id: 'matrix',
+                name: 'Matrix',
+                head: '#00ff00',
+                body: (r) => `rgba(0, 180, 0, ${r})`,
+                eyeColor: '#000',
+                pattern: null
+            },
+            {
+                id: 'glace',
+                name: 'Glace',
+                head: '#e0f0ff',
+                body: (r) => `rgba(150, 200, 255, ${r})`,
+                eyeColor: '#003',
+                pattern: null
+            },
+            {
+                id: 'lave',
+                name: 'Lave',
+                head: '#ff2020',
+                body: (r) => `rgba(200, 50, 0, ${r})`,
+                eyeColor: '#ff0',
+                pattern: 'glow'
+            }
+        ];
+
+        let selectedSkin1 = SKINS[0];
+        let selectedSkin2 = SKINS[1];
+
+        // --- Maps ---
+        const MAPS = [
+            {
+                id: 'classique',
+                name: 'Classique',
+                desc: 'La map originale',
+                bg: '#16213e',
+                gridColor: '#1a2744',
+                borderColor: '#0f3460',
+                foodColor: '#e94560',
+                foodGlow: null,
+                walls: [],
+                emoji: null,
+                wallStyle: null,
+                drawBg: null
+            },
+            {
+                id: 'pirates',
+                name: 'Pirates',
+                desc: 'Navigue entre les navires !',
+                bg: '#0a2a3a',
+                gridColor: '#0d3347',
+                borderColor: '#8B4513',
+                foodColor: '#ffd700',
+                foodGlow: '#ffd700',
+                emoji: '🏴‍☠️',
+                wallStyle: 'wood',
+                walls: (cols, rows) => {
+                    const w = [];
+                    const cx = Math.floor(cols/2), cy = Math.floor(rows/2);
+                    // --- Grand bateau central (horizontal) ---
+                    // Coque (forme de bateau)
+                    for (let dx = -5; dx <= 5; dx++) w.push({ x: cx+dx, y: cy+2, t:'hull' });
+                    for (let dx = -4; dx <= 4; dx++) w.push({ x: cx+dx, y: cy+3, t:'hull' });
+                    for (let dx = -3; dx <= 3; dx++) w.push({ x: cx+dx, y: cy+4, t:'hull' });
+                    // Pointe avant
+                    w.push({ x: cx+6, y: cy+2, t:'hull' });
+                    w.push({ x: cx+7, y: cy+3, t:'hull' });
+                    // Pointe arrière
+                    w.push({ x: cx-6, y: cy+2, t:'hull' });
+                    w.push({ x: cx-6, y: cy+1, t:'hull' });
+                    // Pont
+                    for (let dx = -4; dx <= 4; dx++) w.push({ x: cx+dx, y: cy+1, t:'deck' });
+                    // Mât
+                    w.push({ x: cx, y: cy, t:'mast' });
+                    w.push({ x: cx, y: cy-1, t:'mast' });
+                    w.push({ x: cx, y: cy-2, t:'mast' });
+                    w.push({ x: cx, y: cy-3, t:'mast' });
+                    // Voile
+                    for (let dx = -2; dx <= 2; dx++) w.push({ x: cx+dx, y: cy-2, t:'sail' });
+                    for (let dx = -1; dx <= 1; dx++) w.push({ x: cx+dx, y: cy-3, t:'sail' });
+                    // --- Île en haut à droite ---
+                    const ix = cols-6, iy = 4;
+                    w.push({ x:ix, y:iy, t:'sand' }); w.push({ x:ix+1, y:iy, t:'sand' });
+                    w.push({ x:ix-1, y:iy+1, t:'sand' }); w.push({ x:ix, y:iy+1, t:'sand' });
+                    w.push({ x:ix+1, y:iy+1, t:'sand' }); w.push({ x:ix+2, y:iy+1, t:'sand' });
+                    w.push({ x:ix, y:iy+2, t:'sand' }); w.push({ x:ix+1, y:iy+2, t:'sand' });
+                    w.push({ x:ix+1, y:iy-1, t:'palm' }); // palmier
+                    // --- Rochers en bas à gauche ---
+                    w.push({ x:3, y:rows-4, t:'rock' }); w.push({ x:4, y:rows-4, t:'rock' });
+                    w.push({ x:3, y:rows-5, t:'rock' }); w.push({ x:5, y:rows-3, t:'rock' });
+                    return w;
+                },
+                drawBg: (ctx, cols, rows, tile, size) => {
+                    // Vagues d'eau
+                    ctx.strokeStyle = 'rgba(100, 200, 255, 0.08)';
+                    ctx.lineWidth = 2;
+                    for (let y = 0; y < size; y += 40) {
+                        ctx.beginPath();
+                        for (let x = 0; x < size; x += 5) {
+                            ctx.lineTo(x, y + Math.sin(x * 0.03 + y * 0.1) * 6);
+                        }
+                        ctx.stroke();
+                    }
+                }
+            },
+            {
+                id: 'espace',
+                name: 'Espace',
+                desc: 'Astéroïdes et étoiles',
+                bg: '#020210',
+                gridColor: '#06061a',
+                borderColor: '#555',
+                foodColor: '#00ff88',
+                foodGlow: '#00ff88',
+                emoji: '🚀',
+                wallStyle: 'asteroid',
+                walls: (cols, rows) => {
+                    const w = [];
+                    // Gros astéroïde haut-gauche
+                    const a1x = 5, a1y = 4;
+                    [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[3,1],[1,2],[2,2]].forEach(
+                        d => w.push({ x: a1x+d[0], y: a1y+d[1], t:'ast' })
+                    );
+                    // Gros astéroïde bas-droite
+                    const a2x = cols-8, a2y = rows-7;
+                    [[0,0],[1,0],[0,1],[1,1],[2,1],[-1,1],[0,2],[1,2]].forEach(
+                        d => w.push({ x: a2x+d[0], y: a2y+d[1], t:'ast' })
+                    );
+                    // Planète au centre (cercle)
+                    const px = Math.floor(cols/2), py = Math.floor(rows/2);
+                    for (let dy = -2; dy <= 2; dy++)
+                        for (let dx = -2; dx <= 2; dx++)
+                            if (dx*dx + dy*dy <= 5)
+                                w.push({ x: px+dx, y: py+dy, t:'planet' });
+                    // Petits débris
+                    w.push({ x: cols-4, y: 3, t:'ast' });
+                    w.push({ x: 3, y: rows-4, t:'ast' });
+                    w.push({ x: Math.floor(cols/2)+6, y: 5, t:'ast' });
+                    w.push({ x: Math.floor(cols/2)-6, y: rows-6, t:'ast' });
+                    return w;
+                },
+                drawBg: (ctx, cols, rows, tile, size) => {
+                    // Étoiles
+                    const rng = (s) => { s = Math.sin(s) * 43758.5453; return s - Math.floor(s); };
+                    for (let i = 0; i < 80; i++) {
+                        const x = rng(i * 7.3) * size;
+                        const y = rng(i * 13.7) * size;
+                        const r = rng(i * 3.1) * 1.5 + 0.5;
+                        const brightness = rng(i * 5.9);
+                        ctx.fillStyle = `rgba(255,255,255,${0.3 + brightness * 0.7})`;
+                        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+                    }
+                    // Nébuleuse subtile
+                    const grad = ctx.createRadialGradient(size*0.3, size*0.7, 0, size*0.3, size*0.7, size*0.3);
+                    grad.addColorStop(0, 'rgba(100, 0, 150, 0.06)');
+                    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, size, size);
+                }
+            },
+            {
+                id: 'foret',
+                name: 'Forêt',
+                desc: 'Arbres et champignons',
+                bg: '#071a07',
+                gridColor: '#0d250d',
+                borderColor: '#2d5a2d',
+                foodColor: '#ff4444',
+                foodGlow: null,
+                emoji: '🌲',
+                wallStyle: 'tree',
+                walls: (cols, rows) => {
+                    const w = [];
+                    // Gros arbre en haut à gauche (tronc + feuillage)
+                    const t1x = 4, t1y = 4;
+                    w.push({ x:t1x, y:t1y+2, t:'trunk' }); w.push({ x:t1x, y:t1y+3, t:'trunk' });
+                    [[0,0],[1,0],[-1,0],[0,1],[1,1],[-1,1],[0,-1]].forEach(
+                        d => w.push({ x: t1x+d[0], y: t1y+d[1], t:'leaves' })
+                    );
+                    // Gros arbre en bas à droite
+                    const t2x = cols-5, t2y = rows-7;
+                    w.push({ x:t2x, y:t2y+2, t:'trunk' }); w.push({ x:t2x, y:t2y+3, t:'trunk' });
+                    [[0,0],[1,0],[-1,0],[0,1],[1,1],[-1,1],[0,-1]].forEach(
+                        d => w.push({ x: t2x+d[0], y: t2y+d[1], t:'leaves' })
+                    );
+                    // Buissons au centre
+                    const cx = Math.floor(cols/2), cy = Math.floor(rows/2);
+                    w.push({ x:cx-1, y:cy, t:'bush' }); w.push({ x:cx, y:cy, t:'bush' });
+                    w.push({ x:cx+1, y:cy, t:'bush' });
+                    // Champignons (petits obstacles)
+                    w.push({ x:8, y:rows-5, t:'mushroom' });
+                    w.push({ x:cols-9, y:4, t:'mushroom' });
+                    w.push({ x:Math.floor(cols/2)-5, y:Math.floor(rows/3), t:'mushroom' });
+                    w.push({ x:Math.floor(cols/2)+5, y:Math.floor(rows*2/3), t:'mushroom' });
+                    // Troncs couchés
+                    for (let i = 0; i < 4; i++) w.push({ x: 7+i, y: Math.floor(rows/3), t:'log' });
+                    for (let i = 0; i < 4; i++) w.push({ x: cols-11+i, y: Math.floor(rows*2/3), t:'log' });
+                    return w;
+                },
+                drawBg: (ctx, cols, rows, tile, size) => {
+                    // Herbe subtile
+                    ctx.strokeStyle = 'rgba(30, 80, 30, 0.15)';
+                    ctx.lineWidth = 1;
+                    const rng = (s) => { s = Math.sin(s) * 43758.5453; return s - Math.floor(s); };
+                    for (let i = 0; i < 60; i++) {
+                        const x = rng(i * 11.3) * size;
+                        const y = rng(i * 17.7) * size;
+                        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 2, y - 6); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(x + 4, y); ctx.lineTo(x + 6, y - 5); ctx.stroke();
+                    }
+                }
+            },
+            {
+                id: 'enfer',
+                name: 'Enfer',
+                desc: 'Lave et flammes',
+                bg: '#120000',
+                gridColor: '#1f0505',
+                borderColor: '#ff4500',
+                foodColor: '#ffff00',
+                foodGlow: '#ff4500',
+                emoji: '🔥',
+                wallStyle: 'lava',
+                walls: (cols, rows) => {
+                    const w = [];
+                    // Lac de lave central (forme ovale)
+                    const cx = Math.floor(cols/2), cy = Math.floor(rows/2);
+                    for (let dy = -2; dy <= 2; dy++)
+                        for (let dx = -4; dx <= 4; dx++)
+                            if ((dx*dx)/16 + (dy*dy)/4 <= 1)
+                                w.push({ x: cx+dx, y: cy+dy, t:'lava' });
+                    // Rivière de lave horizontale haut (avec trou)
+                    const ry1 = Math.floor(rows/4);
+                    for (let x = 2; x < cols-2; x++) {
+                        if (Math.abs(x - Math.floor(cols/3)) > 1 && Math.abs(x - Math.floor(cols*2/3)) > 1)
+                            w.push({ x, y: ry1, t:'lava' });
+                    }
+                    // Rivière de lave horizontale bas (avec trou)
+                    const ry2 = Math.floor(rows*3/4);
+                    for (let x = 2; x < cols-2; x++) {
+                        if (Math.abs(x - Math.floor(cols/3)) > 1 && Math.abs(x - Math.floor(cols*2/3)) > 1)
+                            w.push({ x, y: ry2, t:'lava' });
+                    }
+                    // Rochers brulants
+                    w.push({ x:3, y:3, t:'rock' }); w.push({ x:4, y:3, t:'rock' });
+                    w.push({ x:cols-4, y:rows-4, t:'rock' }); w.push({ x:cols-5, y:rows-4, t:'rock' });
+                    return w;
+                },
+                drawBg: (ctx, cols, rows, tile, size) => {
+                    // Lueur rouge venant du bas
+                    const grad = ctx.createLinearGradient(0, 0, 0, size);
+                    grad.addColorStop(0, 'rgba(0,0,0,0)');
+                    grad.addColorStop(1, 'rgba(180, 30, 0, 0.1)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, size, size);
+                    // Particules de cendre
+                    const rng = (s) => { s = Math.sin(s) * 43758.5453; return s - Math.floor(s); };
+                    for (let i = 0; i < 30; i++) {
+                        const x = rng(i * 7.1) * size;
+                        const y = rng(i * 13.3) * size;
+                        ctx.fillStyle = `rgba(255, ${Math.floor(50 + rng(i*3)*100)}, 0, ${0.1 + rng(i*5)*0.15})`;
+                        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI*2); ctx.fill();
+                    }
+                }
+            },
+            {
+                id: 'labyrinthe',
+                name: 'Labyrinthe',
+                desc: 'Murs de pierre anciens',
+                bg: '#0f0f1e',
+                gridColor: '#141430',
+                borderColor: '#6a6a9a',
+                foodColor: '#e94560',
+                foodGlow: '#e94560',
+                emoji: '🏛️',
+                wallStyle: 'stone',
+                walls: (cols, rows) => {
+                    const w = [];
+                    const mx = Math.floor(cols/2), my = Math.floor(rows/2);
+                    // Mur horizontal central avec 2 passages
+                    for (let x = 3; x < cols-3; x++) {
+                        if (Math.abs(x - Math.floor(cols/3)) > 1 && Math.abs(x - Math.floor(cols*2/3)) > 1)
+                            w.push({ x, y: my, t:'stone' });
+                    }
+                    // Mur vertical central avec 2 passages
+                    for (let y = 3; y < rows-3; y++) {
+                        if (Math.abs(y - Math.floor(rows/3)) > 1 && Math.abs(y - Math.floor(rows*2/3)) > 1)
+                            w.push({ x: mx, y, t:'stone' });
+                    }
+                    // Murs coins (en L)
+                    for (let i = 0; i < 5; i++) w.push({ x: 4, y: 4+i, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: 4+i, y: 4, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: cols-5, y: 4+i, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: cols-5-i, y: 4, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: 4, y: rows-5-i, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: 4+i, y: rows-5, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: cols-5, y: rows-5-i, t:'stone' });
+                    for (let i = 0; i < 5; i++) w.push({ x: cols-5-i, y: rows-5, t:'stone' });
+                    return w;
+                },
+                drawBg: null
+            }
+        ];
+
+        let selectedMap = MAPS[0];
+        let currentWalls = [];
+
+        function isTimName(name) {
+            const lower = name.toLowerCase().trim();
+            return TIM_NAMES.includes(lower) || (lower.length > 0 && lower[0] === 't');
+        }
+
+        // --- Map selector ---
+        const mapGrid = document.getElementById('map-grid');
+
+        function drawMapPreview(cvs, map) {
+            const c = cvs.getContext('2d');
+            const w = cvs.width, h = cvs.height;
+            c.fillStyle = map.bg;
+            c.fillRect(0, 0, w, h);
+
+            // Mini grille
+            c.strokeStyle = map.gridColor;
+            c.lineWidth = 0.3;
+            for (let i = 0; i < w; i += 8) {
+                c.beginPath(); c.moveTo(i, 0); c.lineTo(i, h); c.stroke();
+            }
+            for (let i = 0; i < h; i += 8) {
+                c.beginPath(); c.moveTo(0, i); c.lineTo(w, i); c.stroke();
+            }
+
+            // Mini murs
+            if (typeof map.walls === 'function') {
+                const miniCols = 15, miniRows = 10;
+                const walls = map.walls(miniCols, miniRows);
+                const tw = w / miniCols, th = h / miniRows;
+                c.fillStyle = map.borderColor;
+                walls.forEach(wall => {
+                    if (wall.x >= 0 && wall.x < miniCols && wall.y >= 0 && wall.y < miniRows) {
+                        c.fillRect(wall.x * tw + 0.5, wall.y * th + 0.5, tw - 1, th - 1);
+                    }
+                });
+            }
+
+            // Bordure
+            c.strokeStyle = map.borderColor;
+            c.lineWidth = 2;
+            c.strokeRect(0, 0, w, h);
+
+            // Mini nourriture
+            c.fillStyle = map.foodColor;
+            c.beginPath();
+            c.arc(w * 0.7, h * 0.4, 3, 0, Math.PI * 2);
+            c.fill();
+        }
+
+        function buildMapGrid() {
+            mapGrid.innerHTML = '';
+            MAPS.forEach(map => {
+                const card = document.createElement('div');
+                card.className = 'map-card' + (map.id === selectedMap.id ? ' selected-map' : '');
+                const cvs = document.createElement('canvas');
+                cvs.width = 100;
+                cvs.height = 66;
+                drawMapPreview(cvs, map);
+                const label = document.createElement('div');
+                label.className = 'map-name';
+                label.textContent = (map.emoji ? map.emoji + ' ' : '') + map.name;
+                const desc = document.createElement('div');
+                desc.className = 'map-desc';
+                desc.textContent = map.desc;
+                card.appendChild(cvs);
+                card.appendChild(label);
+                card.appendChild(desc);
+                card.addEventListener('click', () => {
+                    selectedMap = map;
+                    mapGrid.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected-map'));
+                    card.classList.add('selected-map');
+                });
+                mapGrid.appendChild(card);
+            });
+        }
+
+        function computeWalls() {
+            if (typeof selectedMap.walls === 'function') {
+                currentWalls = selectedMap.walls(COLS, ROWS);
+            } else {
+                currentWalls = selectedMap.walls || [];
+            }
+        }
+
+        function isWall(x, y) {
+            return currentWalls.some(w => w.x === x && w.y === y);
+        }
+
+        // --- Skin selector ---
+        const skinScreen = document.getElementById('skin-screen');
+        const skinGridP1 = document.getElementById('skin-grid-p1');
+        const skinGridP2 = document.getElementById('skin-grid-p2');
+        const skinP2Section = document.getElementById('skin-p2-section');
+        const skinConfirmBtn = document.getElementById('skin-confirm-btn');
+        const skinP1Label = document.getElementById('skin-p1-label');
+
+        function drawSkinPreview(cvs, skin) {
+            const c = cvs.getContext('2d');
+            const w = cvs.width, h = cvs.height;
+            c.fillStyle = '#16213e';
+            c.fillRect(0, 0, w, h);
+
+            // Dessiner un mini serpent
+            const segments = [
+                { x: 5, y: 2 }, { x: 4, y: 2 }, { x: 3, y: 2 },
+                { x: 2, y: 2 }, { x: 1, y: 2 }
+            ];
+            const t = 12;
+            segments.forEach((seg, i) => {
+                const ratio = 1 - (i / segments.length) * 0.5;
+                if (skin.pattern === 'glow') {
+                    c.shadowColor = skin.head;
+                    c.shadowBlur = 6;
+                }
+                c.fillStyle = i === 0 ? skin.head : skin.body(ratio);
+                c.beginPath();
+                c.roundRect(seg.x * t + 1, seg.y * t + 1, t - 2, t - 2, 3);
+                c.fill();
+                c.shadowBlur = 0;
+            });
+
+            // Yeux
+            const hd = segments[0];
+            c.fillStyle = skin.eyeColor;
+            c.beginPath(); c.arc(hd.x * t + t/2 + 2, hd.y * t + t/2 - 2, 2, 0, Math.PI*2); c.fill();
+            c.beginPath(); c.arc(hd.x * t + t/2 + 2, hd.y * t + t/2 + 2, 2, 0, Math.PI*2); c.fill();
+        }
+
+        function buildSkinGrid(container, selectedId, onSelect, cssClass) {
+            container.innerHTML = '';
+            SKINS.forEach(skin => {
+                const card = document.createElement('div');
+                card.className = 'skin-card' + (skin.id === selectedId ? (' ' + cssClass) : '');
+                const cvs = document.createElement('canvas');
+                cvs.width = 84;
+                cvs.height = 60;
+                drawSkinPreview(cvs, skin);
+                const label = document.createElement('div');
+                label.className = 'skin-name';
+                label.textContent = skin.name;
+                card.appendChild(cvs);
+                card.appendChild(label);
+                card.addEventListener('click', () => {
+                    onSelect(skin);
+                    container.querySelectorAll('.skin-card').forEach(c => c.classList.remove(cssClass));
+                    card.classList.add(cssClass);
+                });
+                container.appendChild(card);
+            });
+        }
+
+        function showSkinScreen() {
+            skinScreen.style.display = 'flex';
+            nameScreen.style.display = 'none';
+            gameArea.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+
+            buildMapGrid();
+
+            if (multiMode) {
+                skinP1Label.textContent = playerName + ' (J1)';
+                skinP2Section.style.display = 'block';
+                buildSkinGrid(skinGridP2, selectedSkin2.id, (s) => { selectedSkin2 = s; }, 'selected-p2');
+            } else {
+                skinP1Label.textContent = 'Ton serpent';
+                skinP2Section.style.display = 'none';
+            }
+            buildSkinGrid(skinGridP1, selectedSkin1.id, (s) => { selectedSkin1 = s; }, 'selected');
+        }
+
+        skinConfirmBtn.addEventListener('click', () => {
+            skinScreen.style.display = 'none';
+            actuallyLaunchGame();
+        });
+
+        // --- Elements DOM ---
+        const nameScreen = document.getElementById('name-screen');
+        const gameArea = document.getElementById('game-area');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const playerNameInput = document.getElementById('player-name-input');
+        const player2NameInput = document.getElementById('player2-name-input');
+        const p2NameRow = document.getElementById('p2-name-row');
+        const startBtn = document.getElementById('start-btn');
+        const startMultiBtn = document.getElementById('start-multi-btn');
+        const replayBtn = document.getElementById('replay-btn');
+        const changeNameBtn = document.getElementById('change-name-btn');
+        const displayName = document.getElementById('display-name');
+        const displayName2 = document.getElementById('display-name2');
+        const displayScore = document.getElementById('display-score');
+        const displayScore2 = document.getElementById('display-score2');
+        const displayRecord = document.getElementById('display-record');
+        const p2Info = document.getElementById('p2-info');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalScore2El = document.getElementById('final-score2');
+        const winnerTextEl = document.getElementById('winner-text');
+        const recordInfoEl = document.getElementById('record-info');
+        const leaderboardEl = document.getElementById('leaderboard');
+        const leaderboardHomeEl = document.getElementById('leaderboard-home');
+        const bonusNotif = document.getElementById('bonus-notification');
+        const zgegOverlay = document.getElementById('zgeg-overlay');
+        const zgegOkBtn = document.getElementById('zgeg-ok-btn');
+        const canvas = document.getElementById('game-canvas');
+        const instructionsEl = document.getElementById('instructions');
+        const ctx = canvas.getContext('2d');
+
+        // --- Etat du jeu ---
+        let playerName = '';
+        let player2Name = '';
+        let multiMode = false;
+
+        // Serpent 1
+        let snake = [];
+        let direction = { x: 1, y: 0 };
+        let nextDirection = { x: 1, y: 0 };
+        let score = 0;
+        let foodEaten = 0;
+        let alive1 = true;
+
+        // Serpent 2
+        let snake2 = [];
+        let direction2 = { x: -1, y: 0 };
+        let nextDirection2 = { x: -1, y: 0 };
+        let score2 = 0;
+        let foodEaten2 = 0;
+        let alive2 = true;
+
+        let food = null;
+        let gameLoop = null;
+        let gameRunning = false;
+        let currentSpeed = BASE_SPEED;
+
+        function getSpeed() {
+            const totalEaten = getTotalFoodEaten();
+            const speedUps = Math.floor(totalEaten / 10);
+            // Réduit de 3ms par palier, minimum 50ms
+            return Math.max(50, BASE_SPEED - speedUps * 3);
+        }
+
+        function updateSpeed() {
+            const newSpeed = getSpeed();
+            if (newSpeed !== currentSpeed) {
+                currentSpeed = newSpeed;
+                clearInterval(gameLoop);
+                gameLoop = setInterval(update, currentSpeed);
+            }
+        }
+
+        // --- Leaderboard ---
+        function loadLeaderboard() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+            catch { return []; }
+        }
+
+        function saveLeaderboard(lb) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(lb));
+        }
+
+        function updateLeaderboard(name, newScore) {
+            const lb = loadLeaderboard();
+            const existing = lb.find(e => e.name.toLowerCase() === name.toLowerCase());
+            let isNewRecord = false;
+            if (existing) {
+                if (newScore > existing.score) {
+                    existing.score = newScore;
+                    existing.name = name;
+                    isNewRecord = true;
+                }
+            } else {
+                lb.push({ name, score: newScore });
+                isNewRecord = true;
+            }
+            lb.sort((a, b) => b.score - a.score);
+            const trimmed = lb.slice(0, 5);
+            saveLeaderboard(trimmed);
+            return isNewRecord;
+        }
+
+        function getRecord() {
+            const lb = loadLeaderboard();
+            return lb.length > 0 ? lb[0] : null;
+        }
+
+        function renderLeaderboard(container) {
+            const lb = loadLeaderboard();
+            if (lb.length === 0) { container.innerHTML = ''; return; }
+            let html = '<div id="leaderboard"><h3>Classement</h3><table><thead><tr><th>Joueur</th><th>Score</th></tr></thead><tbody>';
+            lb.forEach(entry => {
+                html += `<tr><td>${escapeHtml(entry.name)}</td><td>${entry.score}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // --- Logique du jeu ---
+        function initGame() {
+            // Serpent 1 : part du quart gauche, va à droite
+            let s1x = Math.floor(COLS / 4);
+            let s1y = Math.floor(ROWS / 4);
+            // Eviter les murs
+            while (isWall(s1x, s1y) || isWall(s1x-1, s1y) || isWall(s1x-2, s1y)) { s1y++; }
+            snake = [
+                { x: s1x, y: s1y },
+                { x: s1x - 1, y: s1y },
+                { x: s1x - 2, y: s1y }
+            ];
+            direction = { x: 1, y: 0 };
+            nextDirection = { x: 1, y: 0 };
+            score = 0;
+            foodEaten = 0;
+            alive1 = true;
+
+            if (multiMode) {
+                // Serpent 2 : part du quart droit, va à gauche
+                let s2x = Math.floor(COLS * 3 / 4);
+                let s2y = Math.floor(ROWS * 3 / 4);
+                while (isWall(s2x, s2y) || isWall(s2x+1, s2y) || isWall(s2x+2, s2y)) { s2y--; }
+                snake2 = [
+                    { x: s2x, y: s2y },
+                    { x: s2x + 1, y: s2y },
+                    { x: s2x + 2, y: s2y }
+                ];
+                direction2 = { x: -1, y: 0 };
+                nextDirection2 = { x: -1, y: 0 };
+                score2 = 0;
+                foodEaten2 = 0;
+                alive2 = true;
+            }
+
+            // Calculer les murs de la map
+            computeWalls();
+
+            // Reset portails
+            portalActive = false;
+            portalUsed = false;
+            inBonusMap = false;
+            bonusFoods = [];
+            portalPos = null;
+            returnPortalPos = null;
+            savedMainState = null;
+
+            spawnFood();
+            updateDisplay();
+        }
+
+        function allSegments() {
+            const segs = [...snake];
+            if (multiMode) segs.push(...snake2);
+            return segs;
+        }
+
+        function spawnFood() {
+            const occupied = allSegments();
+            let pos;
+            do {
+                pos = {
+                    x: Math.floor(Math.random() * COLS),
+                    y: Math.floor(Math.random() * ROWS)
+                };
+            } while (occupied.some(s => s.x === pos.x && s.y === pos.y) || isPortalTile(pos.x, pos.y) || isWall(pos.x, pos.y));
+            food = pos;
+        }
+
+        // --- Portail & Map bonus ---
+        const PORTAL_SIZE = 2;
+        const PORTAL_THRESHOLD = 15; // apparaît à 15 nourritures
+        const BONUS_FOOD_COUNT = 5;
+        const BONUS_MAP_COLS = 20;
+        const BONUS_MAP_ROWS = 20;
+        const BONUS_MAP_SIZE = BONUS_MAP_COLS * TILE;
+
+        let portalActive = false;
+        let portalUsed = false; // disparait apres retour
+        let inBonusMap = false;
+        let bonusFoods = []; // liste des nourritures bonus
+        let portalPos = null; // position du portail sur la map principale
+        let returnPortalPos = null; // position du portail retour sur la map bonus
+        let savedMainState = null; // sauvegarde de l'état map principale
+
+        function getTotalFoodEaten() {
+            return foodEaten + (multiMode ? foodEaten2 : 0);
+        }
+
+        function checkPortalSpawn() {
+            if (!portalUsed && !portalActive && !inBonusMap && getTotalFoodEaten() >= PORTAL_THRESHOLD) {
+                portalActive = true;
+                // Portail au centre de la map
+                portalPos = { x: Math.floor(COLS / 2) - 1, y: Math.floor(ROWS / 2) - 1 };
+            }
+        }
+
+        function isOnPortal(head, portal) {
+            if (!portal) return false;
+            return head.x >= portal.x && head.x < portal.x + PORTAL_SIZE &&
+                   head.y >= portal.y && head.y < portal.y + PORTAL_SIZE;
+        }
+
+        function isPortalTile(x, y) {
+            if (portalActive && portalPos && isOnPortal({ x, y }, portalPos)) return true;
+            if (inBonusMap && returnPortalPos && isOnPortal({ x, y }, returnPortalPos)) return true;
+            return false;
+        }
+
+        function spawnBonusFoods() {
+            bonusFoods = [];
+            const occupied = allSegments();
+            for (let i = 0; i < BONUS_FOOD_COUNT; i++) {
+                let pos;
+                do {
+                    pos = {
+                        x: Math.floor(Math.random() * BONUS_MAP_COLS),
+                        y: Math.floor(Math.random() * BONUS_MAP_ROWS)
+                    };
+                } while (
+                    occupied.some(s => s.x === pos.x && s.y === pos.y) ||
+                    bonusFoods.some(f => f.x === pos.x && f.y === pos.y) ||
+                    isOnPortal(pos, returnPortalPos)
+                );
+                bonusFoods.push(pos);
+            }
+        }
+
+        function enterBonusMap() {
+            // Sauvegarder l'état de la map principale
+            savedMainState = {
+                food: { ...food },
+                canvasSize: CANVAS_SIZE,
+                cols: COLS,
+                rows: ROWS,
+                snakeLength: snake.length,
+                snake2Length: multiMode ? snake2.length : 0
+            };
+
+            // Passer en map bonus
+            inBonusMap = true;
+            portalActive = false;
+            CANVAS_SIZE = BONUS_MAP_SIZE;
+            COLS = BONUS_MAP_COLS;
+            ROWS = BONUS_MAP_ROWS;
+            canvas.width = CANVAS_SIZE;
+            canvas.height = CANVAS_SIZE;
+
+            // Portail retour en bas à droite
+            returnPortalPos = { x: COLS - PORTAL_SIZE, y: ROWS - PORTAL_SIZE };
+
+            // Repositionner les serpents au centre
+            const cx = Math.floor(COLS / 2);
+            const cy = Math.floor(ROWS / 2);
+            snake = [
+                { x: cx, y: cy },
+                { x: cx - 1, y: cy },
+                { x: cx - 2, y: cy }
+            ];
+            direction = { x: 1, y: 0 };
+            nextDirection = { x: 1, y: 0 };
+
+            if (multiMode && alive2) {
+                snake2 = [
+                    { x: cx, y: cy - 3 },
+                    { x: cx + 1, y: cy - 3 },
+                    { x: cx + 2, y: cy - 3 }
+                ];
+                direction2 = { x: -1, y: 0 };
+                nextDirection2 = { x: -1, y: 0 };
+            }
+
+            spawnBonusFoods();
+
+            bonusNotif.textContent = 'MAP BONUS ! Mange les 5 nourritures !';
+            bonusNotif.style.background = 'linear-gradient(135deg, #9b59b6, #8e44ad)';
+            showBonusNotification();
+        }
+
+        function exitBonusMap() {
+            inBonusMap = false;
+            portalUsed = true;
+            returnPortalPos = null;
+            bonusFoods = [];
+
+            // Restaurer la map principale
+            CANVAS_SIZE = savedMainState.canvasSize;
+            COLS = savedMainState.cols;
+            ROWS = savedMainState.rows;
+            canvas.width = CANVAS_SIZE;
+            canvas.height = CANVAS_SIZE;
+            food = savedMainState.food;
+
+            // Repositionner serpent 1 avec taille d'avant + 5 bonus
+            const cx = Math.floor(COLS / 2);
+            const cy = Math.floor(ROWS / 2);
+            const targetLength1 = savedMainState.snakeLength + BONUS_FOOD_COUNT;
+            snake = [];
+            for (let i = 0; i < targetLength1; i++) {
+                snake.push({ x: cx - i, y: cy });
+            }
+            direction = { x: 1, y: 0 };
+            nextDirection = { x: 1, y: 0 };
+
+            if (multiMode && alive2) {
+                const targetLength2 = savedMainState.snake2Length + BONUS_FOOD_COUNT;
+                snake2 = [];
+                for (let i = 0; i < targetLength2; i++) {
+                    snake2.push({ x: cx + i, y: cy - 3 });
+                }
+                direction2 = { x: -1, y: 0 };
+                nextDirection2 = { x: -1, y: 0 };
+            }
+
+            bonusNotif.textContent = 'Retour à la map principale !';
+            bonusNotif.style.background = '';
+            showBonusNotification();
+        }
+
+        function hitsWall(head) {
+            return head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS || isWall(head.x, head.y);
+        }
+
+        function hitsBody(head, body) {
+            return body.some(s => s.x === head.x && s.y === head.y);
+        }
+
+
+
+        function handleSnakeFood(head, snakeRef, scoreAdd, isP1) {
+            if (inBonusMap) {
+                // Vérifier nourriture bonus
+                const idx = bonusFoods.findIndex(f => f.x === head.x && f.y === head.y);
+                if (idx !== -1) {
+                    if (isP1) { score += POINTS_PER_FOOD; foodEaten++; }
+                    else { score2 += POINTS_PER_FOOD; foodEaten2++; }
+                    bonusFoods.splice(idx, 1);
+                    if (bonusFoods.length === 0) {
+                        // Toutes mangées, retour auto
+                        exitBonusMap();
+                    }
+                    return true; // mangé
+                }
+                // Vérifier portail retour
+                if (isOnPortal(head, returnPortalPos)) {
+                    exitBonusMap();
+                    return true;
+                }
+            } else {
+                // Map principale
+                if (head.x === food.x && head.y === food.y) {
+                    if (isP1) { score += POINTS_PER_FOOD; foodEaten++; }
+                    else { score2 += POINTS_PER_FOOD; foodEaten2++; }
+                    spawnFood();
+                    checkPortalSpawn();
+                    return true; // mangé
+                }
+                // Vérifier entrée portail
+                if (portalActive && isOnPortal(head, portalPos)) {
+                    enterBonusMap();
+                    return 'teleported';
+                }
+            }
+            return false; // pas mangé
+        }
+
+        function update() {
+            // --- Serpent 1 ---
+            if (alive1) {
+                direction = { ...nextDirection };
+                const head1 = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+                const otherBody1 = multiMode && alive2 ? snake2 : [];
+                if (hitsWall(head1) || hitsBody(head1, snake) || hitsBody(head1, otherBody1)) {
+                    alive1 = false;
+                    if (!multiMode || !alive2) return gameOver();
+                } else {
+                    snake.unshift(head1);
+                    const ate = handleSnakeFood(head1, snake, score, true);
+                    if (ate === 'teleported') { updateDisplay(); draw(); return; }
+                    if (!ate) snake.pop();
+                }
+            }
+
+            // --- Serpent 2 ---
+            if (multiMode && alive2) {
+                direction2 = { ...nextDirection2 };
+                const head2 = { x: snake2[0].x + direction2.x, y: snake2[0].y + direction2.y };
+
+                const otherBody2 = alive1 ? snake : [];
+                if (hitsWall(head2) || hitsBody(head2, snake2) || hitsBody(head2, otherBody2)) {
+                    alive2 = false;
+                    if (!alive1) return gameOver();
+                } else {
+                    snake2.unshift(head2);
+                    const ate2 = handleSnakeFood(head2, snake2, score2, false);
+                    if (ate2 === 'teleported') { updateDisplay(); draw(); return; }
+                    if (!ate2) snake2.pop();
+                }
+            }
+
+            if (multiMode && (!alive1 || !alive2)) {
+                return gameOver();
+            }
+
+            updateSpeed();
+            updateDisplay();
+            draw();
+        }
+
+        function showBonusNotification() {
+            bonusNotif.classList.add('show');
+            setTimeout(() => bonusNotif.classList.remove('show'), 2000);
+        }
+
+        function updateDisplay() {
+            displayScore.textContent = score;
+            if (multiMode) displayScore2.textContent = score2;
+            const record = getRecord();
+            displayRecord.textContent = record ? record.score : 0;
+        }
+
+        function drawSnake(snakeArr, skin, dir) {
+            snakeArr.forEach((segment, index) => {
+                const ratio = 1 - (index / snakeArr.length) * 0.5;
+                if (skin.pattern === 'glow') {
+                    ctx.shadowColor = skin.head;
+                    ctx.shadowBlur = 8;
+                }
+                ctx.fillStyle = index === 0 ? skin.head : skin.body(ratio);
+                const padding = 1;
+                ctx.beginPath();
+                ctx.roundRect(
+                    segment.x * TILE + padding,
+                    segment.y * TILE + padding,
+                    TILE - padding * 2,
+                    TILE - padding * 2,
+                    4
+                );
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Yeux
+            if (snakeArr.length === 0) return;
+            const head = snakeArr[0];
+            ctx.fillStyle = skin.eyeColor;
+            const eyeSize = 3;
+            const cx = head.x * TILE + TILE / 2;
+            const cy = head.y * TILE + TILE / 2;
+            let eye1x, eye1y, eye2x, eye2y;
+
+            if (dir.x === 1) { eye1x = cx+4; eye1y = cy-4; eye2x = cx+4; eye2y = cy+4; }
+            else if (dir.x === -1) { eye1x = cx-4; eye1y = cy-4; eye2x = cx-4; eye2y = cy+4; }
+            else if (dir.y === -1) { eye1x = cx-4; eye1y = cy-4; eye2x = cx+4; eye2y = cy-4; }
+            else { eye1x = cx-4; eye1y = cy+4; eye2x = cx+4; eye2y = cy+4; }
+
+            ctx.beginPath(); ctx.arc(eye1x, eye1y, eyeSize, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(eye2x, eye2y, eyeSize, 0, Math.PI*2); ctx.fill();
+        }
+
+        function drawPortal(px, py, color, label) {
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = color.replace(')', ', 0.35)').replace('rgb', 'rgba');
+            ctx.fillRect(px * TILE, py * TILE, PORTAL_SIZE * TILE, PORTAL_SIZE * TILE);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px * TILE, py * TILE, PORTAL_SIZE * TILE, PORTAL_SIZE * TILE);
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, px * TILE + PORTAL_SIZE * TILE / 2, py * TILE + PORTAL_SIZE * TILE / 2 + 5);
+        }
+
+        function draw() {
+            // Fond
+            ctx.fillStyle = inBonusMap ? '#1a0a2e' : selectedMap.bg;
+            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+            // Grille
+            ctx.strokeStyle = inBonusMap ? '#2a1744' : selectedMap.gridColor;
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= COLS; i++) {
+                ctx.beginPath(); ctx.moveTo(i*TILE, 0); ctx.lineTo(i*TILE, CANVAS_SIZE); ctx.stroke();
+            }
+            for (let i = 0; i <= ROWS; i++) {
+                ctx.beginPath(); ctx.moveTo(0, i*TILE); ctx.lineTo(CANVAS_SIZE, i*TILE); ctx.stroke();
+            }
+
+            // Decor de fond de la map
+            if (!inBonusMap && selectedMap.drawBg) {
+                selectedMap.drawBg(ctx, COLS, ROWS, TILE, CANVAS_SIZE);
+            }
+
+            // Murs de la map
+            if (!inBonusMap && currentWalls.length > 0) {
+                currentWalls.forEach(w => {
+                    const wx = w.x * TILE, wy = w.y * TILE;
+                    const t = w.t || 'default';
+
+                    if (t === 'hull') {
+                        ctx.fillStyle = '#5a3010';
+                        ctx.fillRect(wx, wy, TILE, TILE);
+                        ctx.strokeStyle = '#3a1a05';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(wx+1, wy+1, TILE-2, TILE-2);
+                    } else if (t === 'deck') {
+                        ctx.fillStyle = '#8B6914';
+                        ctx.fillRect(wx, wy, TILE, TILE);
+                        ctx.strokeStyle = '#6a4f0a';
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath(); ctx.moveTo(wx, wy+TILE/2); ctx.lineTo(wx+TILE, wy+TILE/2); ctx.stroke();
+                    } else if (t === 'mast') {
+                        ctx.fillStyle = '#4a2800';
+                        ctx.fillRect(wx+7, wy, 6, TILE);
+                    } else if (t === 'sail') {
+                        ctx.fillStyle = 'rgba(255, 250, 240, 0.85)';
+                        ctx.fillRect(wx+1, wy+1, TILE-2, TILE-2);
+                        ctx.strokeStyle = '#ccc';
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(wx+1, wy+1, TILE-2, TILE-2);
+                    } else if (t === 'sand') {
+                        ctx.fillStyle = '#d4a843';
+                        ctx.beginPath(); ctx.roundRect(wx+1, wy+1, TILE-2, TILE-2, 4); ctx.fill();
+                    } else if (t === 'palm') {
+                        ctx.fillStyle = '#2d8a2d';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2, wy+TILE/2, TILE/2, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = '#1a5a1a';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2, wy+TILE/2, 4, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'rock') {
+                        ctx.fillStyle = '#556';
+                        ctx.beginPath(); ctx.roundRect(wx+2, wy+2, TILE-4, TILE-4, 6); ctx.fill();
+                        ctx.fillStyle = '#667';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2-2, wy+TILE/2-2, 3, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'ast') {
+                        ctx.fillStyle = '#5a5a6a';
+                        ctx.beginPath(); ctx.roundRect(wx+1, wy+1, TILE-2, TILE-2, 6); ctx.fill();
+                        ctx.fillStyle = '#4a4a5a';
+                        ctx.beginPath(); ctx.arc(wx+6, wy+8, 3, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = '#6a6a7a';
+                        ctx.beginPath(); ctx.arc(wx+13, wy+5, 2, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'planet') {
+                        ctx.shadowColor = '#4488ff';
+                        ctx.shadowBlur = 8;
+                        ctx.fillStyle = '#2244aa';
+                        ctx.beginPath(); ctx.roundRect(wx+1, wy+1, TILE-2, TILE-2, 4); ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = 'rgba(100, 180, 255, 0.3)';
+                        ctx.beginPath(); ctx.arc(wx+7, wy+7, 4, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'trunk') {
+                        ctx.fillStyle = '#4a2a0a';
+                        ctx.fillRect(wx+6, wy, 8, TILE);
+                    } else if (t === 'leaves') {
+                        ctx.fillStyle = '#1a7a1a';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2, wy+TILE/2, TILE/2-1, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = '#2a9a2a';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2-2, wy+TILE/2-2, 4, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'bush') {
+                        ctx.fillStyle = '#2a6a2a';
+                        ctx.beginPath(); ctx.roundRect(wx+2, wy+4, TILE-4, TILE-6, 6); ctx.fill();
+                        ctx.fillStyle = '#3a8a3a';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2, wy+6, 5, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'mushroom') {
+                        ctx.fillStyle = '#6a4a2a';
+                        ctx.fillRect(wx+8, wy+10, 4, 8);
+                        ctx.fillStyle = '#dd3333';
+                        ctx.beginPath(); ctx.arc(wx+TILE/2, wy+8, 7, Math.PI, 0); ctx.fill();
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath(); ctx.arc(wx+8, wy+5, 2, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(wx+13, wy+6, 1.5, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'log') {
+                        ctx.fillStyle = '#5a3a1a';
+                        ctx.beginPath(); ctx.roundRect(wx, wy+6, TILE, 8, 3); ctx.fill();
+                        ctx.strokeStyle = '#3a2510';
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath(); ctx.moveTo(wx+4, wy+7); ctx.lineTo(wx+4, wy+13); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(wx+12, wy+7); ctx.lineTo(wx+12, wy+13); ctx.stroke();
+                    } else if (t === 'lava') {
+                        ctx.shadowColor = '#ff4500';
+                        ctx.shadowBlur = 10;
+                        ctx.fillStyle = '#cc3300';
+                        ctx.fillRect(wx, wy, TILE, TILE);
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = '#ff6600';
+                        ctx.beginPath(); ctx.arc(wx+6, wy+10, 4, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = '#ffaa00';
+                        ctx.beginPath(); ctx.arc(wx+14, wy+6, 3, 0, Math.PI*2); ctx.fill();
+                    } else if (t === 'stone') {
+                        ctx.fillStyle = '#4a4a6a';
+                        ctx.fillRect(wx, wy, TILE, TILE);
+                        ctx.strokeStyle = '#3a3a5a';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(wx+1, wy+1, TILE-2, TILE-2);
+                        // Fissures
+                        ctx.strokeStyle = '#2a2a4a';
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath(); ctx.moveTo(wx+3, wy+3); ctx.lineTo(wx+10, wy+8); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(wx+14, wy+2); ctx.lineTo(wx+8, wy+15); ctx.stroke();
+                    } else {
+                        ctx.fillStyle = selectedMap.borderColor;
+                        ctx.beginPath(); ctx.roundRect(wx+1, wy+1, TILE-2, TILE-2, 3); ctx.fill();
+                    }
+                });
+                ctx.shadowBlur = 0;
+            }
+
+            // Bordure map bonus
+            if (inBonusMap) {
+                ctx.strokeStyle = '#9b59b6';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                ctx.fillStyle = '#9b59b6';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('MAP BONUS - ' + bonusFoods.length + ' restante(s)', CANVAS_SIZE / 2, 18);
+            }
+
+            // Portail sur map principale
+            if (!inBonusMap && portalActive && portalPos) {
+                drawPortal(portalPos.x, portalPos.y, 'rgb(155, 89, 182)', 'BONUS');
+            }
+
+            // Portail retour sur map bonus
+            if (inBonusMap && returnPortalPos) {
+                drawPortal(returnPortalPos.x, returnPortalPos.y, 'rgb(46, 204, 113)', 'RETOUR');
+            }
+
+            // Serpent 1
+            if (alive1) {
+                drawSnake(snake, selectedSkin1, direction);
+            }
+
+            // Serpent 2
+            if (multiMode && alive2) {
+                drawSnake(snake2, selectedSkin2, direction2);
+            }
+
+            // Nourriture
+            if (inBonusMap) {
+                // Nourritures bonus (dorees)
+                bonusFoods.forEach(f => {
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 10;
+                    ctx.fillStyle = '#ffd700';
+                    ctx.beginPath();
+                    ctx.arc(f.x*TILE + TILE/2, f.y*TILE + TILE/2, TILE/2 - 2, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.beginPath();
+                    ctx.arc(f.x*TILE + TILE/2 - 2, f.y*TILE + TILE/2 - 2, 3, 0, Math.PI*2);
+                    ctx.fill();
+                });
+            } else {
+                if (selectedMap.foodGlow) {
+                    ctx.shadowColor = selectedMap.foodGlow;
+                    ctx.shadowBlur = 10;
+                }
+                ctx.fillStyle = selectedMap.foodColor;
+                ctx.beginPath();
+                ctx.arc(food.x*TILE + TILE/2, food.y*TILE + TILE/2, TILE/2 - 2, 0, Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.arc(food.x*TILE + TILE/2 - 2, food.y*TILE + TILE/2 - 2, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameLoop);
+
+            const isNewRecord1 = updateLeaderboard(playerName, score);
+            let isNewRecord2 = false;
+            if (multiMode) {
+                isNewRecord2 = updateLeaderboard(player2Name, score2);
+            }
+            const record = getRecord();
+
+            gameArea.style.display = 'none';
+            gameOverScreen.style.display = 'flex';
+
+            finalScoreEl.textContent = `${escapeHtml(playerName)} : ${score} ${score <= 1 ? 'pt' : 'pts'}`;
+
+            if (multiMode) {
+                finalScore2El.style.display = 'block';
+                finalScore2El.textContent = `${escapeHtml(player2Name)} : ${score2} ${score2 <= 1 ? 'pt' : 'pts'}`;
+
+                winnerTextEl.style.display = 'block';
+                if (score > score2) {
+                    winnerTextEl.textContent = `${playerName} gagne !`;
+                } else if (score2 > score) {
+                    winnerTextEl.textContent = `${player2Name} gagne !`;
+                } else {
+                    winnerTextEl.textContent = 'Égalité !';
+                }
+            } else {
+                finalScore2El.style.display = 'none';
+                winnerTextEl.style.display = 'none';
+            }
+
+            if ((isNewRecord1 || isNewRecord2) && (score > 0 || score2 > 0)) {
+                recordInfoEl.innerHTML = '<span class="new-record">Nouveau record !</span>';
+            } else if (record) {
+                recordInfoEl.innerHTML = `Record : <strong>${record.score}</strong> par <strong>${escapeHtml(record.name)}</strong>`;
+            }
+
+            renderLeaderboard(leaderboardEl);
+        }
+
+        // --- Contrôles ---
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            const key = e.key.toLowerCase();
+
+            // Joueur 1 : flèches
+            const map1 = {
+                'arrowup': { x: 0, y: -1 },
+                'arrowdown': { x: 0, y: 1 },
+                'arrowleft': { x: -1, y: 0 },
+                'arrowright': { x: 1, y: 0 }
+            };
+
+            // Joueur 2 (ou J1 en solo) : ZQSD
+            const map2 = {
+                'z': { x: 0, y: -1 },
+                's': { x: 0, y: 1 },
+                'q': { x: -1, y: 0 },
+                'd': { x: 1, y: 0 }
+            };
+
+            // J1 : flèches (+ ZQSD en solo)
+            let newDir1 = map1[key];
+            if (!multiMode && !newDir1) newDir1 = map2[key];
+            if (newDir1 && alive1) {
+                if (newDir1.x !== -direction.x || newDir1.y !== -direction.y) {
+                    nextDirection = newDir1;
+                }
+                e.preventDefault();
+                return;
+            }
+
+            // J2 : ZQSD (multi uniquement)
+            if (multiMode) {
+                const newDir2 = map2[key];
+                if (newDir2 && alive2) {
+                    if (newDir2.x !== -direction2.x || newDir2.y !== -direction2.y) {
+                        nextDirection2 = newDir2;
+                    }
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // --- Controles mobiles (D-pad + swipe) ---
+        const mobileControls = document.getElementById('mobile-controls');
+        const mobileControlsP2 = document.getElementById('mobile-controls-p2');
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 600;
+
+        if (isMobile) {
+            mobileControls.style.display = 'flex';
+        }
+
+        const dirMap = {
+            'up': { x: 0, y: -1 },
+            'down': { x: 0, y: 1 },
+            'left': { x: -1, y: 0 },
+            'right': { x: 1, y: 0 }
+        };
+
+        document.querySelectorAll('.dpad-btn').forEach(btn => {
+            const handler = (e) => {
+                e.preventDefault();
+                if (!gameRunning) return;
+                const dir = dirMap[btn.dataset.dir];
+                const player = btn.dataset.player;
+                if (player === '1' && dir && alive1) {
+                    if (dir.x !== -direction.x || dir.y !== -direction.y) {
+                        nextDirection = dir;
+                    }
+                } else if (player === '2' && dir && alive2 && multiMode) {
+                    if (dir.x !== -direction2.x || dir.y !== -direction2.y) {
+                        nextDirection2 = dir;
+                    }
+                }
+            };
+            btn.addEventListener('touchstart', handler, { passive: false });
+            btn.addEventListener('mousedown', handler);
+        });
+
+        // Swipe sur le canvas
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (!gameRunning) return;
+            const touch = e.changedTouches[0];
+            const dx = touch.clientX - touchStartX;
+            const dy = touch.clientY - touchStartY;
+            const minSwipe = 20;
+            if (Math.abs(dx) < minSwipe && Math.abs(dy) < minSwipe) return;
+
+            let newDir;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                newDir = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
+            } else {
+                newDir = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
+            }
+
+            if (alive1 && (newDir.x !== -direction.x || newDir.y !== -direction.y)) {
+                nextDirection = newDir;
+            }
+            e.preventDefault();
+        }, { passive: false });
+
+        // Empecher le scroll/zoom sur mobile pendant le jeu
+        document.addEventListener('touchmove', (e) => {
+            if (gameRunning) e.preventDefault();
+        }, { passive: false });
+
+        // --- Navigation ---
+        function showNameScreen() {
+            nameScreen.style.display = 'flex';
+            skinScreen.style.display = 'none';
+            gameArea.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            renderLeaderboard(leaderboardHomeEl);
+            playerNameInput.focus();
+        }
+
+        function checkTimAndStart(callback) {
+            const name1 = playerNameInput.value.trim();
+            const name2 = multiMode ? player2NameInput.value.trim() : '';
+
+            if (isTimName(name1) || (multiMode && isTimName(name2))) {
+                zgegOverlay.style.display = 'flex';
+                zgegOkBtn.onclick = () => {
+                    zgegOverlay.style.display = 'none';
+                    callback();
+                };
+            } else {
+                callback();
+            }
+        }
+
+        function launchGame() {
+            const name = playerNameInput.value.trim();
+            if (!name) {
+                playerNameInput.style.borderColor = '#e94560';
+                playerNameInput.focus();
+                return;
+            }
+            if (multiMode) {
+                const name2 = player2NameInput.value.trim();
+                if (!name2) {
+                    player2NameInput.style.borderColor = '#e94560';
+                    player2NameInput.focus();
+                    return;
+                }
+                player2Name = name2;
+            }
+
+            playerName = name;
+            displayName.textContent = playerName;
+
+            // Aller à l'écran de choix de skin
+            showSkinScreen();
+        }
+
+        function actuallyLaunchGame() {
+            if (multiMode) {
+                displayName2.textContent = player2Name;
+                p2Info.style.display = '';
+                instructionsEl.textContent = isMobile ? 'Swipe ou D-pad pour jouer' : 'J1 : Flèches | J2 : ZQSD';
+                mobileControlsP2.style.display = isMobile ? 'block' : 'none';
+                document.getElementById('mobile-p1-label').textContent = playerName;
+            } else {
+                p2Info.style.display = 'none';
+                instructionsEl.textContent = isMobile ? 'Swipe ou D-pad pour jouer' : 'Flèches ou ZQSD pour se déplacer';
+                mobileControlsP2.style.display = 'none';
+                document.getElementById('mobile-p1-label').textContent = '';
+            }
+
+            // Adapter la taille de la map
+            CANVAS_SIZE = multiMode ? MULTI_SIZE : SOLO_SIZE;
+            COLS = CANVAS_SIZE / TILE;
+            ROWS = CANVAS_SIZE / TILE;
+            canvas.width = CANVAS_SIZE;
+            canvas.height = CANVAS_SIZE;
+
+            nameScreen.style.display = 'none';
+            skinScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameArea.style.display = 'flex';
+
+            initGame();
+            draw();
+            startCountdown(() => {
+                gameRunning = true;
+                currentSpeed = BASE_SPEED;
+                gameLoop = setInterval(update, currentSpeed);
+            });
+        }
+
+        function startCountdown(callback) {
+            let count = 3;
+            const drawCount = () => {
+                draw(); // redraw the game behind
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#e94560';
+                ctx.font = 'bold ' + Math.floor(canvas.width / 4) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(count, canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+            };
+            drawCount();
+            const interval = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    clearInterval(interval);
+                    draw();
+                    callback();
+                } else {
+                    drawCount();
+                }
+            }, 800);
+        }
+
+        function startSolo() {
+            multiMode = false;
+            p2NameRow.style.display = 'none';
+            checkTimAndStart(launchGame);
+        }
+
+        function startMulti() {
+            multiMode = true;
+            p2NameRow.style.display = 'flex';
+            // Si le nom J2 n'est pas encore rempli, juste afficher le champ
+            if (!player2NameInput.value.trim()) {
+                player2NameInput.focus();
+                // Changer le bouton multi pour lancer
+                startMultiBtn.textContent = 'Lancer Multi';
+                startMultiBtn.onclick = () => {
+                    checkTimAndStart(launchGame);
+                };
+                return;
+            }
+            checkTimAndStart(launchGame);
+        }
+
+        startBtn.addEventListener('click', startSolo);
+        startMultiBtn.addEventListener('click', startMulti);
+
+        playerNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (multiMode) {
+                    player2NameInput.focus();
+                } else {
+                    startSolo();
+                }
+            }
+            playerNameInput.style.borderColor = '#0f3460';
+        });
+
+        player2NameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                checkTimAndStart(launchGame);
+            }
+        });
+
+        replayBtn.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            gameArea.style.display = 'flex';
+            initGame();
+            draw();
+            startCountdown(() => {
+                gameRunning = true;
+                currentSpeed = BASE_SPEED;
+                gameLoop = setInterval(update, currentSpeed);
+            });
+        });
+
+        document.getElementById('change-skin-btn').addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            showSkinScreen();
+        });
+
+        changeNameBtn.addEventListener('click', () => {
+            multiMode = false;
+            p2NameRow.style.display = 'none';
+            startMultiBtn.textContent = 'Multijoueur';
+            startMultiBtn.onclick = startMulti;
+            showNameScreen();
+        });
+
+        // --- Init ---
+        showNameScreen();
+    })();
+    </script>
+</body>
+</html>

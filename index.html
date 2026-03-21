@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a1a">
+    <title>Mes Jeux</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a1a;
+            color: #eee;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Fond animé */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-particles span {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #e94560, #ff6b9d, #c94b4b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* Grille de jeux */
+        .games-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 30px 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        /* Carte de jeu */
+        .game-card {
+            background: #12122a;
+            border-radius: 16px;
+            border: 2px solid #1a1a3a;
+            overflow: hidden;
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+
+        .game-card .card-banner {
+            height: 160px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card .card-banner .banner-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0.3;
+        }
+
+        .game-card .card-banner .banner-icon {
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5));
+        }
+
+        .game-card .card-body {
+            padding: 18px 20px 20px;
+        }
+
+        .game-card .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .game-card .card-desc {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .game-card .card-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-solo { background: #1a3a2a; color: #4ecca3; }
+        .tag-multi { background: #3a2a1a; color: #f0a500; }
+        .tag-mobile { background: #1a2a3a; color: #4a9eff; }
+        .tag-new { background: #3a1a2a; color: #e94560; }
+
+        /* Carte d'ajout */
+        .game-card-add {
+            background: #0d0d20;
+            border: 2px dashed #2a2a4a;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 260px;
+            color: #3a3a5a;
+            transition: border-color 0.25s, color 0.25s;
+            cursor: default;
+        }
+
+        .game-card-add:hover {
+            border-color: #4a4a6a;
+            color: #5a5a7a;
+        }
+
+        .game-card-add .add-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .game-card-add .add-text {
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+            color: #333;
+            font-size: 0.8rem;
+        }
+
+        /* Responsive mobile */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; letter-spacing: 1px; }
+            header { padding: 20px 12px 12px; }
+            header p { font-size: 0.9rem; }
+            .games-container {
+                padding: 8px 12px 30px;
+                gap: 14px;
+                grid-template-columns: 1fr;
+            }
+            .game-card {
+                border-radius: 14px;
+            }
+            .game-card .card-banner {
+                height: 100px;
+                font-size: 2.8rem;
+            }
+            .game-card .card-body {
+                padding: 14px 16px 16px;
+            }
+            .game-card .card-title {
+                font-size: 1.15rem;
+            }
+            .game-card .card-desc {
+                font-size: 0.8rem;
+            }
+            .game-card-add {
+                min-height: 100px;
+            }
+            .game-card-add .add-icon {
+                font-size: 2rem;
+                margin-bottom: 4px;
+            }
+            footer { padding: 12px; font-size: 0.7rem; }
+        }
+
+        /* Touch feedback */
+        @media (hover: none) {
+            .game-card:active {
+                transform: scale(0.97);
+                box-shadow: 0 6px 20px rgba(233, 69, 96, 0.3);
+                border-color: #e94560;
+            }
+            .game-card:hover {
+                transform: none;
+                box-shadow: none;
+                border-color: #1a1a3a;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fond particules -->
+    <div class="bg-particles" id="particles"></div>
+
+    <header>
+        <h1>Mes Jeux</h1>
+        <p>Ma collection de jeux perso</p>
+    </header>
+
+    <div class="games-container" id="games-grid">
+        <!-- Les jeux sont generes en JS -->
+    </div>
+
+    <footer>
+        Fait avec Claude
+    </footer>
+
+    <script>
+    // --- Liste des jeux ---
+    // Pour ajouter un jeu, ajoute un objet dans ce tableau :
+    const GAMES = [
+        {
+            title: 'Snake',
+            desc: 'Le classique du serpent ! Solo ou multijoueur, 8 skins, 6 maps thématiques, map bonus et portails.',
+            icon: '🐍',
+            url: 'jeu_serpent/index.html',
+            bannerGradient: 'linear-gradient(135deg, #0f3460, #16213e)',
+            tags: ['solo', 'multi', 'mobile', 'new']
+        },
+        {
+            title: 'Bataille de Boules de Neige',
+            desc: 'FPS 3D ! Survie 10 vagues de bonhommes de neige en solo ou coopère jusqu\'à 5 joueurs.',
+            icon: '❄️',
+            url: 'bataille_boule_neige/index.html',
+            bannerGradient: 'linear-gradient(135deg, #0a1628, #1a2a4a)',
+            tags: ['solo', 'multi', 'new']
+        },
+        // --- Ajoute tes jeux ici ---
+        // Exemple :
+        // {
+        //     title: 'Pong',
+        //     desc: 'Le jeu de ping-pong rétro.',
+        //     icon: '🏓',
+        //     url: 'jeu_pong/index.html',
+        //     bannerGradient: 'linear-gradient(135deg, #1a1a2e, #2a2a4e)',
+        //     tags: ['solo', 'multi']
+        // },
+    ];
+
+    // --- Rendu ---
+    const grid = document.getElementById('games-grid');
+
+    GAMES.forEach(game => {
+        const card = document.createElement('a');
+        card.href = game.url;
+        card.className = 'game-card';
+
+        const tagMap = {
+            'solo': '<span class="tag tag-solo">Solo</span>',
+            'multi': '<span class="tag tag-multi">Multi</span>',
+            'mobile': '<span class="tag tag-mobile">Mobile</span>',
+            'new': '<span class="tag tag-new">Nouveau</span>'
+        };
+
+        card.innerHTML = `
+            <div class="card-banner">
+                <div class="banner-bg" style="background: ${game.bannerGradient}"></div>
+                <div class="banner-icon">${game.icon}</div>
+            </div>
+            <div class="card-body">
+                <div class="card-title">${game.title}</div>
+                <div class="card-desc">${game.desc}</div>
+                <div class="card-tags">
+                    ${(game.tags || []).map(t => tagMap[t] || '').join('')}
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    // Carte "ajouter un jeu"
+    const addCard = document.createElement('div');
+    addCard.className = 'game-card-add';
+    addCard.innerHTML = `
+        <div class="add-icon">+</div>
+        <div class="add-text">Prochain jeu...</div>
+    `;
+    grid.appendChild(addCard);
+
+    // --- Particules de fond ---
+    const particlesEl = document.getElementById('particles');
+    for (let i = 0; i < 40; i++) {
+        const span = document.createElement('span');
+        span.style.left = Math.random() * 100 + '%';
+        span.style.animationDuration = (8 + Math.random() * 12) + 's';
+        span.style.animationDelay = (Math.random() * 10) + 's';
+        span.style.width = span.style.height = (1 + Math.random() * 3) + 'px';
+        particlesEl.appendChild(span);
+    }
+    </script>
+</body>
+</html>
