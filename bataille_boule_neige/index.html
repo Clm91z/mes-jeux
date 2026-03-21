@@ -1032,13 +1032,13 @@ function animateLobby() {
 // ================================================================
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 500);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 1.15;
 document.body.appendChild(renderer.domElement);
 renderer.domElement.id = 'game';
 renderer.domElement.style.display = 'none';
@@ -1252,13 +1252,18 @@ function buildMap(mapIdx) {
     scene.add(skyDome);
     scene.fog = new THREE.FogExp2(m.fogColor, m.fogDensity);
 
-    // ---- OCEAN ----
-    const oceanGeo = new THREE.PlaneGeometry(500, 500, 1, 1);
-    const ocean = new THREE.Mesh(oceanGeo, new THREE.MeshPhongMaterial({
-        color: m.waterColor, shininess: 120, specular: 0x88aacc, transparent: true, opacity: 0.85
-    }));
-    ocean.rotation.x = -Math.PI/2; ocean.position.y = -0.5;
+    // ---- OCEAN (animated waves) ----
+    const oceanGeo = new THREE.PlaneGeometry(500, 500, 64, 64);
+    const oceanMat = new THREE.MeshPhongMaterial({
+        color: m.waterColor, shininess: 140, specular: 0x88aacc,
+        transparent: true, opacity: 0.82, depthWrite: false
+    });
+    const ocean = new THREE.Mesh(oceanGeo, oceanMat);
+    ocean.rotation.x = -Math.PI/2; ocean.position.y = -0.8;
+    ocean.renderOrder = -1;
     addObj(ocean);
+    // Store ocean ref for wave animation
+    ocean._isOcean = true;
 
     // ---- ISLAND GROUND (textured with paths) ----
     const gSize = MAP_SIZE * 2;
@@ -1273,25 +1278,42 @@ function buildMap(mapIdx) {
         const x = pa.getX(i), z = pa.getY(i);
         const island = islandMask(x, z, MAP_SIZE);
         if (island) {
-            const h = Math.sin(x*0.04)*Math.cos(z*0.04)*2 + Math.sin(x*0.02)*Math.cos(z*0.03)*3 + Math.sin(x*0.08)*0.5;
-            pa.setZ(i, Math.max(0.1, h));
+            // Multi-octave terrain with map-specific height
+            let h = Math.sin(x*0.04)*Math.cos(z*0.04)*2.5
+                   + Math.sin(x*0.02)*Math.cos(z*0.03)*3.5
+                   + Math.sin(x*0.08+z*0.06)*0.8
+                   + Math.cos(x*0.12)*Math.sin(z*0.1)*0.4;
+            // Flatten paths
+            if (isOnPath(x, z)) h = Math.max(0.3, h * 0.3);
+            else h = Math.max(0.5, h);
+            // Edge falloff
+            const d = Math.sqrt(x*x+z*z) / MAP_SIZE;
+            if (d > 0.65) h *= Math.max(0, (0.85-d)/0.2);
+            pa.setZ(i, h);
             if (isOnPath(x, z)) {
-                const b = 0.9 + Math.random()*0.1;
+                const b = 0.88 + Math.random()*0.12;
                 gColors.push(pathCol.r*b, pathCol.g*b, pathCol.b*b);
+            } else if (h > 4) {
+                // Snow caps on hills
+                gColors.push(0.93+Math.random()*0.05, 0.94+Math.random()*0.04, 0.96+Math.random()*0.03);
+            } else if (h > 2.8) {
+                // Rocky zones
+                const rb = 0.35+Math.random()*0.1;
+                gColors.push(rb+0.05, rb+0.08, rb+0.12);
             } else {
                 const gc = gCols[Math.floor(Math.random()*gCols.length)];
-                const b = 0.9 + Math.random()*0.1;
+                const b = 0.85 + Math.random()*0.15;
                 gColors.push(gc.r*b, gc.g*b, gc.b*b);
             }
         } else {
-            pa.setZ(i, -1.5);
-            gColors.push(0, 0, 0); // underwater, hidden by ocean
+            pa.setZ(i, -2.5);
+            gColors.push(0, 0, 0);
         }
     }
     groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(gColors, 3));
     groundGeo.computeVertexNormals();
-    const ground = new THREE.Mesh(groundGeo, new THREE.MeshPhongMaterial({ vertexColors:true, shininess:40, specular:0x445566 }));
-    ground.rotation.x = -Math.PI/2; ground.receiveShadow = true;
+    const ground = new THREE.Mesh(groundGeo, new THREE.MeshPhongMaterial({ vertexColors:true, shininess:35, specular:0x445566, flatShading:true }));
+    ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; ground.position.y = 0.1;
     addObj(ground);
 
     // ---- Beach edge (sand ring around island) ----
@@ -1307,24 +1329,61 @@ function buildMap(mapIdx) {
         addObj(sandPile);
     }
 
-    // ---- Trees ----
+    // ---- Trees (varied types) ----
     for (let i = 0; i < m.trees; i++) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.4, z = (Math.random()-0.5)*MAP_SIZE*1.4;
         if (!islandMask(x, z, MAP_SIZE) || (Math.abs(x)<5 && Math.abs(z)<5)) continue;
         if (isOnPath(x, z)) continue;
         const g = new THREE.Group();
         const hv = 0.7 + Math.random()*0.6;
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.6,3*hv,8), new THREE.MeshPhongMaterial({color:0x6b4226,shininess:10}));
-        trunk.position.y = 1.5*hv; trunk.castShadow = true; g.add(trunk);
-        const cols = [0x1e6020,0x2a7828,0x358a35];
-        for (let j = 0; j < 3; j++) {
-            const cR = (3-j*0.8)*hv, cH = (3.5-j*0.5)*hv;
-            const f = new THREE.Mesh(new THREE.ConeGeometry(cR,cH,8), new THREE.MeshPhongMaterial({color:cols[j],shininess:15,flatShading:true}));
-            f.position.y = (3.5+j*2.2)*hv; f.castShadow = true; g.add(f);
-            const sn = new THREE.Mesh(new THREE.ConeGeometry(cR-0.2,0.8,8), new THREE.MeshPhongMaterial({color:0xffffff,shininess:70}));
-            sn.position.y = (4.7+j*2.2)*hv; g.add(sn);
+        const treeType = Math.random();
+
+        if (treeType < 0.6) {
+            // Pine tree (classic)
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.5,3*hv,8), new THREE.MeshPhongMaterial({color:0x5a3618,shininess:8}));
+            trunk.position.y = 1.5*hv; trunk.castShadow = true; g.add(trunk);
+            // Roots
+            for (let r = 0; r < 3; r++) {
+                const ra = (r/3)*Math.PI*2+Math.random()*0.5;
+                const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,1.2,5), new THREE.MeshPhongMaterial({color:0x4a2a10}));
+                root.position.set(Math.cos(ra)*0.4,0.3,Math.sin(ra)*0.4); root.rotation.z = Math.cos(ra)*0.6; root.rotation.x = Math.sin(ra)*0.6; g.add(root);
+            }
+            const cols = [0x1a5a1e,0x247028,0x2e8a32];
+            for (let j = 0; j < 3; j++) {
+                const cR = (3-j*0.8)*hv, cH = (3.8-j*0.5)*hv;
+                const f = new THREE.Mesh(new THREE.ConeGeometry(cR,cH,7), new THREE.MeshPhongMaterial({color:cols[j],shininess:12,flatShading:true}));
+                f.position.y = (3.5+j*2.2)*hv; f.castShadow = true; g.add(f);
+                const sn = new THREE.Mesh(new THREE.ConeGeometry(cR*0.85,0.7,7), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:60}));
+                sn.position.y = (4.8+j*2.2)*hv; g.add(sn);
+            }
+        } else if (treeType < 0.85) {
+            // Round bush/small tree
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.3,1.5*hv,6), new THREE.MeshPhongMaterial({color:0x5a3618,shininess:8}));
+            trunk.position.y = 0.75*hv; trunk.castShadow = true; g.add(trunk);
+            const bushMat = new THREE.MeshPhongMaterial({color:0x2a6a28,shininess:15,flatShading:true});
+            const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(2*hv,1), bushMat);
+            bush.position.y = 2.5*hv; bush.castShadow = true; g.add(bush);
+            const sn = new THREE.Mesh(new THREE.SphereGeometry(1.8*hv,8,6,0,Math.PI*2,0,Math.PI/2.5), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:50}));
+            sn.position.y = 3*hv; g.add(sn);
+        } else {
+            // Dead/bare tree
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.45,4*hv,6), new THREE.MeshPhongMaterial({color:0x4a3020,shininess:5,flatShading:true}));
+            trunk.position.y = 2*hv; trunk.castShadow = true; g.add(trunk);
+            // Branches
+            for (let b = 0; b < 4; b++) {
+                const ba = (b/4)*Math.PI*2+Math.random()*0.8;
+                const bl = 1+Math.random()*1.5;
+                const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.1,bl*hv,5), new THREE.MeshPhongMaterial({color:0x3a2515}));
+                branch.position.set(Math.cos(ba)*0.3,(2.5+b*0.5)*hv,Math.sin(ba)*0.3);
+                branch.rotation.z = Math.cos(ba)*0.8; branch.rotation.x = Math.sin(ba)*0.8; g.add(branch);
+            }
+            // Snow on branches
+            const sn = new THREE.Mesh(new THREE.SphereGeometry(0.8*hv,6,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8}));
+            sn.position.y = 3.8*hv; g.add(sn);
         }
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(1.6*hv,10,6,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:40})));
+        // Snow pile at base
+        const snowBase = new THREE.Mesh(new THREE.SphereGeometry(1.2*hv,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:40}));
+        snowBase.scale.y = 0.25; g.add(snowBase);
         g.position.set(x,0,z); g.rotation.y = Math.random()*Math.PI*2;
         addObj(g); trees.push({x,z,r:1.5});
     }
@@ -1450,15 +1509,35 @@ function buildMap(mapIdx) {
         lanternPositions.push({x:lx, z:lz});
     }
 
-    // ---- Mountains (background) ----
-    for (let i = 0; i < 10; i++) {
-        const angle = (i/10)*Math.PI*2;
-        const dist = MAP_SIZE*1.5+Math.random()*30;
-        const mH = 25+Math.random()*45;
-        const mt = new THREE.Mesh(new THREE.ConeGeometry(18+Math.random()*15,mH,6), new THREE.MeshPhongMaterial({color:0x7888aa,flatShading:true}));
-        mt.position.set(Math.cos(angle)*dist,mH/2-5,Math.sin(angle)*dist); addObj(mt);
-        const pk = new THREE.Mesh(new THREE.ConeGeometry(7+Math.random()*5,mH*0.35,6), new THREE.MeshPhongMaterial({color:0xffffff,shininess:50}));
-        pk.position.set(Math.cos(angle)*dist,mH*0.65,Math.sin(angle)*dist); addObj(pk);
+    // ---- Mountains (background - layered for depth) ----
+    for (let layer = 0; layer < 2; layer++) {
+        const count = layer === 0 ? 12 : 8;
+        const baseDist = layer === 0 ? MAP_SIZE*1.5 : MAP_SIZE*2.2;
+        const baseH = layer === 0 ? 30 : 50;
+        const colorDark = layer === 0 ? 0x6878a0 : 0x556888;
+        for (let i = 0; i < count; i++) {
+            const angle = (i/count)*Math.PI*2 + layer*0.3;
+            const dist = baseDist+Math.random()*30;
+            const mH = baseH+Math.random()*40;
+            const mW = 20+Math.random()*18;
+            const mg = new THREE.Group();
+            // Main peak
+            const mt = new THREE.Mesh(new THREE.ConeGeometry(mW,mH,7), new THREE.MeshPhongMaterial({color:colorDark,flatShading:true}));
+            mt.position.y = mH/2-5; mg.add(mt);
+            // Snow cap
+            const pk = new THREE.Mesh(new THREE.ConeGeometry(mW*0.4,mH*0.35,7), new THREE.MeshPhongMaterial({color:0xeef2f8,shininess:50}));
+            pk.position.y = mH*0.65; mg.add(pk);
+            // Sub-peak
+            if (Math.random() > 0.4) {
+                const sH = mH*0.6, sW = mW*0.5;
+                const sub = new THREE.Mesh(new THREE.ConeGeometry(sW,sH,6), new THREE.MeshPhongMaterial({color:colorDark,flatShading:true}));
+                sub.position.set(mW*0.5,sH/2-5,mW*0.3); mg.add(sub);
+                const sp = new THREE.Mesh(new THREE.ConeGeometry(sW*0.35,sH*0.3,6), new THREE.MeshPhongMaterial({color:0xeef2f8}));
+                sp.position.set(mW*0.5,sH*0.6,mW*0.3); mg.add(sp);
+            }
+            mg.position.set(Math.cos(angle)*dist,0,Math.sin(angle)*dist);
+            addObj(mg);
+        }
     }
 
     // ---- Falling snow ----
@@ -1956,12 +2035,52 @@ const player = {
 };
 camera.position.set(0, player.height, 0);
 
-// First-person arms
+// First-person arms (detailed cartoon style)
 const armGroup = new THREE.Group();
-const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.15,0.15,0.5), new THREE.MeshPhongMaterial({color:0x4a7abb}));
-rightArm.position.set(0.35,-0.3,-0.5); armGroup.add(rightArm);
-const handSnowball = new THREE.Mesh(new THREE.SphereGeometry(0.14,10,10), new THREE.MeshPhongMaterial({color:0xffffff, shininess:80, specular:0x446688}));
-handSnowball.position.set(0.35,-0.25,-0.75); armGroup.add(handSnowball);
+const skinColors = [0x4a7abb, 0xe94560, 0x4ecca3, 0xf0a500, 0x8844aa];
+function buildFPArm(colorIdx) {
+    while(armGroup.children.length) armGroup.remove(armGroup.children[0]);
+    const jacketColor = skinColors[colorIdx % skinColors.length];
+    const jacketMat = new THREE.MeshPhongMaterial({color:jacketColor, shininess:25});
+    const gloveMat = new THREE.MeshPhongMaterial({color:0x2a2a3a, shininess:40});
+    const skinMat = new THREE.MeshPhongMaterial({color:0xf0d0b0, shininess:20});
+    // Upper arm (jacket sleeve)
+    const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.09,0.35,8), jacketMat);
+    upperArm.position.set(0.32,-0.22,-0.38); upperArm.rotation.x = Math.PI/2.5; armGroup.add(upperArm);
+    // Forearm
+    const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.065,0.075,0.3,8), jacketMat);
+    forearm.position.set(0.34,-0.28,-0.55); forearm.rotation.x = Math.PI/2.8; armGroup.add(forearm);
+    // Wrist (skin)
+    const wrist = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,0.08,8), skinMat);
+    wrist.position.set(0.35,-0.27,-0.65); wrist.rotation.x = Math.PI/3; armGroup.add(wrist);
+    // Glove/hand
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), gloveMat);
+    hand.position.set(0.35,-0.26,-0.7); hand.scale.set(1,0.8,1.2); armGroup.add(hand);
+    // Thumb
+    const thumb = new THREE.Mesh(new THREE.SphereGeometry(0.035,6,6), gloveMat);
+    thumb.position.set(0.3,-0.24,-0.72); armGroup.add(thumb);
+    // Fingers curled
+    for (let i = 0; i < 3; i++) {
+        const finger = new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6), gloveMat);
+        finger.position.set(0.33+i*0.025,-0.3,-0.74); armGroup.add(finger);
+    }
+    // Snowball in hand
+    const sb = new THREE.Mesh(new THREE.SphereGeometry(0.13,12,12), new THREE.MeshPhongMaterial({
+        color:0xf8f8ff, shininess:90, specular:0x6688aa
+    }));
+    sb.position.set(0.35,-0.22,-0.78); sb.name = 'handSnowball'; armGroup.add(sb);
+    // Snow sparkle particles on snowball
+    const sparkGeo = new THREE.BufferGeometry();
+    const sparkArr = new Float32Array(15*3);
+    for (let i = 0; i < 15; i++) {
+        const a = Math.random()*Math.PI*2, r = 0.12+Math.random()*0.04;
+        sparkArr[i*3]=0.35+Math.cos(a)*r; sparkArr[i*3+1]=-0.22+Math.sin(a)*r*0.5; sparkArr[i*3+2]=-0.78+(Math.random()-0.5)*0.1;
+    }
+    sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkArr, 3));
+    armGroup.add(new THREE.Points(sparkGeo, new THREE.PointsMaterial({color:0xffffff,size:0.015,transparent:true,opacity:0.6})));
+}
+buildFPArm(player.colorIdx);
+const handSnowball = {get visible(){return armGroup.children.find(c=>c.name==='handSnowball')?.visible??false}, set visible(v){const s=armGroup.children.find(c=>c.name==='handSnowball');if(s)s.visible=v;}};
 camera.add(armGroup);
 scene.add(camera);
 
@@ -2026,10 +2145,10 @@ function createEnemy(type, pos) {
         const btn = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 6), btnMat);
         btn.position.set(0, r*1.8 + off, r*1.2); g.add(btn);
     });
-    // Shadow
+    // Shadow (raised slightly to avoid z-fighting)
     const shd = new THREE.Mesh(new THREE.CircleGeometry(r*1.5, 12),
-        new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.15}));
-    shd.rotation.x = -Math.PI/2; shd.position.y = 0.02; g.add(shd);
+        new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.15, depthWrite:false}));
+    shd.rotation.x = -Math.PI/2; shd.position.y = 0.08; shd.renderOrder = 1; g.add(shd);
 
     // HP bar above head
     const hpCanvas = document.createElement('canvas');
@@ -2427,8 +2546,8 @@ function resetGame() {
     wave = 0;
     betweenWaves = true;
     betweenWaveTimer = 2;
-    // Update arm color
-    rightArm.material.color.setHex(PLAYER_COLOR_HEX[selectedSkin]);
+    // Rebuild first-person arm with selected skin
+    buildFPArm(selectedSkin);
 }
 
 function launchGame(mode) {
@@ -2557,6 +2676,20 @@ function animate() {
     if (renderer.domElement.style.display !== 'none') {
         renderer.render(scene, camera);
     }
+
+    // Animate ocean waves
+    const t = performance.now() * 0.001;
+    mapObjects.forEach(obj => {
+        if (obj._isOcean) {
+            const oPos = obj.geometry.attributes.position;
+            for (let i = 0; i < oPos.count; i++) {
+                const ox = oPos.getX(i), oz = oPos.getY(i);
+                oPos.setZ(i, Math.sin(ox*0.03+t)*0.4 + Math.cos(oz*0.04+t*1.3)*0.3 + Math.sin((ox+oz)*0.02+t*0.7)*0.2);
+            }
+            oPos.needsUpdate = true;
+            obj.geometry.computeVertexNormals();
+        }
+    });
 
     // Animate falling snow always
     const sp = snowParticles.geometry.attributes.position;
