@@ -24,8 +24,11 @@
         /* ---- LOBBY SCREEN (Brawl Stars style) ---- */
         #lobby-main {
             background: linear-gradient(180deg, #1a2a4a 0%, #0d1a30 100%);
-            position: relative;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            display: block !important; padding: 0 !important;
+            justify-content: initial; align-items: initial;
         }
+        #lobby-main.hidden { display: none !important; }
         #lobby-main::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: radial-gradient(ellipse at 50% 30%, rgba(74,158,255,0.15) 0%, transparent 70%);
@@ -557,6 +560,301 @@
             .play-btn { font-size: 1.1rem; padding: 14px 40px; }
             .character-name-tag { font-size: 1.4rem; }
         }
+
+        /* ========== BRAWL STARS LOBBY LAYOUT ========== */
+        /* Top bar */
+        .lobby-topbar {
+            position: absolute; top: 0; left: 0; right: 0; height: 55px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 80%, transparent 100%);
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 15px; z-index: 20;
+        }
+        .lobby-player-info { display: flex; flex-direction: column; }
+        .lobby-player-name { font-family: 'Lilita One', sans-serif; font-size: 0.95rem; color: #fff; line-height: 1; }
+        .lobby-player-level { font-size: 0.65rem; color: #8ab; font-weight: 700; }
+        .lobby-xp-bar {
+            width: 80px; height: 6px; background: rgba(255,255,255,0.1);
+            border-radius: 3px; overflow: hidden;
+        }
+        .lobby-xp-fill { height: 100%; background: linear-gradient(90deg, #4a9eff, #6ef5c4); border-radius: 3px; transition: width 0.5s; }
+        .gem-display {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(138,43,226,0.2); border: 2px solid rgba(138,43,226,0.4);
+            border-radius: 20px; padding: 4px 12px; font-weight: 900; color: #bb77ff; font-size: 0.9rem;
+        }
+        .gem-icon { font-size: 1rem; }
+
+        /* Lobby content area */
+        .lobby-content {
+            position: absolute; top: 55px; left: 0; right: 0; bottom: 70px;
+            overflow-y: auto; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 10;
+        }
+        .lobby-tab-content {
+            width: 100%; display: flex; flex-direction: column; align-items: center;
+            padding: 5px 15px 15px;
+        }
+        .lobby-tab-content.hidden { display: none; }
+
+        /* Lobby center (3D character) */
+        .lobby-center { width: 100%; height: 35vh; position: relative; min-height: 180px; }
+
+        /* Mode cards in lobby */
+        .lobby-modes {
+            display: flex; gap: 8px; justify-content: center; margin: 6px 0;
+            flex-wrap: wrap;
+        }
+        .lobby-modes .mode-card {
+            width: 105px; padding: 8px 10px;
+        }
+        .lobby-modes .mode-card .mode-icon { font-size: 1.2rem; }
+        .lobby-modes .mode-card .mode-title { font-size: 0.85rem; }
+        .lobby-modes .mode-card .mode-desc { font-size: 0.6rem; }
+
+        /* Big PLAY button (Brawl Stars style) */
+        .play-btn-big {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 85%; max-width: 350px;
+            padding: 16px 30px; margin: 10px 0 6px;
+            border: none; border-radius: 18px; cursor: pointer;
+            background: linear-gradient(180deg, #4ecca3, #2a9a73);
+            box-shadow: 0 7px 0 #1e7a5a, 0 10px 30px rgba(78,204,163,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+            transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .play-btn-big::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: btnShine 3s infinite;
+        }
+        .play-btn-big:hover { transform: translateY(-3px); box-shadow: 0 10px 0 #1e7a5a, 0 14px 40px rgba(78,204,163,0.5); }
+        .play-btn-big:active { transform: translateY(3px); box-shadow: 0 2px 0 #1e7a5a; }
+        .play-btn-big.multi-mode {
+            background: linear-gradient(180deg, #f0a500, #cc8800);
+            box-shadow: 0 7px 0 #996600, 0 10px 30px rgba(240,165,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+        }
+        .play-btn-big.multi-mode:hover { box-shadow: 0 10px 0 #996600, 0 14px 40px rgba(240,165,0,0.5); }
+        .play-btn-big.multi-mode:active { box-shadow: 0 2px 0 #996600; }
+        .play-btn-big.ffa-mode {
+            background: linear-gradient(180deg, #e94560, #c03050);
+            box-shadow: 0 7px 0 #901830, 0 10px 30px rgba(233,69,96,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+        }
+        .play-btn-big.ffa-mode:hover { box-shadow: 0 10px 0 #901830, 0 14px 40px rgba(233,69,96,0.5); }
+        .play-btn-big.ffa-mode:active { box-shadow: 0 2px 0 #901830; }
+        .play-btn-big.ctf-mode {
+            background: linear-gradient(180deg, #4a9eff, #2a6ecf);
+            box-shadow: 0 7px 0 #1a4ea0, 0 10px 30px rgba(74,158,255,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+        }
+        .play-btn-big.ctf-mode:hover { box-shadow: 0 10px 0 #1a4ea0, 0 14px 40px rgba(74,158,255,0.5); }
+        .play-btn-big.ctf-mode:active { box-shadow: 0 2px 0 #1a4ea0; }
+        .play-btn-icon {
+            font-size: 1.8rem; color: #fff;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        .play-btn-text {
+            font-family: 'Lilita One', sans-serif; font-size: 1.6rem; color: #fff;
+            letter-spacing: 4px; text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Bottom navigation bar */
+        .lobby-navbar {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+            background: linear-gradient(180deg, rgba(10,22,40,0.95) 0%, rgba(5,12,25,0.98) 100%);
+            border-top: 2px solid rgba(74,158,255,0.15);
+            display: flex; align-items: stretch; justify-content: space-around;
+            z-index: 20; backdrop-filter: blur(10px);
+        }
+        .nav-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 3px; cursor: pointer;
+            transition: all 0.25s; position: relative;
+            color: #556; opacity: 0.6;
+        }
+        .nav-item:hover { opacity: 0.8; }
+        .nav-item.active {
+            opacity: 1; color: #4a9eff;
+        }
+        .nav-item.active::before {
+            content: ''; position: absolute; top: -2px; left: 20%; right: 20%;
+            height: 3px; background: #4a9eff; border-radius: 0 0 3px 3px;
+            box-shadow: 0 0 10px rgba(74,158,255,0.5);
+        }
+        .nav-icon { font-size: 1.5rem; transition: transform 0.2s; }
+        .nav-item.active .nav-icon { transform: scale(1.15); }
+        .nav-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ---- SHOP TAB ---- */
+        .shop-inner-header {
+            width: 100%; text-align: center; padding: 10px 0 5px;
+        }
+        .shop-inner-header .shop-title { font-family: 'Lilita One', sans-serif; font-size: 1.5rem; color: #ffd700; }
+        .shop-inner-header .shop-stats { margin-top: 5px; }
+        .shop-section { width: 100%; max-width: 700px; margin: 10px 0; }
+        .shop-section-title {
+            font-family: 'Lilita One', sans-serif; font-size: 1.1rem; color: #fff;
+            padding: 5px 10px; text-align: left;
+            border-left: 3px solid #f0a500;
+        }
+        .shop-deals {
+            display: flex; gap: 12px; overflow-x: auto; padding: 10px 5px;
+            scrollbar-width: none;
+        }
+        .shop-deals::-webkit-scrollbar { display: none; }
+        .shop-deal-card {
+            min-width: 130px; background: linear-gradient(135deg, rgba(240,165,0,0.15), rgba(255,215,0,0.05));
+            border: 2px solid rgba(240,165,0,0.3); border-radius: 16px; padding: 14px;
+            text-align: center; cursor: pointer; transition: all 0.25s; flex-shrink: 0;
+        }
+        .shop-deal-card:hover { transform: translateY(-3px); border-color: rgba(240,165,0,0.5); }
+        .shop-deal-badge {
+            background: linear-gradient(135deg, #ff4444, #cc2222); color: #fff;
+            font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 8px;
+            display: inline-block; margin-bottom: 6px; letter-spacing: 0.5px;
+        }
+        .shop-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px; padding: 10px 5px; width: 100%; max-width: 700px;
+        }
+
+        /* ---- FRIENDS TAB ---- */
+        .friends-header { width: 100%; text-align: center; padding: 15px 0 5px; }
+        .friends-empty {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 30px 20px; color: #8ab;
+        }
+        .friends-empty-icon { font-size: 3.5rem; margin-bottom: 12px; opacity: 0.4; }
+        .friends-empty-text { font-family: 'Lilita One', sans-serif; font-size: 1.2rem; color: #fff; margin-bottom: 6px; }
+        .friends-empty-sub { font-size: 0.85rem; color: #556; }
+        .friends-invite-box {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(74,158,255,0.2);
+            border-radius: 16px; padding: 20px 25px; margin-top: 20px; text-align: center;
+            max-width: 400px; width: 90%;
+        }
+        .friends-invite-title { font-family: 'Lilita One', sans-serif; font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
+        .friends-invite-sub { font-size: 0.8rem; color: #8ab; margin-bottom: 10px; }
+        .friends-link {
+            font-family: monospace; font-size: 0.85rem; color: #4a9eff;
+            background: rgba(74,158,255,0.1); border: 1px solid rgba(74,158,255,0.3);
+            border-radius: 10px; padding: 8px 14px; word-break: break-all;
+            user-select: all;
+        }
+
+        /* ---- PROFILE TAB ---- */
+        .profile-card {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 25px 20px 15px; position: relative;
+        }
+        .profile-avatar {
+            width: 90px; height: 90px; border-radius: 50%;
+            border: 4px solid #4a9eff; background: rgba(74,158,255,0.15);
+            margin-bottom: 10px; box-shadow: 0 0 20px rgba(74,158,255,0.3);
+            overflow: hidden;
+        }
+        .profile-name {
+            font-family: 'Lilita One', sans-serif; font-size: 1.5rem; color: #fff;
+        }
+        .profile-level-big {
+            font-size: 0.9rem; color: #4a9eff; font-weight: 900;
+            background: rgba(74,158,255,0.1); padding: 3px 15px; border-radius: 12px;
+            margin: 5px 0;
+        }
+        .profile-xp-bar {
+            width: 200px; height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 5px;
+        }
+        .profile-xp-fill { height: 100%; background: linear-gradient(90deg, #4a9eff, #6ef5c4); border-radius: 4px; }
+        .profile-stats-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+            max-width: 350px; width: 90%; margin: 15px 0;
+        }
+        .profile-stat {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 14px; text-align: center;
+        }
+        .profile-stat-num { font-family: 'Lilita One', sans-serif; font-size: 1.6rem; color: #4a9eff; }
+        .profile-stat-label { font-size: 0.65rem; color: #8ab; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .profile-skins-owned { width: 90%; max-width: 400px; margin-top: 10px; }
+        .profile-skins-grid {
+            display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0; justify-content: center;
+        }
+        .profile-skin-mini {
+            width: 50px; height: 50px; border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.15);
+        }
+        .profile-skin-mini.equipped { border-color: #4a9eff; box-shadow: 0 0 10px rgba(74,158,255,0.4); }
+
+        @media (max-width: 700px) {
+            .lobby-topbar { height: 48px; padding: 0 10px; gap: 6px; }
+            .lobby-player-name { font-size: 0.8rem; }
+            .lobby-xp-bar { width: 50px; }
+            .coin-display, .gem-display { font-size: 0.75rem; padding: 3px 8px; }
+            .lobby-navbar { height: 60px; }
+            .nav-icon { font-size: 1.2rem; }
+            .nav-label { font-size: 0.55rem; }
+            .lobby-content { top: 48px; bottom: 60px; }
+            .lobby-center { height: 28vh; min-height: 150px; }
+            .play-btn-big { padding: 13px 25px; }
+            .play-btn-text { font-size: 1.3rem; }
+            .play-btn-icon { font-size: 1.4rem; }
+            .lobby-modes .mode-card { width: 120px; padding: 8px 10px; }
+            .mode-card .mode-title { font-size: 0.85rem; }
+            .character-name-tag { font-size: 1.3rem; }
+            .controls-hint { display: none; }
+            .shop-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+            .profile-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .profile-stat { padding: 10px; }
+            .profile-stat-num { font-size: 1.2rem; }
+        }
+        .quest-card {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 14px 16px; margin: 8px 0;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .quest-card.completed { border-color: rgba(78,204,163,0.3); }
+        .quest-progress-bar { width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; margin-top:5px; }
+        .quest-progress-fill { height:100%; background:linear-gradient(90deg,#4ecca3,#6ef5c4); border-radius:4px; transition:width 0.3s; }
+        .quest-claim-btn {
+            background: linear-gradient(180deg, #ffd700, #cc9900); color: #1a1a2a;
+            border: none; border-radius: 10px; padding: 6px 14px; font-weight: 900;
+            font-size: 0.75rem; cursor: pointer; white-space: nowrap;
+        }
+        .quest-claim-btn:disabled { background: #555; color: #888; cursor: default; }
+
+        .confetti {
+            position: fixed; z-index: 160; pointer-events: none;
+            width: 10px; height: 10px; opacity: 1;
+            animation: confettiFall 3s ease-in forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ---- ACHIEVEMENTS ---- */
+        .achievement-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; width:90%; max-width:600px; padding:10px 0; }
+        .achievement-card {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 12px; text-align: center; transition: all 0.25s;
+        }
+        .achievement-card.unlocked { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.05); }
+        .achievement-card .ach-icon { font-size: 2rem; margin-bottom: 5px; }
+        .achievement-card.locked .ach-icon { filter: grayscale(1) opacity(0.3); }
+        .achievement-card .ach-name { font-weight: 900; font-size: 0.85rem; }
+        .achievement-card .ach-desc { font-size: 0.65rem; color: #8ab; margin-top: 3px; }
+
+        /* ---- BATTLE PASS ---- */
+        .bp-strip { display:flex; gap:10px; overflow-x:auto; padding:15px 10px; scrollbar-width:none; }
+        .bp-strip::-webkit-scrollbar { display:none; }
+        .bp-tier { min-width:110px; background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.08); border-radius:14px; padding:12px; text-align:center; flex-shrink:0; }
+        .bp-tier.earned { border-color:rgba(78,204,163,0.4); }
+        .bp-tier.claimed { border-color:rgba(255,215,0,0.3); opacity:0.7; }
+        .bp-tier .bp-icon { font-size:1.8rem; margin-bottom:5px; }
+        .bp-tier .bp-name { font-weight:900; font-size:0.8rem; }
+        .bp-tier .bp-xp { font-size:0.65rem; color:#8ab; }
+        .bp-claim-btn { background:linear-gradient(180deg,#4ecca3,#2a9a73); color:#fff; border:none; border-radius:8px; padding:5px 12px; font-weight:900; font-size:0.7rem; cursor:pointer; margin-top:5px; }
+        .bp-progress-bar { width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:5px; }
+        .bp-progress-fill { height:100%; background:linear-gradient(90deg,#4ecca3,#6ef5c4); border-radius:3px; }
+
     </style>
 </head>
 <body>
@@ -583,58 +881,190 @@
 <div class="screen-overlay hidden" id="lobby-main">
     <div class="lobby-snow" id="lobby-snow-2"></div>
 
-    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;gap:10px;">
-        <div class="lobby-title">&#10052; Choisis ton style</div>
-        <div class="coin-display" style="font-size:0.9rem;padding:4px 12px;"><span class="coin-icon">&#129689;</span><span id="lobby-coins">0</span></div>
-        <button class="lobby-back-btn" onclick="backToTitle()">&#8592; Retour</button>
-    </div>
-
-    <div class="lobby-center">
-        <canvas id="lobby-3d-canvas"></canvas>
-    </div>
-
-    <div class="character-name-tag" id="char-name">Blizzard</div>
-    <div class="character-subtitle" id="char-subtitle">Prêt au combat !</div>
-
-    <!-- Skin selector -->
-    <div class="skin-selector" id="skin-selector"></div>
-
-    <!-- Mode selector -->
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:5px 0;">
-        <div class="mode-card active" id="mode-solo-card" onclick="selectMode('solo')" style="width:180px;padding:12px 16px;">
-            <div class="mode-icon" style="font-size:1.2rem;">&#9876;&#65039;</div>
-            <div class="mode-title" style="font-size:0.95rem;">Solo</div>
-            <div class="mode-desc">10 vagues, difficulté croissante</div>
+    <!-- Top bar with coins and back -->
+    <div class="lobby-topbar">
+        <button class="lobby-back-btn" onclick="backToTitle()">&#8592;</button>
+        <div class="lobby-player-info">
+            <div class="lobby-player-name">Joueur</div>
+            <div class="lobby-player-level">Niv. <span id="player-level">1</span></div>
         </div>
-        <div class="mode-card" id="mode-multi-card" onclick="selectMode('multi')" style="width:180px;padding:12px 16px;">
-            <div class="mode-icon" style="font-size:1.2rem;">&#129309;</div>
-            <div class="mode-title" style="font-size:0.95rem;">Multijoueur</div>
-            <div class="mode-desc">Jusqu'à 5 joueurs en coop</div>
+        <div class="lobby-xp-bar"><div class="lobby-xp-fill" id="lobby-xp-fill" style="width:35%"></div></div>
+        <div class="coin-display"><span class="coin-icon">&#129689;</span><span id="lobby-coins">0</span></div>
+        <div class="gem-display"><span class="gem-icon">&#128142;</span><span id="lobby-gems">0</span></div>
+    </div>
+
+    <!-- Tab content container -->
+    <div class="lobby-content" id="lobby-content">
+        <!-- TAB: COMBAT (default) -->
+        <div class="lobby-tab-content" id="tab-combat">
+            <div class="lobby-center">
+                <canvas id="lobby-3d-canvas"></canvas>
+            </div>
+            <div class="character-name-tag" id="char-name">Blizzard</div>
+            <div class="character-subtitle" id="char-subtitle">Pret au combat !</div>
+
+            <!-- Skin selector row -->
+            <div class="skin-selector" id="skin-selector"></div>
+
+            <!-- Mode selector -->
+            <div class="lobby-modes">
+                <div class="mode-card active" id="mode-solo-card" onclick="selectMode('solo')">
+                    <div class="mode-icon">&#9876;&#65039;</div>
+                    <div class="mode-title">Solo</div>
+                    <div class="mode-desc">10 vagues</div>
+                </div>
+                <div class="mode-card" id="mode-multi-card" onclick="selectMode('multi')">
+                    <div class="mode-icon">&#129309;</div>
+                    <div class="mode-title">Equipe</div>
+                    <div class="mode-desc">Coop 5 joueurs</div>
+                </div>
+                <div class="mode-card" id="mode-ffa-card" onclick="selectMode('ffa')">
+                    <div class="mode-icon">&#128165;</div>
+                    <div class="mode-title">FFA</div>
+                    <div class="mode-desc">Chacun pour soi</div>
+                </div>
+                <div class="mode-card" id="mode-ctf-card" onclick="selectMode('ctf')">
+                    <div class="mode-icon">&#127987;&#65039;</div>
+                    <div class="mode-title">Drapeau</div>
+                    <div class="mode-desc">Capture le drapeau</div>
+                </div>
+            </div>
+
+            <!-- Big play button -->
+            <button class="play-btn-big" id="btn-play" onclick="onPlayClick()">
+                <span class="play-btn-icon">&#9654;</span>
+                <span class="play-btn-text">JOUER</span>
+            </button>
+
+            <div class="controls-hint">ZQSD — Bouger | ESPACE — Sauter | SOURIS — Viser | CLIC — Lancer | R — Recharger</div>
+        </div>
+
+        <!-- TAB: BOUTIQUE -->
+        <div class="lobby-tab-content hidden" id="tab-shop">
+            <div class="shop-inner-header">
+                <div class="shop-title">&#128722; Boutique</div>
+                <div class="shop-stats">
+                    Parties: <span id="stat-games">0</span> &nbsp;|&nbsp;
+                    Kills: <span id="stat-kills">0</span> &nbsp;|&nbsp;
+                    Victoires: <span id="stat-wins">0</span>
+                </div>
+            </div>
+            <!-- Daily deals section -->
+            <div class="shop-section">
+                <div class="shop-section-title">&#128293; Offres du jour</div>
+                <div class="shop-deals" id="shop-deals"></div>
+            </div>
+            <!-- All skins -->
+            <div class="shop-section">
+                <div class="shop-section-title">&#127912; Tous les skins</div>
+                <div class="shop-grid" id="shop-grid"></div>
+            </div>
+            <div class="shop-section">
+                <div class="shop-section-title">&#127913; Chapeaux</div>
+                <div class="shop-grid" id="shop-hats-grid"></div>
+            </div>
+            <div class="shop-section">
+                <div class="shop-section-title">&#10024; Accessoires</div>
+                <div class="shop-grid" id="shop-accessories-grid"></div>
+            </div>
+        </div>
+
+        <!-- TAB: AMIS -->
+        <div class="lobby-tab-content hidden" id="tab-friends">
+            <div class="friends-header">
+                <div class="shop-title">&#129309; Amis</div>
+            </div>
+            <div class="friends-empty">
+                <div class="friends-empty-icon">&#128100;</div>
+                <div class="friends-empty-text">Le multijoueur en ligne arrive bientot !</div>
+                <div class="friends-empty-sub">Tu pourras inviter tes amis et jouer ensemble</div>
+            </div>
+            <div class="friends-invite-box">
+                <div class="friends-invite-title">&#127881; Invite un ami</div>
+                <div class="friends-invite-sub">Partage ce lien pour jouer ensemble :</div>
+                <div class="friends-link" id="friends-link">clm91z.github.io/mes-jeux/</div>
+                <button class="btn btn-blue" onclick="copyFriendLink()" style="margin-top:10px;padding:8px 20px;font-size:0.85rem;">&#128203; Copier le lien</button>
+            </div>
+        </div>
+
+        <!-- TAB: QUETES -->
+        <div class="lobby-tab-content hidden" id="tab-quests">
+            <div style="width:100%;text-align:center;padding:15px 0 5px;">
+                <div style="font-family:'Lilita One',sans-serif;font-size:1.5rem;color:#4ecca3;">&#128220; Qu&ecirc;tes</div>
+            </div>
+            <div id="quest-list" style="width:90%;max-width:450px;"></div>
+        </div>
+
+        <!-- TAB: SUCCES -->
+        <div class="lobby-tab-content hidden" id="tab-achievements">
+            <div style="width:100%;text-align:center;padding:15px 0 5px;">
+                <div style="font-family:'Lilita One',sans-serif;font-size:1.5rem;color:#ffd700;">&#127942; Succ&egrave;s</div>
+                <div style="font-size:0.8rem;color:#8ab;" id="ach-counter"></div>
+            </div>
+            <div class="achievement-grid" id="achievement-grid"></div>
+        </div>
+
+        <!-- TAB: BATTLE PASS -->
+        <div class="lobby-tab-content hidden" id="tab-pass">
+            <div style="width:100%;text-align:center;padding:15px 0 5px;">
+                <div style="font-family:'Lilita One',sans-serif;font-size:1.5rem;color:#4ecca3;">&#11088; Battle Pass</div>
+                <div id="bp-header-progress" style="width:80%;max-width:400px;margin:8px auto;"></div>
+            </div>
+            <div class="bp-strip" id="bp-strip"></div>
+        </div>
+
+        <!-- TAB: PROFIL -->
+        <div class="lobby-tab-content hidden" id="tab-profile">
+            <div class="profile-card">
+                <div class="profile-avatar" id="profile-avatar"></div>
+                <div class="profile-name">Joueur</div>
+                <div class="profile-level-big">Niveau <span id="profile-level">1</span></div>
+                <div class="profile-xp-bar"><div class="profile-xp-fill" id="profile-xp-fill" style="width:35%"></div></div>
+            </div>
+            <div class="profile-stats-grid">
+                <div class="profile-stat"><div class="profile-stat-num" id="profile-games">0</div><div class="profile-stat-label">Parties</div></div>
+                <div class="profile-stat"><div class="profile-stat-num" id="profile-kills">0</div><div class="profile-stat-label">Eliminations</div></div>
+                <div class="profile-stat"><div class="profile-stat-num" id="profile-wins">0</div><div class="profile-stat-label">Victoires</div></div>
+                <div class="profile-stat"><div class="profile-stat-num" id="profile-coins-total">0</div><div class="profile-stat-label">Pieces gagnees</div></div>
+            </div>
+            <div class="profile-skins-owned">
+                <div class="shop-section-title">&#127912; Skins possedes</div>
+                <div class="profile-skins-grid" id="profile-skins-grid"></div>
+            </div>
         </div>
     </div>
 
-    <div class="lobby-bottom">
-        <button class="play-btn play-btn-solo" id="btn-play" onclick="onPlayClick()">&#9654; LANCER LA PARTIE</button>
+    <!-- Bottom navigation bar (Brawl Stars style) -->
+    <div class="lobby-navbar">
+        <div class="nav-item active" id="nav-combat" onclick="switchLobbyTab('combat')">
+            <div class="nav-icon">&#9876;&#65039;</div>
+            <div class="nav-label">Combat</div>
+        </div>
+        <div class="nav-item" id="nav-shop" onclick="switchLobbyTab('shop')">
+            <div class="nav-icon">&#128722;</div>
+            <div class="nav-label">Boutique</div>
+        </div>
+        <div class="nav-item" id="nav-friends" onclick="switchLobbyTab('friends')">
+            <div class="nav-icon">&#129309;</div>
+            <div class="nav-label">Amis</div>
+        </div>
+        <div class="nav-item" id="nav-quests" onclick="switchLobbyTab('quests')">
+            <div class="nav-icon">&#128220;</div>
+            <div class="nav-label">Qu&ecirc;tes</div>
+        </div>
+        <div class="nav-item" id="nav-achievements" onclick="switchLobbyTab('achievements')">
+            <div class="nav-icon">&#127942;</div>
+            <div class="nav-label">Succes</div>
+        </div>
+        <div class="nav-item" id="nav-pass" onclick="switchLobbyTab('pass')">
+            <div class="nav-icon">&#11088;</div>
+            <div class="nav-label">Pass</div>
+        </div>
+        <div class="nav-item" id="nav-profile" onclick="switchLobbyTab('profile')">
+            <div class="nav-icon">&#128100;</div>
+            <div class="nav-label">Profil</div>
+        </div>
     </div>
-
-    <div class="controls-hint" style="margin-top:5px;margin-bottom:10px;">ZQSD — Bouger &nbsp;|&nbsp; ESPACE — Sauter &nbsp;|&nbsp; SOURIS — Viser &nbsp;|&nbsp; CLIC — Lancer &nbsp;|&nbsp; R — Recharger</div>
-
-    <button class="btn btn-orange" style="margin-top:5px;padding:8px 25px;font-size:0.85rem;" onclick="openShop()">&#128722; BOUTIQUE</button>
-</div>
-
-<!-- ============ BOUTIQUE ============ -->
-<div class="screen-overlay hidden" id="shop-screen">
-    <div class="shop-header">
-        <div class="shop-title">&#128722; Boutique</div>
-        <div class="coin-display"><span class="coin-icon">&#129689;</span><span id="shop-coins">0</span></div>
-        <button class="lobby-back-btn" onclick="closeShop()">&#8592; Retour</button>
-    </div>
-    <div class="shop-stats">
-        Parties: <span id="stat-games">0</span> &nbsp;|&nbsp;
-        Kills: <span id="stat-kills">0</span> &nbsp;|&nbsp;
-        Victoires: <span id="stat-wins">0</span>
-    </div>
-    <div class="shop-grid" id="shop-grid"></div>
 </div>
 
 <!-- ============ MULTI CHOICE MODAL ============ -->
@@ -783,12 +1213,51 @@ const SKIN_PRICES = [0, 0, 0, 0, 0, 150, 200, 250, 300, 500, 400, 350]; // 0 = f
 const SKIN_RARITY = ['Commun','Commun','Commun','Commun','Commun','Rare','Rare','Épique','Épique','Légendaire','Épique','Rare'];
 const RARITY_COLORS = {'Commun':'#8ab','Rare':'#4a9eff','Épique':'#aa66ff','Légendaire':'#ffd700'};
 
+const HAT_NAMES = ['Bonnet','Casque Viking','Couronne','Chapeau Cowboy','Casquette','Haut-de-forme','Bandana Ninja','Oreilles Chat'];
+const HAT_PRICES = [0, 200, 500, 300, 150, 400, 250, 350];
+const HAT_RARITY = ['Commun','Rare','Légendaire','Rare','Commun','Épique','Rare','Épique'];
+
+const ACCESSORY_NAMES = ['Aucun','Echarpe Rouge','Echarpe Arc-en-ciel','Sac a Dos','Lunettes de Ski','Cape','Ailes de Glace','Bouclier'];
+const ACCESSORY_PRICES = [0, 100, 250, 200, 150, 400, 500, 350];
+const ACCESSORY_RARITY = ['Commun','Commun','Rare','Rare','Commun','\u00C9pique','L\u00E9gendaire','\u00C9pique'];
+
+const ACHIEVEMENTS = [
+    { id: 'first_blood', name: 'Premier Sang', desc: 'Tue ton premier ennemi', icon: '\u{1F3AF}', condition: (s) => s.stats.kills >= 1 },
+    { id: 'killer_50', name: 'Tueur', desc: 'Tue 50 ennemis au total', icon: '\u{1F480}', condition: (s) => s.stats.kills >= 50 },
+    { id: 'killer_200', name: 'Massacreur', desc: 'Tue 200 ennemis au total', icon: '\u{2620}\u{FE0F}', condition: (s) => s.stats.kills >= 200 },
+    { id: 'winner', name: 'Victorieux', desc: 'Gagne ta premiere partie', icon: '\u{1F3C6}', condition: (s) => s.stats.wins >= 1 },
+    { id: 'champion', name: 'Champion', desc: 'Gagne 10 parties', icon: '\u{1F451}', condition: (s) => s.stats.wins >= 10 },
+    { id: 'survivor', name: 'Survivant', desc: 'Termine la vague 10', icon: '\u{1F6E1}\u{FE0F}', condition: (s) => (s.stats.maxWave || 0) >= 10 },
+    { id: 'rich', name: 'Riche', desc: 'Accumule 500 pieces', icon: '\u{1F4B0}', condition: (s) => s.coins >= 500 },
+    { id: 'collector', name: 'Collectionneur', desc: 'Possede 8 skins', icon: '\u{1F3A8}', condition: (s) => s.owned.length >= 8 },
+    { id: 'hatter', name: 'Chapelier', desc: 'Possede 4 chapeaux', icon: '\u{1F3A9}', condition: (s) => (s.hats || []).length >= 4 },
+    { id: 'level_5', name: 'Veteran', desc: 'Atteins le niveau 5', icon: '\u{2B50}', condition: (s) => (s.level || 1) >= 5 },
+    { id: 'level_10', name: 'Expert', desc: 'Atteins le niveau 10', icon: '\u{1F31F}', condition: (s) => (s.level || 1) >= 10 },
+    { id: 'boss_slayer', name: 'Tueur de Boss', desc: 'Tue un boss', icon: '\u{1F409}', condition: (s) => (s.stats.bossKills || 0) >= 1 }
+];
+
+const BATTLE_PASS = [
+    { tier: 1, xp: 50, reward: 'coins', amount: 30, name: '30 Pieces', icon: '\u{1FA99}' },
+    { tier: 2, xp: 120, reward: 'coins', amount: 50, name: '50 Pieces', icon: '\u{1FA99}' },
+    { tier: 3, xp: 200, reward: 'skin', skinIdx: 5, name: 'Skin Sakura', icon: '\u{1F338}' },
+    { tier: 4, xp: 300, reward: 'coins', amount: 80, name: '80 Pieces', icon: '\u{1FA99}' },
+    { tier: 5, xp: 420, reward: 'hat', hatIdx: 4, name: 'Casquette', icon: '\u{1F9E2}' },
+    { tier: 6, xp: 550, reward: 'coins', amount: 100, name: '100 Pieces', icon: '\u{1FA99}' },
+    { tier: 7, xp: 700, reward: 'skin', skinIdx: 7, name: 'Skin Inferno', icon: '\u{1F525}' },
+    { tier: 8, xp: 870, reward: 'coins', amount: 150, name: '150 Pieces', icon: '\u{1FA99}' },
+    { tier: 9, xp: 1050, reward: 'hat', hatIdx: 5, name: 'Haut-de-forme', icon: '\u{1F3A9}' },
+    { tier: 10, xp: 1250, reward: 'coins', amount: 300, name: '300 Pieces', icon: '\u{1F48E}' }
+];
+
 // ---- SAVE SYSTEM (localStorage) ----
 function loadSave() {
     try {
         const s = JSON.parse(localStorage.getItem('snowball_save') || '{}');
-        return { coins: s.coins || 0, owned: s.owned || [0,1,2,3,4], stats: s.stats || {games:0,kills:0,wins:0} };
-    } catch(e) { return { coins: 0, owned: [0,1,2,3,4], stats:{games:0,kills:0,wins:0} }; }
+        const stats = s.stats || {games:0,kills:0,wins:0};
+        stats.maxWave = stats.maxWave || 0;
+        stats.bossKills = stats.bossKills || 0;
+        return { coins: s.coins || 0, owned: s.owned || [0,1,2,3,4], stats: stats, quests: s.quests || [], hats: s.hats || [0], selectedHat: s.selectedHat || 0, xp: s.xp || 0, level: s.level || 1, achievements: s.achievements || [], battlePassXP: s.battlePassXP || 0, battlePassClaimed: s.battlePassClaimed || [], accessories: s.accessories || [0], selectedAccessory: s.selectedAccessory || 0 };
+    } catch(e) { return { coins: 0, owned: [0,1,2,3,4], stats:{games:0,kills:0,wins:0,maxWave:0,bossKills:0}, quests: [], hats: [0], selectedHat: 0, xp: 0, level: 1, achievements: [], battlePassXP: 0, battlePassClaimed: [], accessories: [0], selectedAccessory: 0 }; }
 }
 function writeSave(data) { localStorage.setItem('snowball_save', JSON.stringify(data)); }
 let saveData = loadSave();
@@ -798,6 +1267,15 @@ let selectedSkin = 0;
 let selectedMode = 'solo';
 let currentMode = null;
 let gameRunning = false;
+
+// ---- Toon gradient texture for cel-shading (must be before any MeshToonMaterial) ----
+const toonGradient = new THREE.DataTexture(
+    new Uint8Array([40,40,40,255, 120,120,120,255, 200,200,200,255, 255,255,255,255]),
+    4, 1, THREE.RGBAFormat
+);
+toonGradient.minFilter = THREE.NearestFilter;
+toonGradient.magFilter = THREE.NearestFilter;
+toonGradient.needsUpdate = true;
 
 // ================================================================
 //  LOBBY 3D SCENE (Character Preview)
@@ -857,150 +1335,368 @@ const lobbySnowPts = new THREE.Points(lobbySnowGeo, new THREE.PointsMaterial({
 lobbyScene.add(lobbySnowPts);
 
 // ================================================================
+//  HAT/ACCESSORY MESH BUILDER
+// ================================================================
+function createHatMesh(hatIdx, headY, col, colDark) {
+    const hg = new THREE.Group();
+    hg.position.y = headY;
+    col = col || 0x4a9eff;
+    colDark = colDark || 0x2a5a8f;
+    let bandColor;
+    try { bandColor = new THREE.Color(col).multiplyScalar(1.3).getHex(); } catch(e) { bandColor = col; }
+    if (hatIdx === 0) {
+        const beanie = new THREE.Mesh(new THREE.SphereGeometry(0.62, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), new THREE.MeshToonMaterial({color: colDark, gradientMap: toonGradient}));
+        hg.add(beanie);
+        const bnd = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.08, 8, 20), new THREE.MeshToonMaterial({color: bandColor, gradientMap: toonGradient}));
+        bnd.position.y = -0.12; bnd.rotation.x = Math.PI / 2; hg.add(bnd);
+        const pompon = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient}));
+        pompon.position.y = 0.52; hg.add(pompon);
+    } else if (hatIdx === 1) {
+        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.65, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), new THREE.MeshToonMaterial({color: 0x888899, gradientMap: toonGradient}));
+        hg.add(helmet);
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.06, 8, 20), new THREE.MeshToonMaterial({color: 0x666677, gradientMap: toonGradient}));
+        rim.position.y = -0.1; rim.rotation.x = Math.PI / 2; hg.add(rim);
+        const hornMat = new THREE.MeshToonMaterial({color: 0xddcc88, gradientMap: toonGradient});
+        [-1, 1].forEach(side => {
+            const hornGrp = new THREE.Group();
+            const hornBase = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.55, 8), hornMat);
+            hornBase.rotation.z = side * 0.6; hornBase.position.set(side * 0.15, 0.15, 0); hornGrp.add(hornBase);
+            const hornTip = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), hornMat);
+            hornTip.position.set(side * 0.32, 0.38, 0); hornGrp.add(hornTip);
+            hornGrp.position.set(side * 0.45, 0.0, 0); hg.add(hornGrp);
+        });
+    } else if (hatIdx === 2) {
+        const crownMat = new THREE.MeshToonMaterial({color: 0xffd700, gradientMap: toonGradient});
+        const crBase = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 0.25, 16), crownMat);
+        crBase.position.y = 0.12; hg.add(crBase);
+        const pointMat = new THREE.MeshToonMaterial({color: 0xffaa00, gradientMap: toonGradient});
+        for (let ci = 0; ci < 6; ci++) {
+            const ang = (ci / 6) * Math.PI * 2;
+            const pt = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.2, 4), pointMat);
+            pt.position.set(Math.sin(ang) * 0.4, 0.35, Math.cos(ang) * 0.4); hg.add(pt);
+        }
+        const gemCols = [0xff0000, 0x0044ff, 0x00cc44];
+        for (let ci = 0; ci < 3; ci++) {
+            const ang = (ci / 3) * Math.PI * 2 + Math.PI / 6;
+            const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.06, 0), new THREE.MeshToonMaterial({color: gemCols[ci], gradientMap: toonGradient}));
+            gem.position.set(Math.sin(ang) * 0.47, 0.12, Math.cos(ang) * 0.47); hg.add(gem);
+        }
+    } else if (hatIdx === 3) {
+        const brownMat = new THREE.MeshToonMaterial({color: 0x8B4513, gradientMap: toonGradient});
+        const brownDkMat = new THREE.MeshToonMaterial({color: 0x6B3410, gradientMap: toonGradient});
+        const brim3 = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.85, 0.06, 20), brownMat);
+        brim3.position.y = -0.02; hg.add(brim3);
+        const topDome = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.6), brownMat);
+        topDome.position.y = 0.15; hg.add(topDome);
+        const indent = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.08, 10), brownDkMat);
+        indent.position.y = 0.38; hg.add(indent);
+        const hBand = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.04, 6, 16), new THREE.MeshToonMaterial({color: 0xddaa44, gradientMap: toonGradient}));
+        hBand.position.y = 0.05; hBand.rotation.x = Math.PI / 2; hg.add(hBand);
+    } else if (hatIdx === 4) {
+        const capMat = new THREE.MeshToonMaterial({color: col, gradientMap: toonGradient});
+        const dome = new THREE.Mesh(new THREE.SphereGeometry(0.6, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), capMat);
+        hg.add(dome);
+        const vShape = new THREE.Shape();
+        vShape.absarc(0, 0, 0.35, -Math.PI * 0.4, Math.PI * 0.4, false); vShape.lineTo(0, 0);
+        const visor = new THREE.Mesh(new THREE.ExtrudeGeometry(vShape, {depth: 0.04, bevelEnabled: false}), new THREE.MeshToonMaterial({color: colDark, gradientMap: toonGradient}));
+        visor.rotation.x = -Math.PI / 2 + 0.15; visor.position.set(0, -0.08, 0.45); hg.add(visor);
+        const btn4 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), capMat);
+        btn4.position.y = 0.35; hg.add(btn4);
+    } else if (hatIdx === 5) {
+        const blkMat = new THREE.MeshToonMaterial({color: 0x1a1a1a, gradientMap: toonGradient});
+        const dkGrey = new THREE.MeshToonMaterial({color: 0x2a2a2a, gradientMap: toonGradient});
+        const brim5 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.65, 0.06, 18), blkMat);
+        brim5.position.y = 0.0; hg.add(brim5);
+        const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.4, 0.7, 14), dkGrey);
+        cyl.position.y = 0.38; hg.add(cyl);
+        const topD = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.04, 14), blkMat);
+        topD.position.y = 0.73; hg.add(topD);
+        const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.04, 6, 16), new THREE.MeshToonMaterial({color: 0x8B0000, gradientMap: toonGradient}));
+        ribbon.position.y = 0.1; ribbon.rotation.x = Math.PI / 2; hg.add(ribbon);
+    } else if (hatIdx === 6) {
+        const ninjaMat = new THREE.MeshToonMaterial({color: 0x222222, gradientMap: toonGradient});
+        const ninjaAcc = new THREE.MeshToonMaterial({color: 0xcc0000, gradientMap: toonGradient});
+        const nBand = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.1, 8, 20), ninjaMat);
+        nBand.position.y = -0.05; nBand.rotation.x = Math.PI / 2; hg.add(nBand);
+        const plate = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.15, 0.06), new THREE.MeshToonMaterial({color: 0xbbbbcc, gradientMap: toonGradient}));
+        plate.position.set(0, -0.05, 0.56); hg.add(plate);
+        const engr = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.02), new THREE.MeshToonMaterial({color: 0x666688, gradientMap: toonGradient}));
+        engr.position.set(0, -0.05, 0.6); hg.add(engr);
+        [-1, 1].forEach(side => {
+            const tail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.5), ninjaAcc);
+            tail.position.set(side * 0.15, -0.08, -0.6); tail.rotation.x = 0.3; tail.rotation.z = side * 0.15; hg.add(tail);
+        });
+    } else if (hatIdx === 7) {
+        const earMat = new THREE.MeshToonMaterial({color: 0x333333, gradientMap: toonGradient});
+        const inEarMat = new THREE.MeshToonMaterial({color: 0xff88aa, gradientMap: toonGradient});
+        [-1, 1].forEach(side => {
+            const es = new THREE.Shape();
+            es.moveTo(0, 0); es.lineTo(0.12, 0.35); es.lineTo(-0.12, 0.35); es.lineTo(0, 0);
+            const ear = new THREE.Mesh(new THREE.ExtrudeGeometry(es, {depth: 0.06, bevelEnabled: false}), earMat);
+            ear.position.set(side * 0.3, 0.2, 0); ear.rotation.z = side * -0.15; hg.add(ear);
+            const is2 = new THREE.Shape();
+            is2.moveTo(0, 0.05); is2.lineTo(0.07, 0.28); is2.lineTo(-0.07, 0.28); is2.lineTo(0, 0.05);
+            const inEar = new THREE.Mesh(new THREE.ExtrudeGeometry(is2, {depth: 0.07, bevelEnabled: false}), inEarMat);
+            inEar.position.set(side * 0.3, 0.2, 0); inEar.rotation.z = side * -0.15; hg.add(inEar);
+        });
+        const hband = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.04, 6, 16), earMat);
+        hband.position.y = 0.15; hband.rotation.x = Math.PI / 2; hg.add(hband);
+    }
+    return hg;
+}
+
+// ================================================================
+//  ACCESSORY MESH BUILDER
+// ================================================================
+function createAccessoryMesh(accIdx, col) {
+    const g = new THREE.Group();
+    if (accIdx === 0) return g; // Aucun
+    if (accIdx === 1) { // Echarpe Rouge
+        const scarfMat = new THREE.MeshToonMaterial({color: 0xcc2222, gradientMap: toonGradient});
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.06, 8, 16), scarfMat);
+        ring.position.y = 1.5; ring.rotation.x = Math.PI / 2; g.add(ring);
+        const tail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.4, 0.05), scarfMat);
+        tail.position.set(0.25, 1.25, 0.15); tail.rotation.z = -0.3; g.add(tail);
+    } else if (accIdx === 2) { // Echarpe Arc-en-ciel
+        const colors = [0xff0000, 0xff8800, 0xffff00, 0x00cc00, 0x0066ff, 0x8800ff];
+        const ringMat = new THREE.MeshToonMaterial({color: 0xff4488, gradientMap: toonGradient});
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.06, 8, 16), ringMat);
+        ring.position.y = 1.5; ring.rotation.x = Math.PI / 2; g.add(ring);
+        for (let i = 0; i < colors.length; i++) {
+            const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.05),
+                new THREE.MeshToonMaterial({color: colors[i], gradientMap: toonGradient}));
+            stripe.position.set(0.25, 1.35 - i * 0.065, 0.15); stripe.rotation.z = -0.3; g.add(stripe);
+        }
+    } else if (accIdx === 3) { // Sac a Dos
+        const bagMat = new THREE.MeshToonMaterial({color: 0x8B4513, gradientMap: toonGradient});
+        const bag = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.45, 0.25), bagMat);
+        bag.position.set(0, 0.95, -0.55); g.add(bag);
+        const flap = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.12, 0.26),
+            new THREE.MeshToonMaterial({color: 0x6B3410, gradientMap: toonGradient}));
+        flap.position.set(0, 1.22, -0.55); g.add(flap);
+        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.04),
+            new THREE.MeshBasicMaterial({color: 0xFFD700}));
+        buckle.position.set(0, 1.15, -0.42); g.add(buckle);
+    } else if (accIdx === 4) { // Lunettes de Ski
+        const bandMat = new THREE.MeshToonMaterial({color: 0x222222, gradientMap: toonGradient});
+        const band = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 6, 16), bandMat);
+        band.position.y = 2.15; band.rotation.x = Math.PI / 2; g.add(band);
+        const lensMat = new THREE.MeshToonMaterial({color: 0xff6600, gradientMap: toonGradient});
+        [-1, 1].forEach(side => {
+            const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 8), lensMat);
+            lens.position.set(side * 0.2, 2.1, 0.52); lens.rotation.x = Math.PI / 2; g.add(lens);
+            const rim = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 6, 12), bandMat);
+            rim.position.set(side * 0.2, 2.1, 0.53); g.add(rim);
+        });
+    } else if (accIdx === 5) { // Cape
+        const capeMat = new THREE.MeshToonMaterial({color: col || 0x4a9eff, gradientMap: toonGradient, side: THREE.DoubleSide});
+        const cape = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.2), capeMat);
+        cape.position.set(0, 0.95, -0.5); cape.rotation.x = 0.15; g.add(cape);
+        const edgeMat = new THREE.MeshToonMaterial({color: 0xFFD700, gradientMap: toonGradient});
+        const edge = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.04, 0.02), edgeMat);
+        edge.position.set(0, 1.55, -0.48); g.add(edge);
+    } else if (accIdx === 6) { // Ailes de Glace
+        const wingMat = new THREE.MeshToonMaterial({color: 0x88ddff, gradientMap: toonGradient, transparent: true, opacity: 0.7, side: THREE.DoubleSide});
+        [-1, 1].forEach(side => {
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0); shape.lineTo(side * 0.7, 0.3); shape.lineTo(side * 0.5, -0.4); shape.lineTo(0, -0.2); shape.lineTo(0, 0);
+            const wing = new THREE.Mesh(new THREE.ShapeGeometry(shape), wingMat);
+            wing.position.set(side * 0.3, 1.2, -0.45); wing.rotation.y = side * -0.3; g.add(wing);
+        });
+    } else if (accIdx === 7) { // Bouclier
+        const shieldMat = new THREE.MeshToonMaterial({color: 0x888899, gradientMap: toonGradient});
+        const shield = new THREE.Mesh(new THREE.CircleGeometry(0.3, 12), shieldMat);
+        shield.position.set(-0.85, 0.9, 0.1); shield.rotation.y = Math.PI / 2; g.add(shield);
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.03, 6, 16),
+            new THREE.MeshToonMaterial({color: 0xFFD700, gradientMap: toonGradient}));
+        rim.position.set(-0.85, 0.9, 0.1); rim.rotation.y = Math.PI / 2; g.add(rim);
+        const boss = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8),
+            new THREE.MeshToonMaterial({color: 0xFFD700, gradientMap: toonGradient}));
+        boss.position.set(-0.85, 0.9, 0.14); g.add(boss);
+    }
+    return g;
+}
+
+// ================================================================
 //  CHARACTER MODEL BUILDER (Brawl Stars cartoon style)
 // ================================================================
 function createCharacterModel(colorIdx, detailed) {
     const g = new THREE.Group();
     const col = PLAYER_COLOR_HEX[colorIdx] || 0x4a9eff;
-    const skinCol = 0xffccaa;
+    const colBright = new THREE.Color(col).multiplyScalar(1.15).getHex();
+    const colDark = new THREE.Color(col).multiplyScalar(0.65).getHex();
+    const skinCol = 0xffcba4;
 
-    // Body - chunky cartoon style
-    const bodyMat = new THREE.MeshPhongMaterial({color: col, shininess: 40, specular: 0x222222});
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 1.1, 12), bodyMat);
-    body.position.y = 1.15; body.castShadow = true;
-    g.add(body);
-
-    // Jacket front highlight
-    const jacketFront = new THREE.Mesh(
-        new THREE.SphereGeometry(0.52, 12, 8, 0, Math.PI, 0, Math.PI),
-        new THREE.MeshPhongMaterial({color: new THREE.Color(col).multiplyScalar(1.2).getHex(), shininess: 50})
+    // ===== BODY (Brawl Stars: round & chunky) =====
+    const bodyMat = new THREE.MeshToonMaterial({color: col, gradientMap: toonGradient});
+    // Main torso - round sphere shape
+    const torso = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 12), bodyMat);
+    torso.position.y = 0.95; torso.scale.set(1, 1.1, 0.85); torso.castShadow = true;
+    g.add(torso);
+    // Belly highlight (front)
+    const belly = new THREE.Mesh(
+        new THREE.SphereGeometry(0.42, 12, 10),
+        new THREE.MeshToonMaterial({color: colBright, gradientMap: toonGradient})
     );
-    jacketFront.position.set(0, 1.15, 0.08); jacketFront.rotation.x = -0.2;
-    jacketFront.scale.set(1, 0.9, 0.6);
-    g.add(jacketFront);
-
-    // Belt
-    const belt = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.06, 6, 16), new THREE.MeshPhongMaterial({color:0x3a2a1a}));
-    belt.position.y = 0.75; belt.rotation.x = Math.PI/2;
+    belly.position.set(0, 0.9, 0.2); belly.scale.set(0.8, 0.85, 0.5);
+    g.add(belly);
+    // Collar/neck area
+    const collar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.35, 0.15, 12),
+        new THREE.MeshToonMaterial({color: colDark, gradientMap: toonGradient})
+    );
+    collar.position.y = 1.5;
+    g.add(collar);
+    // Belt buckle
+    const beltMat = new THREE.MeshToonMaterial({color: 0x8B6914, gradientMap: toonGradient});
+    const belt = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.05, 6, 16), beltMat);
+    belt.position.y = 0.55; belt.rotation.x = Math.PI/2;
     g.add(belt);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.06), new THREE.MeshBasicMaterial({color: 0xFFD700}));
+    buckle.position.set(0, 0.55, 0.52);
+    g.add(buckle);
 
-    // Head - bigger for cartoon look
-    const headMat = new THREE.MeshPhongMaterial({color: skinCol, shininess: 30});
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 12), headMat);
-    head.position.y = 2.0; head.castShadow = true;
-    head.scale.set(1, 1.05, 0.95);
+    // ===== HEAD (Brawl Stars: HUGE round head, ~50% of total height) =====
+    const headMat = new THREE.MeshToonMaterial({color: skinCol, gradientMap: toonGradient});
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 14), headMat);
+    head.position.y = 2.05; head.castShadow = true;
+    head.scale.set(1, 1.0, 0.9);
     g.add(head);
-
-    // Eyes - big cartoon eyes
-    const eyeWhiteMat = new THREE.MeshPhongMaterial({color:0xffffff, shininess:80});
-    const eyePupilMat = new THREE.MeshBasicMaterial({color:0x111122});
-    const eyeGlintMat = new THREE.MeshBasicMaterial({color:0xffffff});
+    // Cheeks (rosy)
     [-1, 1].forEach(side => {
-        const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), eyeWhiteMat);
-        eyeWhite.position.set(side*0.15, 2.08, 0.35);
-        eyeWhite.scale.set(1, 1.2, 0.7);
+        const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8),
+            new THREE.MeshToonMaterial({color: 0xffaa88, gradientMap: toonGradient}));
+        cheek.position.set(side * 0.4, 1.85, 0.35);
+        cheek.scale.set(1, 0.7, 0.5);
+        g.add(cheek);
+    });
+
+    // ===== EYES (Brawl Stars: BIG oval eyes, thick black outline) =====
+    const eyeOutlineMat = new THREE.MeshBasicMaterial({color: 0x111111});
+    const eyeWhiteMat = new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient});
+    const eyePupilMat = new THREE.MeshBasicMaterial({color: 0x111122});
+    const eyeGlintMat = new THREE.MeshBasicMaterial({color: 0xffffff});
+    [-1, 1].forEach(side => {
+        // Eye outline (black border)
+        const outline = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10), eyeOutlineMat);
+        outline.position.set(side * 0.2, 2.1, 0.45);
+        outline.scale.set(0.9, 1.15, 0.5);
+        g.add(outline);
+        // Eye white
+        const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), eyeWhiteMat);
+        eyeWhite.position.set(side * 0.2, 2.1, 0.47);
+        eyeWhite.scale.set(0.85, 1.1, 0.5);
         g.add(eyeWhite);
-        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), eyePupilMat);
-        pupil.position.set(side*0.15, 2.07, 0.41);
+        // Pupil (big, looking forward)
+        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyePupilMat);
+        pupil.position.set(side * 0.18, 2.08, 0.54);
         g.add(pupil);
-        // Eye glint
-        const glint = new THREE.Mesh(new THREE.SphereGeometry(0.025, 6, 6), eyeGlintMat);
-        glint.position.set(side*0.12, 2.11, 0.42);
+        // Glint
+        const glint = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), eyeGlintMat);
+        glint.position.set(side * 0.14, 2.14, 0.55);
         g.add(glint);
     });
 
-    // Eyebrows
-    [-1,1].forEach(side => {
+    // Thick eyebrows (Brawl Stars style - bold)
+    [-1, 1].forEach(side => {
         const brow = new THREE.Mesh(
-            new THREE.BoxGeometry(0.18, 0.04, 0.04),
-            new THREE.MeshLambertMaterial({color:0x553322})
+            new THREE.BoxGeometry(0.22, 0.06, 0.06),
+            new THREE.MeshBasicMaterial({color: 0x3a2211})
         );
-        brow.position.set(side*0.15, 2.22, 0.38);
-        brow.rotation.z = side * -0.15;
+        brow.position.set(side * 0.2, 2.3, 0.44);
+        brow.rotation.z = side * -0.2;
         g.add(brow);
     });
 
-    // Mouth - small smile
-    const mouthCurve = new THREE.EllipseCurve(0, 0, 0.08, 0.04, Math.PI*0.1, Math.PI*0.9, false, 0);
-    const mouthPts = mouthCurve.getPoints(12);
+    // Mouth - confident grin
+    const mouthCurve = new THREE.EllipseCurve(0, 0, 0.12, 0.06, Math.PI * 0.15, Math.PI * 0.85, false, 0);
+    const mouthPts = mouthCurve.getPoints(16);
     const mouthGeo = new THREE.BufferGeometry().setFromPoints(mouthPts);
-    const mouth = new THREE.Line(mouthGeo, new THREE.LineBasicMaterial({color:0x553322, linewidth:2}));
-    mouth.position.set(0, 1.88, 0.4);
+    const mouth = new THREE.Line(mouthGeo, new THREE.LineBasicMaterial({color: 0x553322, linewidth: 2}));
+    mouth.position.set(0, 1.82, 0.52);
     g.add(mouth);
+    // Nose (small bump)
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6),
+        new THREE.MeshToonMaterial({color: 0xf0b888, gradientMap: toonGradient}));
+    nose.position.set(0, 1.95, 0.56);
+    g.add(nose);
 
-    // Beanie/hat
-    const beanieColor = new THREE.Color(col).multiplyScalar(0.7).getHex();
-    const beanie = new THREE.Mesh(
-        new THREE.SphereGeometry(0.44, 12, 8, 0, Math.PI*2, 0, Math.PI*0.6),
-        new THREE.MeshPhongMaterial({color: beanieColor, shininess:30})
-    );
-    beanie.position.y = 2.15;
-    g.add(beanie);
-    // Beanie rim
-    const beanieRim = new THREE.Mesh(
-        new THREE.TorusGeometry(0.42, 0.06, 8, 16),
-        new THREE.MeshPhongMaterial({color:0xf0f0f0, shininess:40})
-    );
-    beanieRim.position.y = 2.02; beanieRim.rotation.x = Math.PI/2;
-    g.add(beanieRim);
-    // Pompon
-    const pompon = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 8, 8),
-        new THREE.MeshPhongMaterial({color:0xffffff, shininess:60})
-    );
-    pompon.position.y = 2.55;
-    g.add(pompon);
+    // ===== HAT/ACCESSORY =====
+    const hatGroup = createHatMesh(saveData.selectedHat || 0, 2.2, col, colDark);
+    g.add(hatGroup);
+    g.userData.hat = hatGroup;
 
-    // Arms - chunky
-    const armMat = new THREE.MeshPhongMaterial({color: col, shininess:30});
+    // ===== ACCESSORY =====
+    const accGroup = createAccessoryMesh(saveData.selectedAccessory || 0, col);
+    g.add(accGroup);
+    g.userData.accessory = accGroup;
+
+    // ===== ARMS (Brawl Stars: short, thick, tube-like) =====
+    const armMat = new THREE.MeshToonMaterial({color: col, gradientMap: toonGradient});
+    const gloveMat = new THREE.MeshToonMaterial({color: 0xe8e0d0, gradientMap: toonGradient});
     [-1, 1].forEach(side => {
-        const armGroup = new THREE.Group();
-        // Upper arm
-        const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.5, 8), armMat);
-        upper.position.y = -0.18;
-        upper.rotation.z = side * 0.3;
-        armGroup.add(upper);
-        // Hand (glove)
-        const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8),
-            new THREE.MeshPhongMaterial({color:0xddd8cc, shininess:20}));
-        hand.position.set(side*0.1, -0.4, 0);
-        armGroup.add(hand);
-        armGroup.position.set(side*0.65, 1.35, 0);
-        armGroup.rotation.z = side * -0.4;
-        g.add(armGroup);
-        armGroup.userData.side = side;
+        const armGrp = new THREE.Group();
+        // Upper arm (thick tube)
+        const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.45, 8), armMat);
+        upper.position.y = -0.15;
+        armGrp.add(upper);
+        // Forearm
+        const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.35, 8), armMat);
+        lower.position.set(0, -0.42, 0);
+        armGrp.add(lower);
+        // Big round glove hand (Brawl Stars signature)
+        const hand = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 10), gloveMat);
+        hand.position.set(0, -0.62, 0);
+        armGrp.add(hand);
+        // Glove cuff
+        const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.08, 8), gloveMat);
+        cuff.position.set(0, -0.48, 0);
+        armGrp.add(cuff);
+        armGrp.position.set(side * 0.7, 1.3, 0);
+        armGrp.rotation.z = side * -0.35;
+        armGrp.rotation.x = -0.1;
+        g.add(armGrp);
+        armGrp.userData.side = side;
     });
 
-    // Legs - short chunky
-    const legMat = new THREE.MeshPhongMaterial({color:0x334455, shininess:20});
+    // ===== LEGS (Brawl Stars: very short, stubby) =====
+    const legMat = new THREE.MeshToonMaterial({color: 0x2a3a4a, gradientMap: toonGradient});
+    const bootMat = new THREE.MeshToonMaterial({color: 0x4a3020, gradientMap: toonGradient});
     [-1, 1].forEach(side => {
-        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.4, 8), legMat);
-        leg.position.set(side*0.22, 0.3, 0); leg.castShadow = true;
+        // Thick short leg
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.3, 8), legMat);
+        leg.position.set(side * 0.25, 0.3, 0); leg.castShadow = true;
         g.add(leg);
-        // Boot
-        const boot = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 6, 0, Math.PI*2, 0, Math.PI*0.6),
-            new THREE.MeshPhongMaterial({color:0x553322, shininess:20}));
-        boot.position.set(side*0.22, 0.08, 0.06);
-        boot.rotation.x = Math.PI;
+        // Big round boot
+        const boot = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), bootMat);
+        boot.position.set(side * 0.25, 0.1, 0.06);
+        boot.scale.set(0.8, 0.6, 1.1);
         g.add(boot);
+        // Boot sole
+        const sole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.06, 0.35),
+            new THREE.MeshToonMaterial({color: 0x222222, gradientMap: toonGradient}));
+        sole.position.set(side * 0.25, 0.02, 0.06);
+        g.add(sole);
     });
 
+    // ===== ACCESSORIES =====
     // Snowball in right hand (if detailed)
     if (detailed) {
         const snowball = new THREE.Mesh(
-            new THREE.SphereGeometry(0.15, 12, 12),
-            new THREE.MeshPhongMaterial({color:0xffffff, shininess:80, specular:0x446688})
+            new THREE.SphereGeometry(0.18, 12, 12),
+            new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient})
         );
-        snowball.position.set(0.75, 1.0, 0.2);
+        snowball.position.set(0.85, 0.7, 0.15);
         g.add(snowball);
         g.userData.snowball = snowball;
     }
 
-    // Shadow blob
-    const shadowGeo = new THREE.CircleGeometry(0.5, 16);
-    const shadowMat = new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.2});
-    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
-    shadow.rotation.x = -Math.PI/2; shadow.position.y = 0.02;
+    // Shadow (bigger for Brawl Stars look)
+    const shadow = new THREE.Mesh(
+        new THREE.CircleGeometry(0.65, 16),
+        new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: 0.25, depthWrite: false})
+    );
+    shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
     g.add(shadow);
 
     return g;
@@ -1063,6 +1759,144 @@ function earnCoins(amount, x, y) {
     setTimeout(() => pop.remove(), 1500);
 }
 
+// ================================================================
+//  XP / LEVEL SYSTEM
+// ================================================================
+function addXP(amount) {
+    saveData.xp += amount;
+    let xpNeeded = saveData.level * 100;
+    while (saveData.xp >= xpNeeded) {
+        saveData.xp -= xpNeeded;
+        saveData.level++;
+        earnCoins(20);
+        showXPNotification('Niveau ' + saveData.level + ' ! +20 pieces');
+        checkAchievements();
+        xpNeeded = saveData.level * 100;
+    }
+    writeSave(saveData);
+    updateLevelDisplays();
+}
+
+function addBattlePassXP(amount) {
+    saveData.battlePassXP += amount;
+    writeSave(saveData);
+}
+
+function updateLevelDisplays() {
+    const xpNeeded = saveData.level * 100;
+    const pct = Math.min(100, Math.floor((saveData.xp / xpNeeded) * 100));
+    const elUpd = function(id, val) { const e = document.getElementById(id); if(e) e.textContent = val; };
+    elUpd('player-level', saveData.level);
+    elUpd('profile-level', saveData.level);
+    const lobbyXpFill = document.getElementById('lobby-xp-fill');
+    if (lobbyXpFill) lobbyXpFill.style.width = pct + '%';
+    const profileXpFill = document.getElementById('profile-xp-fill');
+    if (profileXpFill) profileXpFill.style.width = pct + '%';
+}
+
+function showXPNotification(text) {
+    const feed = document.getElementById('killfeed');
+    if (!feed) return;
+    const msgEl = document.createElement('div');
+    msgEl.className = 'kill-msg';
+    msgEl.innerHTML = '<span style="color:#ffd700">\u2B50 ' + text + '</span>';
+    feed.appendChild(msgEl);
+    setTimeout(function() { msgEl.remove(); }, 3000);
+}
+
+// ================================================================
+//  ACHIEVEMENTS SYSTEM
+// ================================================================
+function checkAchievements() {
+    if (!saveData.achievements) saveData.achievements = [];
+    let changed = false;
+    ACHIEVEMENTS.forEach(function(ach) {
+        if (saveData.achievements.includes(ach.id)) return;
+        try {
+            if (ach.condition(saveData)) {
+                saveData.achievements.push(ach.id);
+                saveData.coins += 15;
+                changed = true;
+                showXPNotification('Succes: ' + ach.name + ' ! +15 pieces');
+            }
+        } catch(e) {}
+    });
+    if (changed) {
+        writeSave(saveData);
+        updateCoinDisplays();
+    }
+}
+
+function buildAchievementList() {
+    const container = document.getElementById('achievement-grid');
+    if (!container) return;
+    container.innerHTML = '';
+    ACHIEVEMENTS.forEach(function(ach) {
+        const unlocked = saveData.achievements && saveData.achievements.includes(ach.id);
+        const card = document.createElement('div');
+        card.className = 'achievement-card ' + (unlocked ? 'unlocked' : 'locked');
+        card.innerHTML = '<div class="ach-icon">' + ach.icon + '</div>' +
+            '<div class="ach-name">' + ach.name + '</div>' +
+            '<div class="ach-desc">' + ach.desc + '</div>';
+        container.appendChild(card);
+    });
+}
+
+// ================================================================
+//  BATTLE PASS SYSTEM
+// ================================================================
+function buildBattlePass() {
+    const container = document.getElementById('bp-strip');
+    if (!container) return;
+    container.innerHTML = '';
+    const totalXP = saveData.battlePassXP || 0;
+    const claimed = saveData.battlePassClaimed || [];
+    const maxXP = BATTLE_PASS[BATTLE_PASS.length - 1].xp;
+    const headerEl = document.getElementById('bp-header-progress');
+    if (headerEl) {
+        const pct = Math.min(100, Math.floor((totalXP / maxXP) * 100));
+        headerEl.innerHTML = '<div style="font-size:0.75rem;color:#8ab;margin-bottom:3px;">XP total: ' + totalXP + ' / ' + maxXP + '</div>' +
+            '<div class="bp-progress-bar"><div class="bp-progress-fill" style="width:' + pct + '%"></div></div>';
+    }
+    BATTLE_PASS.forEach(function(tier) {
+        const earned = totalXP >= tier.xp;
+        const isClaimed = claimed.includes(tier.tier);
+        const card = document.createElement('div');
+        card.className = 'bp-tier' + (isClaimed ? ' claimed' : earned ? ' earned' : '');
+        let inner = '<div style="font-size:0.6rem;color:#556;font-weight:900;">TIER ' + tier.tier + '</div>' +
+            '<div class="bp-icon">' + tier.icon + '</div>' +
+            '<div class="bp-name">' + tier.name + '</div>' +
+            '<div class="bp-xp">' + (earned ? 'Debloque !' : totalXP + ' / ' + tier.xp + ' XP') + '</div>';
+        if (earned && !isClaimed) {
+            inner += '<button class="bp-claim-btn" onclick="claimBattlePassTier(' + tier.tier + ')">Reclamer</button>';
+        } else if (isClaimed) {
+            inner += '<div style="font-size:0.65rem;color:#4ecca3;font-weight:900;margin-top:5px;">Reclame !</div>';
+        }
+        card.innerHTML = inner;
+        container.appendChild(card);
+    });
+}
+
+function claimBattlePassTier(tierNum) {
+    const tier = BATTLE_PASS.find(function(t) { return t.tier === tierNum; });
+    if (!tier) return;
+    if (saveData.battlePassClaimed.includes(tierNum)) return;
+    if ((saveData.battlePassXP || 0) < tier.xp) return;
+    saveData.battlePassClaimed.push(tierNum);
+    if (tier.reward === 'coins') {
+        saveData.coins += tier.amount;
+        updateCoinDisplays();
+    } else if (tier.reward === 'skin') {
+        if (!saveData.owned.includes(tier.skinIdx)) saveData.owned.push(tier.skinIdx);
+    } else if (tier.reward === 'hat') {
+        if (!saveData.hats.includes(tier.hatIdx)) saveData.hats.push(tier.hatIdx);
+    }
+    writeSave(saveData);
+    showXPNotification('Battle Pass: ' + tier.name + ' reclame !');
+    buildBattlePass();
+    checkAchievements();
+}
+
 function buildShopGrid() {
     const grid = document.getElementById('shop-grid');
     grid.innerHTML = '';
@@ -1115,6 +1949,7 @@ function buildShopGrid() {
                 saveData.owned.sort((a,b) => a-b);
                 writeSave(saveData);
                 updateCoinDisplays();
+                checkAchievements();
                 // Select the newly bought skin
                 selectedSkin = idx;
                 lobbyScene.remove(lobbyCharacter);
@@ -1133,17 +1968,371 @@ function buildShopGrid() {
     document.getElementById('stat-wins').textContent = saveData.stats.wins;
 }
 
+function buildHatShop() {
+    const grid = document.getElementById('shop-hats-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    HAT_NAMES.forEach((name, i) => {
+        const owned = saveData.hats.includes(i);
+        const selected = i === saveData.selectedHat;
+        const price = HAT_PRICES[i];
+        const rarity = HAT_RARITY[i];
+        const canBuy = !owned && saveData.coins >= price;
+        const card = document.createElement('div');
+        card.className = 'shop-card' + (owned ? ' owned' : '') + (selected ? ' selected' : '');
+        const hatIcons = ['\u{1F9E2}','\u{2694}\uFE0F','\u{1F451}','\u{1FA0C}','\u{1F9E2}','\u{1F3A9}','\u{1F977}','\u{1F431}'];
+        card.innerHTML = `
+            <div class="shop-card-preview" style="background:rgba(255,255,255,0.1);border-color:${RARITY_COLORS[rarity]};display:flex;align-items:center;justify-content:center;font-size:1.8rem;">${hatIcons[i]}</div>
+            <div class="shop-card-name">${name}</div>
+            <div class="shop-card-rarity" style="color:${RARITY_COLORS[rarity]}">${rarity}</div>
+            ${owned
+                ? (selected ? '<div class="shop-card-owned">\u00C9quip\u00E9</div>' : '<div class="shop-card-owned">Poss\u00E9d\u00E9</div>')
+                : (price === 0
+                    ? '<div class="shop-card-owned">Gratuit</div>'
+                    : `<button class="shop-buy-btn hat-buy-btn" ${canBuy?'':'disabled'} data-hat-idx="${i}">\u{1FA99} ${price}</button>`
+                )
+            }
+        `;
+        if (owned) {
+            card.onclick = () => {
+                saveData.selectedHat = i;
+                writeSave(saveData);
+                lobbyScene.remove(lobbyCharacter);
+                lobbyCharacter = createCharacterModel(selectedSkin, true);
+                lobbyScene.add(lobbyCharacter);
+                buildHatShop();
+            };
+        }
+        grid.appendChild(card);
+    });
+    grid.querySelectorAll('.hat-buy-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.hatIdx);
+            const price = HAT_PRICES[idx];
+            if (saveData.coins >= price) {
+                saveData.coins -= price;
+                saveData.hats.push(idx);
+                saveData.hats.sort((a,b) => a-b);
+                saveData.selectedHat = idx;
+                writeSave(saveData);
+                updateCoinDisplays();
+                checkAchievements();
+                lobbyScene.remove(lobbyCharacter);
+                lobbyCharacter = createCharacterModel(selectedSkin, true);
+                lobbyScene.add(lobbyCharacter);
+                buildHatShop();
+            }
+        };
+    });
+}
+
+function buildAccessoryShop() {
+    const grid = document.getElementById('shop-accessories-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const accIcons = ['\u274C','\u{1F9E3}','\u{1F308}','\u{1F392}','\u{1F97D}','\u{1F9E3}','\u{2744}\uFE0F','\u{1F6E1}\uFE0F'];
+    ACCESSORY_NAMES.forEach((name, i) => {
+        const owned = saveData.accessories.includes(i);
+        const selected = i === saveData.selectedAccessory;
+        const price = ACCESSORY_PRICES[i];
+        const rarity = ACCESSORY_RARITY[i];
+        const canBuy = !owned && saveData.coins >= price;
+        const card = document.createElement('div');
+        card.className = 'shop-card' + (owned ? ' owned' : '') + (selected ? ' selected' : '');
+        card.innerHTML = `
+            <div class="shop-card-preview" style="background:rgba(255,255,255,0.1);border-color:${RARITY_COLORS[rarity]};display:flex;align-items:center;justify-content:center;font-size:1.8rem;">${accIcons[i]}</div>
+            <div class="shop-card-name">${name}</div>
+            <div class="shop-card-rarity" style="color:${RARITY_COLORS[rarity]}">${rarity}</div>
+            ${owned
+                ? (selected ? '<div class="shop-card-owned">\u00C9quip\u00E9</div>' : '<div class="shop-card-owned">Poss\u00E9d\u00E9</div>')
+                : (price === 0
+                    ? '<div class="shop-card-owned">Gratuit</div>'
+                    : `<button class="shop-buy-btn acc-buy-btn" ${canBuy?'':'disabled'} data-acc-idx="${i}">\u{1FA99} ${price}</button>`
+                )
+            }
+        `;
+        if (owned) {
+            card.onclick = () => {
+                saveData.selectedAccessory = i;
+                writeSave(saveData);
+                lobbyScene.remove(lobbyCharacter);
+                lobbyCharacter = createCharacterModel(selectedSkin, true);
+                lobbyScene.add(lobbyCharacter);
+                buildAccessoryShop();
+            };
+        }
+        grid.appendChild(card);
+    });
+    grid.querySelectorAll('.acc-buy-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.accIdx);
+            const price = ACCESSORY_PRICES[idx];
+            if (saveData.coins >= price) {
+                saveData.coins -= price;
+                saveData.accessories.push(idx);
+                saveData.accessories.sort((a,b) => a-b);
+                saveData.selectedAccessory = idx;
+                writeSave(saveData);
+                updateCoinDisplays();
+                lobbyScene.remove(lobbyCharacter);
+                lobbyCharacter = createCharacterModel(selectedSkin, true);
+                lobbyScene.add(lobbyCharacter);
+                buildAccessoryShop();
+            }
+        };
+    });
+}
+
 function openShop() {
-    document.getElementById('lobby-main').classList.add('hidden');
-    document.getElementById('shop-screen').classList.remove('hidden');
-    buildShopGrid();
+    switchLobbyTab('shop');
 }
 
 function closeShop() {
-    document.getElementById('shop-screen').classList.add('hidden');
-    document.getElementById('lobby-main').classList.remove('hidden');
-    buildSkinSelector();
+    switchLobbyTab('combat');
+}
+
+// ================================================================
+//  LOBBY TAB NAVIGATION (Brawl Stars style)
+// ================================================================
+function switchLobbyTab(tab) {
+    // Hide all tabs
+    document.querySelectorAll('.lobby-tab-content').forEach(t => t.classList.add('hidden'));
+    // Deactivate all nav items
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    // Show selected tab
+    const tabEl = document.getElementById('tab-' + tab);
+    if (tabEl) tabEl.classList.remove('hidden');
+    // Activate nav item
+    const navEl = document.getElementById('nav-' + tab);
+    if (navEl) navEl.classList.add('active');
+    // Tab-specific setup
+    if (tab === 'shop') {
+        buildShopGrid();
+        buildShopDeals();
+        buildHatShop();
+        buildAccessoryShop();
+    } else if (tab === 'combat') {
+        buildSkinSelector();
+        updateCoinDisplays();
+    } else if (tab === 'quests') {
+        initQuests();
+        buildQuestList();
+    } else if (tab === 'achievements') {
+        buildAchievementList();
+        const counter = document.getElementById('ach-counter');
+        if (counter) counter.textContent = (saveData.achievements || []).length + ' / ' + ACHIEVEMENTS.length + ' debloques';
+    } else if (tab === 'pass') {
+        buildBattlePass();
+    } else if (tab === 'profile') {
+        updateProfileTab();
+    }
+}
+
+// ================================================================
+//  QUEST SYSTEM
+// ================================================================
+const QUEST_TEMPLATES = [
+    { id: 'kill_10', desc: 'Tue 10 ennemis en une partie', type: 'kill', target: 10, reward: 20 },
+    { id: 'win_no_death', desc: 'Gagne une partie sans mourir', type: 'win_no_death', target: 1, reward: 50 },
+    { id: 'wave_5', desc: 'Termine la vague 5', type: 'wave', target: 5, reward: 15 },
+    { id: 'powerup_3', desc: 'Collecte 3 power-ups', type: 'powerup', target: 3, reward: 10 },
+    { id: 'boss_kill', desc: 'Tue un boss', type: 'boss_kill', target: 1, reward: 30 },
+    { id: 'kill_20_total', desc: 'Fais 20 eliminations totales', type: 'kill_total', target: 20, reward: 25 },
+    { id: 'win_2', desc: 'Gagne 2 parties', type: 'win', target: 2, reward: 40 },
+    { id: 'fast_kill_5', desc: 'Tue 5 ennemis rapides', type: 'fast_kill', target: 5, reward: 15 }
+];
+let sessionDeathCount = 0;
+let sessionKillCount = 0;
+let sessionPowerupCount = 0;
+
+function initQuests() {
+    if (!saveData.quests || saveData.quests.length === 0 || saveData.quests.every(q => q.claimed)) {
+        // Pick 3 random unique quests
+        const shuffled = QUEST_TEMPLATES.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+        saveData.quests = shuffled.map(t => ({
+            id: t.id, progress: 0, target: t.target, completed: false, claimed: false
+        }));
+        writeSave(saveData);
+    }
+}
+
+function updateQuestProgress(type, amount) {
+    if (!saveData.quests || saveData.quests.length === 0) return;
+    let changed = false;
+    saveData.quests.forEach(q => {
+        if (q.completed || q.claimed) return;
+        const tmpl = QUEST_TEMPLATES.find(t => t.id === q.id);
+        if (!tmpl) return;
+        let match = false;
+        if (tmpl.type === 'kill' && type === 'kill') match = true;
+        else if (tmpl.type === 'kill_total' && type === 'kill') match = true;
+        else if (tmpl.type === 'wave' && type === 'wave') { q.progress = Math.max(q.progress, amount); if (q.progress >= q.target) q.completed = true; changed = true; return; }
+        else if (tmpl.type === 'win' && type === 'win') match = true;
+        else if (tmpl.type === 'win_no_death' && type === 'win_no_death') { q.progress = amount; if (q.progress >= q.target) q.completed = true; changed = true; return; }
+        else if (tmpl.type === 'boss_kill' && type === 'boss_kill') match = true;
+        else if (tmpl.type === 'powerup' && type === 'powerup') match = true;
+        else if (tmpl.type === 'fast_kill' && type === 'fast_kill') match = true;
+        if (match) {
+            q.progress += amount;
+            if (q.progress >= q.target) q.completed = true;
+            changed = true;
+        }
+    });
+    if (changed) writeSave(saveData);
+}
+
+function buildQuestList() {
+    const container = document.getElementById('quest-list');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!saveData.quests || saveData.quests.length === 0) {
+        container.innerHTML = '<div style="color:#8ab;text-align:center;padding:20px;">Aucune quete active</div>';
+        return;
+    }
+    saveData.quests.forEach((q, idx) => {
+        const tmpl = QUEST_TEMPLATES.find(t => t.id === q.id);
+        if (!tmpl) return;
+        const pct = Math.min(100, Math.round((q.progress / q.target) * 100));
+        const card = document.createElement('div');
+        card.className = 'quest-card' + (q.completed ? ' completed' : '');
+        card.innerHTML = `
+            <div style="flex:1;">
+                <div style="font-weight:900;font-size:0.9rem;color:${q.completed?'#4ecca3':'#fff'};">${tmpl.desc}</div>
+                <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${pct}%"></div></div>
+                <div style="font-size:0.7rem;color:#8ab;margin-top:3px;">${q.progress}/${q.target} — ${tmpl.reward} pieces</div>
+            </div>
+            <button class="quest-claim-btn" ${q.claimed?'disabled':''}  onclick="claimQuestReward(${idx})" ${!q.completed?'disabled':''}>${q.claimed?'Reclame':'Reclamer'}</button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function claimQuestReward(idx) {
+    const q = saveData.quests[idx];
+    if (!q || !q.completed || q.claimed) return;
+    const tmpl = QUEST_TEMPLATES.find(t => t.id === q.id);
+    if (!tmpl) return;
+    q.claimed = true;
+    earnCoins(tmpl.reward);
+    writeSave(saveData);
     updateCoinDisplays();
+    buildQuestList();
+}
+
+// Init quests on load
+initQuests();
+
+// ================================================================
+//  CONFETTI / VICTORY CELEBRATION
+// ================================================================
+function spawnConfetti() {
+    const colors = ['#ff4444','#44ff44','#4444ff','#ffff44','#ff44ff','#44ffff','#ffd700','#ff6600'];
+    for (let i = 0; i < 60; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti';
+        el.style.left = Math.random() * 100 + '%';
+        el.style.top = '-10px';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.width = (6 + Math.random() * 8) + 'px';
+        el.style.height = (4 + Math.random() * 6) + 'px';
+        el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        el.style.animationDelay = (Math.random() * 2) + 's';
+        el.style.animationDuration = (2 + Math.random() * 2) + 's';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5000);
+    }
+}
+
+function buildShopDeals() {
+    const dealsEl = document.getElementById('shop-deals');
+    if (!dealsEl) return;
+    dealsEl.innerHTML = '';
+    // Pick 3 random unowned skins as daily deals, or any if all owned
+    const indices = [];
+    for (let i = 0; i < SKIN_NAMES.length; i++) indices.push(i);
+    const shuffled = indices.sort(() => Math.random() - 0.5).slice(0, 3);
+    shuffled.forEach(i => {
+        const owned = saveData.owned.includes(i);
+        const discountPrice = Math.floor(SKIN_PRICES[i] * 0.7);
+        const card = document.createElement('div');
+        card.className = 'shop-deal-card';
+        card.innerHTML = `
+            <div class="shop-deal-badge">-30%</div>
+            <div class="shop-card-preview" style="margin:0 auto 8px;">
+                <div class="skin-color" style="width:100%;height:100%;border-radius:50%;background:${PLAYER_COLORS[i]};"></div>
+            </div>
+            <div class="shop-card-name" style="font-size:0.85rem;font-weight:900;">${SKIN_NAMES[i]}</div>
+            ${owned ?
+                '<div class="shop-card-owned">Possede</div>' :
+                `<div style="margin-top:5px;"><span style="text-decoration:line-through;color:#556;font-size:0.7rem;">${SKIN_PRICES[i]}</span> <span style="color:#ffd700;font-weight:900;">${discountPrice} &#129689;</span></div>`
+            }
+        `;
+        if (!owned && SKIN_PRICES[i] > 0) {
+            card.onclick = () => {
+                if (saveData.coins >= discountPrice) {
+                    saveData.coins -= discountPrice;
+                    saveData.owned.push(i);
+                    saveData.owned.sort((a,b) => a-b);
+                    writeSave(saveData);
+                    updateCoinDisplays();
+                    checkAchievements();
+                    buildShopDeals();
+                    buildShopGrid();
+                }
+            };
+        }
+        dealsEl.appendChild(card);
+    });
+}
+
+function updateProfileTab() {
+    const stats = saveData.stats || {games:0, kills:0, wins:0};
+    const el = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+    el('profile-games', stats.games || 0);
+    el('profile-kills', stats.kills || 0);
+    el('profile-wins', stats.wins || 0);
+    el('profile-coins-total', saveData.coins || 0);
+    el('stat-games', stats.games || 0);
+    el('stat-kills', stats.kills || 0);
+    el('stat-wins', stats.wins || 0);
+    // Level from saveData
+    const level = saveData.level || 1;
+    const xpNeeded = level * 100;
+    const xpPct = Math.min(100, Math.floor(((saveData.xp || 0) / xpNeeded) * 100));
+    el('player-level', level);
+    el('profile-level', level);
+    const xpFill = document.getElementById('profile-xp-fill');
+    if (xpFill) xpFill.style.width = xpPct + '%';
+    const lobbyXpFill = document.getElementById('lobby-xp-fill');
+    if (lobbyXpFill) lobbyXpFill.style.width = xpPct + '%';
+    // Owned skins grid
+    const grid = document.getElementById('profile-skins-grid');
+    if (grid) {
+        grid.innerHTML = '';
+        saveData.owned.forEach(i => {
+            const d = document.createElement('div');
+            d.className = 'profile-skin-mini' + (selectedSkin === i ? ' equipped' : '');
+            d.style.background = PLAYER_COLORS[i];
+            d.title = SKIN_NAMES[i];
+            grid.appendChild(d);
+        });
+    }
+}
+
+function copyFriendLink() {
+    const link = document.getElementById('friends-link');
+    if (link) {
+        navigator.clipboard.writeText(link.textContent).then(() => {
+            link.style.borderColor = '#4ecca3';
+            link.style.color = '#4ecca3';
+            setTimeout(() => {
+                link.style.borderColor = 'rgba(74,158,255,0.3)';
+                link.style.color = '#4a9eff';
+            }, 1500);
+        });
+    }
 }
 
 // ================================================================
@@ -1154,18 +2343,26 @@ function selectMode(mode) {
     document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
     document.getElementById('mode-' + mode + '-card').classList.add('active');
     const btn = document.getElementById('btn-play');
-    if (mode === 'solo') {
-        btn.className = 'play-btn play-btn-solo';
-        btn.innerHTML = '&#9654; JOUER';
-    } else {
-        btn.className = 'play-btn play-btn-multi';
-        btn.innerHTML = '&#129309; MULTIJOUEUR';
-    }
+    const modeLabels = {
+        solo: { cls: 'play-btn-big', icon: '&#9654;', text: 'JOUER' },
+        multi: { cls: 'play-btn-big multi-mode', icon: '&#129309;', text: 'EQUIPE' },
+        ffa: { cls: 'play-btn-big ffa-mode', icon: '&#128165;', text: 'COMBAT' },
+        ctf: { cls: 'play-btn-big ctf-mode', icon: '&#127987;&#65039;', text: 'DRAPEAU' }
+    };
+    const ml = modeLabels[mode] || modeLabels.solo;
+    btn.className = ml.cls;
+    btn.innerHTML = `<span class="play-btn-icon">${ml.icon}</span><span class="play-btn-text">${ml.text}</span>`;
 }
 
 function onPlayClick() {
     if (selectedMode === 'solo') {
         launchGame('solo');
+    } else if (selectedMode === 'ffa') {
+        // FFA: solo with AI "players" instead of snowmen
+        launchGame('ffa');
+    } else if (selectedMode === 'ctf') {
+        // CTF: solo with flag objectives and AI teams
+        launchGame('ctf');
     } else {
         showModal('multi-choice-screen');
     }
@@ -1195,6 +2392,9 @@ function onPlayClick() {
 function goToLobby() {
     document.getElementById('title-screen').classList.add('hidden');
     document.getElementById('lobby-main').classList.remove('hidden');
+    switchLobbyTab('combat');
+    updateProfileTab();
+    updateLevelDisplays();
     if (!lobbyAnimFrame) animateLobby();
 }
 
@@ -1251,7 +2451,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 1.3;
+renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 renderer.domElement.id = 'game';
 renderer.domElement.style.display = 'none';
@@ -1263,8 +2464,8 @@ addEventListener('resize', () => {
 });
 
 // ---- Lighting (warm cartoon style) ----
-scene.add(new THREE.AmbientLight(0x99bbdd, 0.55));
-const dirLight = new THREE.DirectionalLight(0xffeedd, 1.1);
+scene.add(new THREE.AmbientLight(0xaaccee, 0.7));
+const dirLight = new THREE.DirectionalLight(0xfff0cc, 1.4);
 dirLight.position.set(60, 100, 40); dirLight.castShadow = true;
 dirLight.shadow.mapSize.set(4096, 4096);
 dirLight.shadow.camera.near = 0.5; dirLight.shadow.camera.far = 300;
@@ -1272,11 +2473,14 @@ dirLight.shadow.camera.left = dirLight.shadow.camera.bottom = -100;
 dirLight.shadow.camera.right = dirLight.shadow.camera.top = 100;
 dirLight.shadow.bias = -0.001;
 scene.add(dirLight);
-const fillLight = new THREE.DirectionalLight(0x6688cc, 0.45);
+const fillLight = new THREE.DirectionalLight(0x8899cc, 0.6);
 fillLight.position.set(-40, 30, -50);
 scene.add(fillLight);
-const hemiLight = new THREE.HemisphereLight(0xaaddff, 0xddeeff, 0.45);
+const hemiLight = new THREE.HemisphereLight(0xccddff, 0x88aa66, 0.5);
 scene.add(hemiLight);
+const rimLight = new THREE.DirectionalLight(0xffddaa, 0.3);
+rimLight.position.set(-30, 60, -80);
+scene.add(rimLight);
 
 // ================================================================
 //  MAP DEFINITIONS
@@ -1323,6 +2527,30 @@ const MAPS = [
         waterColor: 0x0a1530, groundColors: [0x8090a8, 0x7080a0, 0x9aa8b8],
         pathColor: 0x556678, trees: 30, rocks: 15, forts: 12, houses: 8, snowmen: 5, bridges: 3, snowDensity: 4000,
         isNight: true
+    },
+    {
+        id: 'ville_enneigee', name: 'Ville Enneigée', icon: '🏙️',
+        bg: 'linear-gradient(135deg, #2a3a5a, #1a2040)',
+        sky: [['#1a2040',0],['#2a3a5a',0.3],['#4a6a9a',0.5],['#7a9abb',0.7],['#aabbcc',1]],
+        fogColor: 0x8899aa, fogDensity: 0.006,
+        waterColor: 0x1a5588, groundColors: [0xaabbcc, 0x99aabb, 0xbbccdd],
+        pathColor: 0x888888, trees: 20, rocks: 20, forts: 8, houses: 15, snowmen: 5, bridges: 3, snowDensity: 4000
+    },
+    {
+        id: 'grotte_glace', name: 'Grotte de Glace', icon: '🧊',
+        bg: 'linear-gradient(135deg, #0a2040, #051530)',
+        sky: [['#051530',0],['#0a2040',0.3],['#1a3060',0.5],['#2a4070',0.7],['#3a5080',1]],
+        fogColor: 0x2a4060, fogDensity: 0.008,
+        waterColor: 0x0a3355, groundColors: [0x88bbdd, 0x77aacc, 0x99ccee],
+        pathColor: 0x6699bb, trees: 10, rocks: 30, forts: 5, houses: 3, snowmen: 10, bridges: 1, snowDensity: 3000
+    },
+    {
+        id: 'sommet_montagne', name: 'Sommet de Montagne', icon: '⛰️',
+        bg: 'linear-gradient(135deg, #3a4a6a, #2a3a5a)',
+        sky: [['#1a2a4a',0],['#3a5a8a',0.2],['#6a8abb',0.4],['#aaccee',0.6],['#ddeeff',0.8],['#eef4ff',1]],
+        fogColor: 0xbbccdd, fogDensity: 0.004,
+        waterColor: 0x3388bb, groundColors: [0xddddee, 0xccccdd, 0xeeeeff],
+        pathColor: 0x998877, trees: 15, rocks: 25, forts: 6, houses: 4, snowmen: 12, bridges: 2, snowDensity: 6000
     }
 ];
 let currentMapIdx = 0;
@@ -1370,30 +2598,44 @@ function isOnPath(x, z) {
 
 function addObj(obj) { scene.add(obj); mapObjects.push(obj); }
 
+// Get terrain height at world position (x, z) - mirrors buildMap height calc
+function getTerrainHeight(x, z) {
+    if (!islandMask(x, z, MAP_SIZE)) return -2.5 + 0.1; // ocean floor + ground offset
+    let h = Math.sin(x*0.04)*Math.cos(z*0.04)*2.5
+           + Math.sin(x*0.02)*Math.cos(z*0.03)*3.5
+           + Math.sin(x*0.08+z*0.06)*0.8
+           + Math.cos(x*0.12)*Math.sin(z*0.1)*0.4;
+    if (isOnPath(x, z)) h = Math.max(0.3, h * 0.3);
+    else h = Math.max(0.5, h);
+    const d = Math.sqrt(x*x+z*z) / MAP_SIZE;
+    if (d > 0.65) h *= Math.max(0, (0.85-d)/0.2);
+    return h + 0.1; // +0.1 for ground mesh position.y offset
+}
+
 // Create a cartoon house
 function createHouse(x, z, color) {
     const g = new THREE.Group();
     // Base
     const w = 3 + Math.random()*2, h = 3 + Math.random()*1.5, d = 3 + Math.random()*2;
-    const wallMat = new THREE.MeshPhongMaterial({color: color, shininess: 20});
+    const wallMat = new THREE.MeshToonMaterial({color: color, gradientMap: toonGradient});
     const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
     base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
     // Roof
     const roofH = 2 + Math.random();
     const roof = new THREE.Mesh(
         new THREE.ConeGeometry(Math.max(w,d)*0.8, roofH, 4),
-        new THREE.MeshPhongMaterial({color: 0xcc4444, shininess: 15})
+        new THREE.MeshToonMaterial({color: 0xcc4444, gradientMap: toonGradient})
     );
     roof.position.y = h + roofH/2; roof.rotation.y = Math.PI/4; roof.castShadow = true; g.add(roof);
     // Snow on roof
     const roofSnow = new THREE.Mesh(
         new THREE.ConeGeometry(Math.max(w,d)*0.85, roofH*0.4, 4),
-        new THREE.MeshPhongMaterial({color: 0xffffff, shininess: 60})
+        new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient})
     );
     roofSnow.position.y = h + roofH*0.6; roofSnow.rotation.y = Math.PI/4; g.add(roofSnow);
     // Door
     const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.1),
-        new THREE.MeshPhongMaterial({color: 0x5c3a1e}));
+        new THREE.MeshToonMaterial({color: 0x5c3a1e, gradientMap: toonGradient}));
     door.position.set(0, 0.8, d/2+0.05); g.add(door);
     // Windows
     const winMat = new THREE.MeshPhongMaterial({color: 0xffee88, emissive: 0xffdd44, emissiveIntensity: 0.3, shininess: 100});
@@ -1403,7 +2645,7 @@ function createHouse(x, z, color) {
     });
     // Chimney
     const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2, 0.6),
-        new THREE.MeshPhongMaterial({color: 0x884422}));
+        new THREE.MeshToonMaterial({color: 0x884422, gradientMap: toonGradient}));
     chimney.position.set(w*0.25, h+roofH*0.5, 0); g.add(chimney);
 
     g.position.set(x, 0, z);
@@ -1414,7 +2656,7 @@ function createHouse(x, z, color) {
 // Create a wooden bridge
 function createBridge(x, z, rot) {
     const g = new THREE.Group();
-    const bridgeMat = new THREE.MeshPhongMaterial({color: 0x7a5a3a, shininess: 10});
+    const bridgeMat = new THREE.MeshToonMaterial({color: 0x7a5a3a, gradientMap: toonGradient});
     // Planks
     const bLen = 8, bW = 3;
     const base = new THREE.Mesh(new THREE.BoxGeometry(bW, 0.3, bLen), bridgeMat);
@@ -1508,14 +2750,14 @@ function buildMap(mapIdx) {
                 gColors.push(pathCol.r*b, pathCol.g*b, pathCol.b*b);
             } else if (h > 4) {
                 // Snow caps on hills
-                gColors.push(0.93+Math.random()*0.05, 0.94+Math.random()*0.04, 0.96+Math.random()*0.03);
+                gColors.push(0.97+Math.random()*0.03, 0.98+Math.random()*0.02, 1.0);
             } else if (h > 2.8) {
                 // Rocky zones
-                const rb = 0.35+Math.random()*0.1;
-                gColors.push(rb+0.05, rb+0.08, rb+0.12);
+                const rb = 0.42+Math.random()*0.1;
+                gColors.push(rb, rb+0.03, rb+0.13);
             } else {
                 const gc = gCols[Math.floor(Math.random()*gCols.length)];
-                const b = 0.85 + Math.random()*0.15;
+                const b = 0.935 + Math.random()*0.165;
                 gColors.push(gc.r*b, gc.g*b, gc.b*b);
             }
         } else {
@@ -1535,7 +2777,7 @@ function buildMap(mapIdx) {
         const dist = MAP_SIZE*0.8 + Math.sin(angle*3)*8 + Math.random()*5;
         const sandPile = new THREE.Mesh(
             new THREE.SphereGeometry(3+Math.random()*3, 8, 4, 0, Math.PI*2, 0, Math.PI/2),
-            new THREE.MeshPhongMaterial({color: 0xddc8a0, shininess: 10})
+            new THREE.MeshToonMaterial({color: 0xddc8a0, gradientMap: toonGradient})
         );
         sandPile.position.set(Math.cos(angle)*dist, -0.3, Math.sin(angle)*dist);
         sandPile.scale.set(1+Math.random()*0.5, 0.3, 1+Math.random()*0.5);
@@ -1553,49 +2795,49 @@ function buildMap(mapIdx) {
 
         if (treeType < 0.6) {
             // Pine tree (classic)
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.5,3*hv,8), new THREE.MeshPhongMaterial({color:0x5a3618,shininess:8}));
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.5,3*hv,8), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
             trunk.position.y = 1.5*hv; trunk.castShadow = true; g.add(trunk);
             // Roots
             for (let r = 0; r < 3; r++) {
                 const ra = (r/3)*Math.PI*2+Math.random()*0.5;
-                const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,1.2,5), new THREE.MeshPhongMaterial({color:0x4a2a10}));
+                const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,1.2,5), new THREE.MeshToonMaterial({color:0x4a2a10, gradientMap: toonGradient}));
                 root.position.set(Math.cos(ra)*0.4,0.3,Math.sin(ra)*0.4); root.rotation.z = Math.cos(ra)*0.6; root.rotation.x = Math.sin(ra)*0.6; g.add(root);
             }
             const cols = [0x1a5a1e,0x247028,0x2e8a32];
             for (let j = 0; j < 3; j++) {
                 const cR = (3-j*0.8)*hv, cH = (3.8-j*0.5)*hv;
-                const f = new THREE.Mesh(new THREE.ConeGeometry(cR,cH,7), new THREE.MeshPhongMaterial({color:cols[j],shininess:12,flatShading:true}));
+                const f = new THREE.Mesh(new THREE.ConeGeometry(cR,cH,7), new THREE.MeshToonMaterial({color:cols[j], gradientMap: toonGradient}));
                 f.position.y = (3.5+j*2.2)*hv; f.castShadow = true; g.add(f);
-                const sn = new THREE.Mesh(new THREE.ConeGeometry(cR*0.85,0.7,7), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:60}));
+                const sn = new THREE.Mesh(new THREE.ConeGeometry(cR*0.85,0.7,7), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
                 sn.position.y = (4.8+j*2.2)*hv; g.add(sn);
             }
         } else if (treeType < 0.85) {
             // Round bush/small tree
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.3,1.5*hv,6), new THREE.MeshPhongMaterial({color:0x5a3618,shininess:8}));
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.3,1.5*hv,6), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
             trunk.position.y = 0.75*hv; trunk.castShadow = true; g.add(trunk);
-            const bushMat = new THREE.MeshPhongMaterial({color:0x2a6a28,shininess:15,flatShading:true});
+            const bushMat = new THREE.MeshToonMaterial({color:0x2a6a28, gradientMap: toonGradient});
             const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(2*hv,1), bushMat);
             bush.position.y = 2.5*hv; bush.castShadow = true; g.add(bush);
-            const sn = new THREE.Mesh(new THREE.SphereGeometry(1.8*hv,8,6,0,Math.PI*2,0,Math.PI/2.5), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:50}));
+            const sn = new THREE.Mesh(new THREE.SphereGeometry(1.8*hv,8,6,0,Math.PI*2,0,Math.PI/2.5), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
             sn.position.y = 3*hv; g.add(sn);
         } else {
             // Dead/bare tree
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.45,4*hv,6), new THREE.MeshPhongMaterial({color:0x4a3020,shininess:5,flatShading:true}));
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.45,4*hv,6), new THREE.MeshToonMaterial({color:0x4a3020, gradientMap: toonGradient}));
             trunk.position.y = 2*hv; trunk.castShadow = true; g.add(trunk);
             // Branches
             for (let b = 0; b < 4; b++) {
                 const ba = (b/4)*Math.PI*2+Math.random()*0.8;
                 const bl = 1+Math.random()*1.5;
-                const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.1,bl*hv,5), new THREE.MeshPhongMaterial({color:0x3a2515}));
+                const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.1,bl*hv,5), new THREE.MeshToonMaterial({color:0x3a2515, gradientMap: toonGradient}));
                 branch.position.set(Math.cos(ba)*0.3,(2.5+b*0.5)*hv,Math.sin(ba)*0.3);
                 branch.rotation.z = Math.cos(ba)*0.8; branch.rotation.x = Math.sin(ba)*0.8; g.add(branch);
             }
             // Snow on branches
-            const sn = new THREE.Mesh(new THREE.SphereGeometry(0.8*hv,6,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8}));
+            const sn = new THREE.Mesh(new THREE.SphereGeometry(0.8*hv,6,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
             sn.position.y = 3.8*hv; g.add(sn);
         }
         // Snow pile at base
-        const snowBase = new THREE.Mesh(new THREE.SphereGeometry(1.2*hv,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:40}));
+        const snowBase = new THREE.Mesh(new THREE.SphereGeometry(1.2*hv,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
         snowBase.scale.y = 0.25; g.add(snowBase);
         g.position.set(x,0,z); g.rotation.y = Math.random()*Math.PI*2;
         addObj(g); trees.push({x,z,r:1.5});
@@ -1618,7 +2860,7 @@ function buildMap(mapIdx) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.1, z = (Math.random()-0.5)*MAP_SIZE*1.1;
         if (!islandMask(x, z, MAP_SIZE) || (Math.abs(x)<8 && Math.abs(z)<8)) continue;
         const fg = new THREE.Group();
-        const mat = new THREE.MeshPhongMaterial({color:0xd8e8f4,shininess:50,specular:0x445566});
+        const mat = new THREE.MeshToonMaterial({color:0xd8e8f4, gradientMap: toonGradient});
         const mn = new THREE.Mesh(new THREE.SphereGeometry(2.5,12,8,0,Math.PI*2,0,Math.PI/2), mat);
         mn.scale.set(1.6,0.9,1.1); mn.castShadow = mn.receiveShadow = true; fg.add(mn);
         [-1,1].forEach(s => {
@@ -1634,25 +2876,25 @@ function buildMap(mapIdx) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.3, z = (Math.random()-0.5)*MAP_SIZE*1.3;
         const rg = new THREE.Group();
         const sz = 0.8+Math.random()*2;
-        const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(sz,1), new THREE.MeshPhongMaterial({color:0x5a6a7a,shininess:15,flatShading:true}));
+        const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(sz,1), new THREE.MeshToonMaterial({color:0x5a6a7a, gradientMap: toonGradient}));
         rk.position.y = sz*0.4; rk.rotation.set(Math.random(),Math.random(),Math.random()); rk.castShadow = true; rg.add(rk);
-        rg.add(new THREE.Mesh(new THREE.SphereGeometry(sz*0.7,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8,shininess:50})));
+        rg.add(new THREE.Mesh(new THREE.SphereGeometry(sz*0.7,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient})));
         rg.children[1].position.y = sz*0.8;
         rg.position.set(x,0,z); addObj(rg);
     }
 
     // ---- Snowmen ----
-    const dMat = new THREE.MeshPhongMaterial({color:0xffffff,shininess:70,specular:0x556688});
+    const dMat = new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient});
     for (let i = 0; i < m.snowmen; i++) {
         const g = new THREE.Group();
         const sc = 0.7+Math.random()*0.4;
         g.add(new THREE.Mesh(new THREE.SphereGeometry(1.2*sc,12,12), dMat)); g.children[0].position.y = 1.2*sc;
         g.add(new THREE.Mesh(new THREE.SphereGeometry(0.9*sc,12,12), dMat)); g.children[1].position.y = 2.6*sc;
         g.add(new THREE.Mesh(new THREE.SphereGeometry(0.6*sc,12,12), dMat)); g.children[2].position.y = 3.7*sc;
-        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1*sc,0.5*sc,8), new THREE.MeshPhongMaterial({color:0xff6600}));
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1*sc,0.5*sc,8), new THREE.MeshToonMaterial({color:0xff6600, gradientMap: toonGradient}));
         nose.position.set(0,3.7*sc,0.6*sc); nose.rotation.x = Math.PI/2; g.add(nose);
         const hC = [0xcc2244,0x2244cc,0x22aa44,0xcc8800][i%4];
-        g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.6*sc,0.6*sc,0.06,12), new THREE.MeshPhongMaterial({color:hC})));
+        g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.6*sc,0.6*sc,0.06,12), new THREE.MeshToonMaterial({color:hC, gradientMap: toonGradient})));
         g.children[4].position.y = 4.15*sc;
         const x = (Math.random()-0.5)*MAP_SIZE*0.8, z = (Math.random()-0.5)*MAP_SIZE*0.8;
         g.position.set(x,0,z); g.rotation.y = Math.random()*Math.PI*2;
@@ -1672,11 +2914,11 @@ function buildMap(mapIdx) {
         const vg = new THREE.Group();
         // Outer cone
         const volcano = new THREE.Mesh(new THREE.ConeGeometry(18, 25, 12),
-            new THREE.MeshPhongMaterial({color: 0x554433, shininess: 10, flatShading: true}));
+            new THREE.MeshToonMaterial({color: 0x554433, gradientMap: toonGradient}));
         volcano.position.y = 12.5; vg.add(volcano);
         // Snow cap
         const vSnow = new THREE.Mesh(new THREE.ConeGeometry(8, 8, 12),
-            new THREE.MeshPhongMaterial({color: 0xffffff, shininess: 50}));
+            new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient}));
         vSnow.position.y = 22; vg.add(vSnow);
         // Lava crater
         const crater = new THREE.Mesh(new THREE.CylinderGeometry(5, 3, 3, 12),
@@ -1708,7 +2950,7 @@ function buildMap(mapIdx) {
         if (!islandMask(lx, lz, MAP_SIZE)) continue;
         const lg = new THREE.Group();
         const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,3,6),
-            new THREE.MeshPhongMaterial({color:0x444444}));
+            new THREE.MeshToonMaterial({color:0x444444, gradientMap: toonGradient}));
         pole.position.y = 1.5; lg.add(pole);
         const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8),
             new THREE.MeshPhongMaterial({color:0xffdd66, emissive:0xffaa22, emissiveIntensity:0.8}));
@@ -1735,17 +2977,17 @@ function buildMap(mapIdx) {
             const mW = 20+Math.random()*18;
             const mg = new THREE.Group();
             // Main peak
-            const mt = new THREE.Mesh(new THREE.ConeGeometry(mW,mH,7), new THREE.MeshPhongMaterial({color:colorDark,flatShading:true}));
+            const mt = new THREE.Mesh(new THREE.ConeGeometry(mW,mH,7), new THREE.MeshToonMaterial({color:colorDark, gradientMap: toonGradient}));
             mt.position.y = mH/2-5; mg.add(mt);
             // Snow cap
-            const pk = new THREE.Mesh(new THREE.ConeGeometry(mW*0.4,mH*0.35,7), new THREE.MeshPhongMaterial({color:0xeef2f8,shininess:50}));
+            const pk = new THREE.Mesh(new THREE.ConeGeometry(mW*0.4,mH*0.35,7), new THREE.MeshToonMaterial({color:0xeef2f8, gradientMap: toonGradient}));
             pk.position.y = mH*0.65; mg.add(pk);
             // Sub-peak
             if (Math.random() > 0.4) {
                 const sH = mH*0.6, sW = mW*0.5;
-                const sub = new THREE.Mesh(new THREE.ConeGeometry(sW,sH,6), new THREE.MeshPhongMaterial({color:colorDark,flatShading:true}));
+                const sub = new THREE.Mesh(new THREE.ConeGeometry(sW,sH,6), new THREE.MeshToonMaterial({color:colorDark, gradientMap: toonGradient}));
                 sub.position.set(mW*0.5,sH/2-5,mW*0.3); mg.add(sub);
-                const sp = new THREE.Mesh(new THREE.ConeGeometry(sW*0.35,sH*0.3,6), new THREE.MeshPhongMaterial({color:0xeef2f8}));
+                const sp = new THREE.Mesh(new THREE.ConeGeometry(sW*0.35,sH*0.3,6), new THREE.MeshToonMaterial({color:0xeef2f8, gradientMap: toonGradient}));
                 sp.position.set(mW*0.5,sH*0.6,mW*0.3); mg.add(sp);
             }
             mg.position.set(Math.cos(angle)*dist,0,Math.sin(angle)*dist);
@@ -1754,7 +2996,7 @@ function buildMap(mapIdx) {
     }
 
     // ---- Falling snow ----
-    snowCount = m.snowDensity;
+    snowCount = m.snowDensity * 2;
     const sPosArr = new Float32Array(snowCount*3);
     for (let i = 0; i < snowCount; i++) {
         sPosArr[i*3]=(Math.random()-0.5)*250;
@@ -1764,8 +3006,8 @@ function buildMap(mapIdx) {
     const sGeo = new THREE.BufferGeometry();
     sGeo.setAttribute('position', new THREE.BufferAttribute(sPosArr, 3));
     snowParticles = new THREE.Points(sGeo, new THREE.PointsMaterial({
-        color:0xffffff, size:0.35, transparent:true, opacity:0.85,
-        depthWrite:false, blending:THREE.AdditiveBlending
+        color:0xffffff, size:0.4, transparent:true, opacity:0.8,
+        depthWrite:false, blending:THREE.AdditiveBlending, sizeAttenuation:true
     }));
     scene.add(snowParticles);
 
@@ -1773,7 +3015,7 @@ function buildMap(mapIdx) {
     if (m.isNight) {
         dirLight.intensity = 0.3; fillLight.intensity = 0.15; hemiLight.intensity = 0.2;
     } else {
-        dirLight.intensity = 1.1; fillLight.intensity = 0.45; hemiLight.intensity = 0.45;
+        dirLight.intensity = 1.4; fillLight.intensity = 0.6; hemiLight.intensity = 0.5;
     }
 }
 
@@ -1814,6 +3056,15 @@ function buildMiniIsland(mapIdx) {
             if (vd < 1.5) h -= 2; // crater
         } else if (idx === 4) { // Nuit Boréale - ridges
             h += Math.abs(Math.sin(x*0.4+z*0.3))*2 + Math.cos(x*0.2)*1.5;
+        } else if (idx === 5) { // Ville - flat urban terrain
+            h += Math.sin(x*0.5)*0.8 + Math.abs(Math.cos(z*0.4))*0.5;
+            h *= 0.7; // flatter
+        } else if (idx === 6) { // Grotte - jagged cave terrain
+            h += Math.abs(Math.sin(x*0.6)*Math.cos(z*0.7))*3;
+            h += Math.sin(x*1.2)*0.5;
+        } else if (idx === 7) { // Sommet - very tall peaks
+            h += Math.sin(x*0.3)*Math.cos(z*0.25)*4;
+            h += Math.abs(Math.cos(x*0.15+z*0.2))*3;
         }
         // Smooth edge falloff
         if (d > 0.7) h *= Math.max(0, (1-d)/0.3);
@@ -1901,7 +3152,7 @@ function buildMiniIsland(mapIdx) {
             bpa2.setY(i, y/r * (r+wobble));
         }
     }
-    const bottom = new THREE.Mesh(bottomGeo, new THREE.MeshPhongMaterial({color:0x3a2a1a, side:THREE.DoubleSide}));
+    const bottom = new THREE.Mesh(bottomGeo, new THREE.MeshToonMaterial({color:0x3a2a1a, side:THREE.DoubleSide, gradientMap: toonGradient}));
     bottom.rotation.x = Math.PI/2;
     bottom.position.y = -5;
     g.add(bottom);
@@ -1923,12 +3174,12 @@ function buildMiniIsland(mapIdx) {
         if (th < 0.5 || th > 4.5) continue;
         const tg = new THREE.Group();
         const hv = 0.4+Math.random()*0.4;
-        tg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.14,0.8*hv,5), new THREE.MeshPhongMaterial({color:0x6b4226})));
+        tg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.14,0.8*hv,5), new THREE.MeshToonMaterial({color:0x6b4226, gradientMap: toonGradient})));
         tg.children[0].position.y = 0.4*hv;
         for (let j = 0; j < 2; j++) {
-            tg.add(new THREE.Mesh(new THREE.ConeGeometry((0.8-j*0.2)*hv,(1.1-j*0.2)*hv,6), new THREE.MeshPhongMaterial({color:[0x1e6020,0x358a35][j],flatShading:true})));
+            tg.add(new THREE.Mesh(new THREE.ConeGeometry((0.8-j*0.2)*hv,(1.1-j*0.2)*hv,6), new THREE.MeshToonMaterial({color:[0x1e6020,0x358a35][j], gradientMap: toonGradient})));
             tg.children[j+1].position.y = (0.9+j*0.7)*hv;
-            tg.add(new THREE.Mesh(new THREE.ConeGeometry((0.6-j*0.2)*hv,0.2,6), new THREE.MeshPhongMaterial({color:0xffffff})));
+            tg.add(new THREE.Mesh(new THREE.ConeGeometry((0.6-j*0.2)*hv,0.2,6), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient})));
             tg.children[j*2+2].position.y = (1.3+j*0.7)*hv;
         }
         tg.position.set(tx, th, tz);
@@ -1943,11 +3194,11 @@ function buildMiniIsland(mapIdx) {
         if (hh < 0.8 || hh > 3) continue;
         const hg = new THREE.Group();
         const hw = 0.8+Math.random()*0.3, hht = 0.8+Math.random()*0.3;
-        hg.add(new THREE.Mesh(new THREE.BoxGeometry(hw,hht,hw), new THREE.MeshPhongMaterial({color:[0xcc8844,0x8888cc,0xcc6666,0x66aa66][i%4]})));
+        hg.add(new THREE.Mesh(new THREE.BoxGeometry(hw,hht,hw), new THREE.MeshToonMaterial({color:[0xcc8844,0x8888cc,0xcc6666,0x66aa66][i%4], gradientMap: toonGradient})));
         hg.children[0].position.y = hht/2;
-        hg.add(new THREE.Mesh(new THREE.ConeGeometry(hw*0.65,0.5,4), new THREE.MeshPhongMaterial({color:0xcc4444})));
+        hg.add(new THREE.Mesh(new THREE.ConeGeometry(hw*0.65,0.5,4), new THREE.MeshToonMaterial({color:0xcc4444, gradientMap: toonGradient})));
         hg.children[1].position.y = hht+0.25; hg.children[1].rotation.y = Math.PI/4;
-        hg.add(new THREE.Mesh(new THREE.ConeGeometry(hw*0.7,0.2,4), new THREE.MeshPhongMaterial({color:0xffffff})));
+        hg.add(new THREE.Mesh(new THREE.ConeGeometry(hw*0.7,0.2,4), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient})));
         hg.children[2].position.y = hht+0.4; hg.children[2].rotation.y = Math.PI/4;
         // Window glow
         const winMat = new THREE.MeshPhongMaterial({color:0xffee88, emissive:0xffdd44, emissiveIntensity:0.4});
@@ -1964,20 +3215,20 @@ function buildMiniIsland(mapIdx) {
         const rh = heightAt(rx, rz, mapIdx);
         if (rh < 0.3) continue;
         const sz = 0.2+Math.random()*0.5;
-        const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(sz,0), new THREE.MeshPhongMaterial({color:0x5a6a7a,flatShading:true}));
+        const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(sz,0), new THREE.MeshToonMaterial({color:0x5a6a7a, gradientMap: toonGradient}));
         rk.position.set(rx, rh+sz*0.2, rz);
         rk.rotation.set(Math.random(),Math.random(),0);
         g.add(rk);
         // Snow cap on big rocks
         if (sz > 0.35) {
-            const sc = new THREE.Mesh(new THREE.SphereGeometry(sz*0.6,6,3,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0xf0f4f8}));
+            const sc = new THREE.Mesh(new THREE.SphereGeometry(sz*0.6,6,3,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
             sc.position.set(rx, rh+sz*0.6, rz);
             g.add(sc);
         }
     }
 
     // ---- Mini snowmen ----
-    const wm = new THREE.MeshPhongMaterial({color:0xffffff, shininess:60});
+    const wm = new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient});
     for (let i = 0; i < Math.min(m.snowmen/4, 3); i++) {
         const a = Math.random()*Math.PI*2, d = 1.5+Math.random()*4;
         const sx = Math.cos(a)*d, sz2 = Math.sin(a)*d;
@@ -1988,7 +3239,7 @@ function buildMiniIsland(mapIdx) {
         sg.add(new THREE.Mesh(new THREE.SphereGeometry(0.18,6,6), wm)); sg.children[1].position.y = 0.6;
         sg.add(new THREE.Mesh(new THREE.SphereGeometry(0.12,6,6), wm)); sg.children[2].position.y = 0.85;
         // Hat
-        sg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.14,0.15,6), new THREE.MeshPhongMaterial({color:[0xcc2244,0x2244cc,0x22aa44][i%3]})));
+        sg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.14,0.15,6), new THREE.MeshToonMaterial({color:[0xcc2244,0x2244cc,0x22aa44][i%3], gradientMap: toonGradient})));
         sg.children[3].position.y = 1.0;
         sg.position.set(sx, sh, sz2);
         g.add(sg);
@@ -2244,53 +3495,73 @@ const player = {
     cooldown: 0, kills: 0, score: 0,
     onGround: true, yVelocity: 0,
     height: 1.7, invincible: 0,
-    colorIdx: 0
+    colorIdx: 0,
+    speedBoost: 0, damageBoost: 0, explosiveAmmo: 0
 };
-camera.position.set(0, player.height, 0);
+camera.position.set(0, player.height + 0.5, 0);
 
 // First-person arms (detailed cartoon style)
 const armGroup = new THREE.Group();
-const skinColors = [0x4a7abb, 0xe94560, 0x4ecca3, 0xf0a500, 0x8844aa];
 function buildFPArm(colorIdx) {
     while(armGroup.children.length) armGroup.remove(armGroup.children[0]);
-    const jacketColor = skinColors[colorIdx % skinColors.length];
-    const jacketMat = new THREE.MeshPhongMaterial({color:jacketColor, shininess:25});
-    const gloveMat = new THREE.MeshPhongMaterial({color:0x2a2a3a, shininess:40});
-    const skinMat = new THREE.MeshPhongMaterial({color:0xf0d0b0, shininess:20});
-    // Upper arm (jacket sleeve)
-    const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.09,0.35,8), jacketMat);
-    upperArm.position.set(0.32,-0.22,-0.38); upperArm.rotation.x = Math.PI/2.5; armGroup.add(upperArm);
-    // Forearm
-    const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.065,0.075,0.3,8), jacketMat);
-    forearm.position.set(0.34,-0.28,-0.55); forearm.rotation.x = Math.PI/2.8; armGroup.add(forearm);
-    // Wrist (skin)
-    const wrist = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,0.08,8), skinMat);
-    wrist.position.set(0.35,-0.27,-0.65); wrist.rotation.x = Math.PI/3; armGroup.add(wrist);
-    // Glove/hand
-    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), gloveMat);
-    hand.position.set(0.35,-0.26,-0.7); hand.scale.set(1,0.8,1.2); armGroup.add(hand);
-    // Thumb
-    const thumb = new THREE.Mesh(new THREE.SphereGeometry(0.035,6,6), gloveMat);
-    thumb.position.set(0.3,-0.24,-0.72); armGroup.add(thumb);
-    // Fingers curled
+    const jacketColor = PLAYER_COLOR_HEX[colorIdx] || 0x4a9eff;
+    const jacketMat = new THREE.MeshToonMaterial({color: jacketColor, gradientMap: toonGradient});
+    const jacketDark = new THREE.MeshToonMaterial({color: new THREE.Color(jacketColor).multiplyScalar(0.7).getHex(), gradientMap: toonGradient});
+    const gloveMat = new THREE.MeshToonMaterial({color: 0xe8e0d0, gradientMap: toonGradient});
+    const skinMat = new THREE.MeshToonMaterial({color: 0xffcba4, gradientMap: toonGradient});
+
+    // ===== RIGHT ARM (Brawl Stars: thick, chunky, cartoon) =====
+    // Shoulder (round)
+    const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), jacketMat);
+    shoulder.position.set(0.3, -0.12, -0.3); armGroup.add(shoulder);
+    // Upper arm (thick tube)
+    const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.3, 8), jacketMat);
+    upperArm.position.set(0.32, -0.2, -0.42); upperArm.rotation.x = Math.PI / 2.3; armGroup.add(upperArm);
+    // Sleeve cuff
+    const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.09, 0.06, 8), jacketDark);
+    cuff.position.set(0.33, -0.26, -0.55); cuff.rotation.x = Math.PI / 2.5; armGroup.add(cuff);
+    // Forearm (skin showing)
+    const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.18, 8), skinMat);
+    forearm.position.set(0.34, -0.27, -0.62); forearm.rotation.x = Math.PI / 2.8; armGroup.add(forearm);
+    // Big round glove (Brawl Stars signature oversized glove)
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), gloveMat);
+    hand.position.set(0.35, -0.25, -0.73); hand.scale.set(1, 0.85, 1.15); armGroup.add(hand);
+    // Glove cuff band
+    const gloveCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.05, 8), gloveMat);
+    gloveCuff.position.set(0.35, -0.26, -0.65); gloveCuff.rotation.x = Math.PI / 3; armGroup.add(gloveCuff);
+    // Thumb (big round)
+    const thumb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), gloveMat);
+    thumb.position.set(0.28, -0.22, -0.75); armGroup.add(thumb);
+    // Curled fingers
     for (let i = 0; i < 3; i++) {
-        const finger = new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6), gloveMat);
-        finger.position.set(0.33+i*0.025,-0.3,-0.74); armGroup.add(finger);
+        const finger = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), gloveMat);
+        finger.position.set(0.33 + i * 0.03, -0.3, -0.77); armGroup.add(finger);
     }
-    // Snowball in hand
-    const sb = new THREE.Mesh(new THREE.SphereGeometry(0.13,12,12), new THREE.MeshPhongMaterial({
-        color:0xf8f8ff, shininess:90, specular:0x6688aa
+
+    // ===== LEFT ARM (visible on side) =====
+    const lShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), jacketMat);
+    lShoulder.position.set(-0.3, -0.15, -0.25); armGroup.add(lShoulder);
+    const lUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 0.25, 8), jacketMat);
+    lUpper.position.set(-0.32, -0.22, -0.35); lUpper.rotation.x = Math.PI / 2.5; armGroup.add(lUpper);
+    const lHand = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), gloveMat);
+    lHand.position.set(-0.33, -0.28, -0.52); armGroup.add(lHand);
+
+    // ===== SNOWBALL in hand =====
+    const sb = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), new THREE.MeshToonMaterial({
+        color: 0xf8f8ff, gradientMap: toonGradient
     }));
-    sb.position.set(0.35,-0.22,-0.78); sb.name = 'handSnowball'; armGroup.add(sb);
+    sb.position.set(0.35, -0.18, -0.82); sb.name = 'handSnowball'; armGroup.add(sb);
     // Snow sparkle particles on snowball
     const sparkGeo = new THREE.BufferGeometry();
-    const sparkArr = new Float32Array(15*3);
-    for (let i = 0; i < 15; i++) {
-        const a = Math.random()*Math.PI*2, r = 0.12+Math.random()*0.04;
-        sparkArr[i*3]=0.35+Math.cos(a)*r; sparkArr[i*3+1]=-0.22+Math.sin(a)*r*0.5; sparkArr[i*3+2]=-0.78+(Math.random()-0.5)*0.1;
+    const sparkArr = new Float32Array(20 * 3);
+    for (let i = 0; i < 20; i++) {
+        const a = Math.random() * Math.PI * 2, r = 0.14 + Math.random() * 0.04;
+        sparkArr[i * 3] = 0.35 + Math.cos(a) * r;
+        sparkArr[i * 3 + 1] = -0.18 + Math.sin(a) * r * 0.5;
+        sparkArr[i * 3 + 2] = -0.82 + (Math.random() - 0.5) * 0.12;
     }
     sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkArr, 3));
-    armGroup.add(new THREE.Points(sparkGeo, new THREE.PointsMaterial({color:0xffffff,size:0.015,transparent:true,opacity:0.6})));
+    armGroup.add(new THREE.Points(sparkGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.02, transparent: true, opacity: 0.7})));
 }
 buildFPArm(player.colorIdx);
 const handSnowball = {get visible(){return armGroup.children.find(c=>c.name==='handSnowball')?.visible??false}, set visible(v){const s=armGroup.children.find(c=>c.name==='handSnowball');if(s)s.visible=v;}};
@@ -2301,6 +3572,9 @@ scene.add(camera);
 //  ENEMIES (Brawl Stars cartoon snowmen)
 // ================================================================
 let enemies = [];
+let powerups = [];
+let powerupSpawnTimer = 20 + Math.random() * 10;
+let currentBoss = null;
 
 function createEnemy(type, pos) {
     const g = new THREE.Group();
@@ -2313,7 +3587,7 @@ function createEnemy(type, pos) {
         color = 0xe94560; speed = 3.5; hp = 60; r = 0.6; scoreVal = 10; fireRate = 70;
     }
 
-    const snowMat = new THREE.MeshPhongMaterial({color:0xf0f0f0, shininess:60, specular:0x445566});
+    const snowMat = new THREE.MeshToonMaterial({color:0xf0f0f0, gradientMap: toonGradient});
     // Bottom ball
     const bodyBot = new THREE.Mesh(new THREE.SphereGeometry(r*1.3, 10, 10), snowMat);
     bodyBot.position.y = r*1.3; bodyBot.castShadow = true; g.add(bodyBot);
@@ -2321,10 +3595,10 @@ function createEnemy(type, pos) {
     const bodyMid = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 10), snowMat);
     bodyMid.position.y = r*3; bodyMid.castShadow = true; g.add(bodyMid);
     // Head
-    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(r*0.7, 10, 10), new THREE.MeshPhongMaterial({color:0xffffff, shininess:70}));
+    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(r*0.7, 10, 10), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient}));
     headMesh.position.y = r*4.2; headMesh.castShadow = true; g.add(headMesh);
     // Carrot nose
-    const noseM = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 8), new THREE.MeshPhongMaterial({color:0xff6600}));
+    const noseM = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 8), new THREE.MeshToonMaterial({color:0xff6600, gradientMap: toonGradient}));
     noseM.position.set(0, r*4.2, r*0.65); noseM.rotation.x = Math.PI/2; g.add(noseM);
     // Eyes - evil glowing
     const eyeColor = type === 'fast' ? 0xff8800 : type === 'tank' ? 0xaa44ff : 0xff2244;
@@ -2342,9 +3616,9 @@ function createEnemy(type, pos) {
     });
     // Hat
     const hatColor = type === 'tank' ? 0x5522aa : type === 'fast' ? 0xcc8800 : 0xcc2244;
-    const brimM = new THREE.Mesh(new THREE.CylinderGeometry(r*0.9, r*0.9, 0.08, 10), new THREE.MeshPhongMaterial({color:hatColor}));
+    const brimM = new THREE.Mesh(new THREE.CylinderGeometry(r*0.9, r*0.9, 0.08, 10), new THREE.MeshToonMaterial({color:hatColor, gradientMap: toonGradient}));
     brimM.position.y = r*4.7; g.add(brimM);
-    const topH = new THREE.Mesh(new THREE.CylinderGeometry(r*0.5, r*0.65, r*0.8, 10), new THREE.MeshPhongMaterial({color:hatColor}));
+    const topH = new THREE.Mesh(new THREE.CylinderGeometry(r*0.5, r*0.65, r*0.8, 10), new THREE.MeshToonMaterial({color:hatColor, gradientMap: toonGradient}));
     topH.position.y = r*5.1; g.add(topH);
     // Stick arms with snowball
     const stickMat = new THREE.MeshLambertMaterial({color:0x5c3a1e});
@@ -2371,11 +3645,14 @@ function createEnemy(type, pos) {
     hpSprite.position.y = r*5.8; hpSprite.scale.set(2, 0.3, 1);
     g.add(hpSprite);
 
-    if (pos) g.position.set(pos.x, 0, pos.z);
-    else {
+    if (pos) {
+        g.position.set(pos.x, getTerrainHeight(pos.x, pos.z), pos.z);
+    } else {
         const angle = Math.random() * Math.PI * 2;
         const dist = 40 + Math.random() * 40;
-        g.position.set(camera.position.x + Math.cos(angle)*dist, 0, camera.position.z + Math.sin(angle)*dist);
+        const ex = camera.position.x + Math.cos(angle)*dist;
+        const ez = camera.position.z + Math.sin(angle)*dist;
+        g.position.set(ex, getTerrainHeight(ex, ez), ez);
     }
     scene.add(g);
 
@@ -2390,14 +3667,19 @@ function createEnemy(type, pos) {
 }
 
 function updateEnemyHpBar(e) {
+    const cw = e.hpCanvas.width, ch = e.hpCanvas.height;
     const ctx = e.hpCanvas.getContext('2d');
-    ctx.clearRect(0,0,128,16);
+    ctx.clearRect(0,0,cw,ch);
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.beginPath(); ctx.roundRect(0,0,128,16,4); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(0,0,cw,ch,4); ctx.fill();
     const pct = Math.max(0, e.hp / e.maxHp);
-    const barColor = pct > 0.5 ? '#e94560' : '#ff2244';
+    const barColor = e.isBoss ? (pct > 0.5 ? '#ff4400' : '#ff0000') : (pct > 0.5 ? '#e94560' : '#ff2244');
     ctx.fillStyle = barColor;
-    ctx.beginPath(); ctx.roundRect(2,2,124*pct,12,3); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(2,2,(cw-4)*pct,ch-4,3); ctx.fill();
+    if (e.isBoss) {
+        ctx.fillStyle = '#fff'; ctx.font = `bold ${ch-4}px sans-serif`; ctx.textAlign = 'center';
+        ctx.fillText(e.name, cw/2, ch-4);
+    }
     e.hpTex.needsUpdate = true;
 }
 
@@ -2420,7 +3702,8 @@ function shootSnowball(origin, direction, isEnemy, shooterIdx) {
     group.position.copy(origin);
     scene.add(group);
     const speed = isEnemy ? 25 : 42;
-    projectiles.push({ mesh: group, velocity: direction.clone().normalize().multiplyScalar(speed), isEnemy, life: 3, shooterIdx: shooterIdx || 0, trailTimer: 0 });
+    const trailColor = isEnemy ? 0xff4444 : (PLAYER_COLOR_HEX[player.colorIdx] || 0xddeeff);
+    projectiles.push({ mesh: group, velocity: direction.clone().normalize().multiplyScalar(speed), isEnemy, life: 3, shooterIdx: shooterIdx || 0, trailTimer: 0, trailColor: trailColor });
 }
 
 function spawnImpact(position, color) {
@@ -2439,6 +3722,209 @@ function spawnImpact(position, color) {
         });
     }
 }
+
+// ================================================================
+//  DEATH EXPLOSION
+// ================================================================
+function spawnDeathExplosion(pos, size) {
+    const count = 12 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < count; i++) {
+        const chunkSize = (0.1 + Math.random() * 0.2) * size;
+        const chunk = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(chunkSize, 0),
+            new THREE.MeshToonMaterial({color: 0xf0f4f8, gradientMap: toonGradient})
+        );
+        chunk.position.copy(pos);
+        chunk.position.y += size;
+        scene.add(chunk);
+        const vel = new THREE.Vector3(
+            (Math.random() - 0.5) * 8,
+            3 + Math.random() * 6,
+            (Math.random() - 0.5) * 8
+        );
+        impacts.push({mesh: chunk, velocity: vel, life: 1.0 + Math.random() * 0.5});
+    }
+}
+
+// ================================================================
+//  POWER-UPS
+// ================================================================
+function createPowerupMesh(type) {
+    const g = new THREE.Group();
+    if (type === 'heal') {
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 10), new THREE.MeshToonMaterial({color: 0x44cc66, gradientMap: toonGradient}));
+        g.add(sphere);
+        // White cross
+        const crossMat = new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient});
+        const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.15, 0.15), crossMat);
+        crossH.position.z = 0.4; g.add(crossH);
+        const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.6, 0.15), crossMat);
+        crossV.position.z = 0.4; g.add(crossV);
+    } else if (type === 'speed') {
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 6), new THREE.MeshToonMaterial({color: 0xffdd00, gradientMap: toonGradient}));
+        g.add(cone);
+        const cone2 = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.5, 6), new THREE.MeshToonMaterial({color: 0xffaa00, gradientMap: toonGradient}));
+        cone2.position.y = -0.4; cone2.rotation.z = Math.PI; g.add(cone2);
+    } else if (type === 'damage') {
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 10), new THREE.MeshToonMaterial({color: 0xdd2222, gradientMap: toonGradient}));
+        g.add(sphere);
+        // Spikes
+        const spikeMat = new THREE.MeshToonMaterial({color: 0xff4444, gradientMap: toonGradient});
+        for (let i = 0; i < 8; i++) {
+            const spike = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 4), spikeMat);
+            const a = (i / 8) * Math.PI * 2;
+            spike.position.set(Math.cos(a) * 0.4, Math.sin(a) * 0.4, 0);
+            spike.rotation.z = a - Math.PI/2;
+            g.add(spike);
+        }
+    } else if (type === 'explosive') {
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 10), new THREE.MeshToonMaterial({color: 0xff8800, gradientMap: toonGradient}));
+        g.add(sphere);
+        // Fuse
+        const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4, 6), new THREE.MeshToonMaterial({color: 0x554433, gradientMap: toonGradient}));
+        fuse.position.y = 0.5; fuse.rotation.z = 0.3; g.add(fuse);
+        // Spark
+        const spark = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({color: 0xffff44}));
+        spark.position.set(0.1, 0.7, 0); g.add(spark);
+    }
+    return g;
+}
+
+function spawnPowerup() {
+    const types = ['heal', 'speed', 'damage', 'explosive'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    const mesh = createPowerupMesh(type);
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 15 + Math.random() * 60;
+    const px = Math.cos(angle) * dist;
+    const pz = Math.sin(angle) * dist;
+    mesh.position.set(px, getTerrainHeight(px, pz) + 2, pz);
+    scene.add(mesh);
+    // Glow ring
+    const glowColor = type==='heal'?0x44cc66:type==='speed'?0xffdd00:type==='damage'?0xdd2222:0xff8800;
+    const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.6, 0.8, 16),
+        new THREE.MeshBasicMaterial({color: glowColor, transparent: true, opacity: 0.4, side: THREE.DoubleSide})
+    );
+    ring.rotation.x = -Math.PI/2; ring.position.y = -1.5; mesh.add(ring);
+    powerups.push({mesh, type, baseY: mesh.position.y, time: 0});
+}
+
+// ================================================================
+//  BOSS SYSTEM
+// ================================================================
+function createBoss(waveNum) {
+    const g = new THREE.Group();
+    const isFinal = waveNum === 10;
+    const hp = isFinal ? 1000 : 500;
+    const speed = isFinal ? 3 : 2;
+    const r = 0.8;
+    const snowMat = new THREE.MeshToonMaterial({color:0xf0f0f0, gradientMap: toonGradient});
+
+    // Bottom ball
+    const bodyBot = new THREE.Mesh(new THREE.SphereGeometry(r*1.3, 12, 12), snowMat);
+    bodyBot.position.y = r*1.3; bodyBot.castShadow = true; g.add(bodyBot);
+    // Middle ball
+    const bodyMid = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 12), snowMat);
+    bodyMid.position.y = r*3; bodyMid.castShadow = true; g.add(bodyMid);
+    // Head
+    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(r*0.7, 12, 12), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient}));
+    headMesh.position.y = r*4.2; headMesh.castShadow = true; g.add(headMesh);
+    // Carrot nose
+    const noseM = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.8, 8), new THREE.MeshToonMaterial({color:0xff6600, gradientMap: toonGradient}));
+    noseM.position.set(0, r*4.2, r*0.65); noseM.rotation.x = Math.PI/2; g.add(noseM);
+    // Eyes - boss glowing red/gold
+    const eyeColor = isFinal ? 0xffcc00 : 0xff0000;
+    const eyeGlowMat = new THREE.MeshBasicMaterial({color: eyeColor});
+    [-1,1].forEach(side => {
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), eyeGlowMat);
+        eye.position.set(side*r*0.3, r*4.35, r*0.55); g.add(eye);
+    });
+    // Evil eyebrows
+    [-1,1].forEach(side => {
+        const brow = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.06, 0.06), new THREE.MeshBasicMaterial({color:0x333333}));
+        brow.position.set(side*r*0.3, r*4.55, r*0.55);
+        brow.rotation.z = side * 0.5;
+        g.add(brow);
+    });
+
+    if (isFinal) {
+        // Golden crown
+        const crownMat = new THREE.MeshToonMaterial({color: 0xffd700, gradientMap: toonGradient});
+        const crownBase = new THREE.Mesh(new THREE.CylinderGeometry(r*0.6, r*0.7, 0.2, 8), crownMat);
+        crownBase.position.y = r*4.8; g.add(crownBase);
+        for (let i = 0; i < 5; i++) {
+            const point = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.35, 4), crownMat);
+            const a = (i/5)*Math.PI*2;
+            point.position.set(Math.cos(a)*r*0.5, r*5.1, Math.sin(a)*r*0.5);
+            g.add(point);
+        }
+        // Jewels on crown
+        const jewelMat = new THREE.MeshBasicMaterial({color: 0xff0044});
+        for (let i = 0; i < 5; i++) {
+            const jewel = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), jewelMat);
+            const a = (i/5)*Math.PI*2;
+            jewel.position.set(Math.cos(a)*r*0.6, r*4.85, Math.sin(a)*r*0.6);
+            g.add(jewel);
+        }
+    } else {
+        // Red hat
+        const hatMat = new THREE.MeshToonMaterial({color: 0xcc0000, gradientMap: toonGradient});
+        const brimM = new THREE.Mesh(new THREE.CylinderGeometry(r*0.9, r*0.9, 0.1, 12), hatMat);
+        brimM.position.y = r*4.7; g.add(brimM);
+        const topH = new THREE.Mesh(new THREE.CylinderGeometry(r*0.5, r*0.65, r, 12), hatMat);
+        topH.position.y = r*5.2; g.add(topH);
+    }
+
+    // Stick arms
+    const stickMat = new THREE.MeshLambertMaterial({color:0x5c3a1e});
+    [-1,1].forEach(side => {
+        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 1.8, 6), stickMat);
+        arm.position.set(side*r*1.5, r*3, 0); arm.rotation.z = side * -0.5; g.add(arm);
+    });
+    // Buttons
+    const btnMat = new THREE.MeshBasicMaterial({color:0x222222});
+    [0, 0.35, 0.7].forEach(off => {
+        const btn = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), btnMat);
+        btn.position.set(0, r*1.8 + off, r*1.2); g.add(btn);
+    });
+    // Shadow
+    const shd = new THREE.Mesh(new THREE.CircleGeometry(r*2, 12),
+        new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.2, depthWrite:false}));
+    shd.rotation.x = -Math.PI/2; shd.position.y = 0.08; shd.renderOrder = 1; g.add(shd);
+
+    // Boss HP bar (wider)
+    const hpCanvas = document.createElement('canvas');
+    hpCanvas.width = 256; hpCanvas.height = 24;
+    const hpTex = new THREE.CanvasTexture(hpCanvas);
+    const hpSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: hpTex, transparent: true}));
+    hpSprite.position.y = r*6; hpSprite.scale.set(4, 0.6, 1);
+    g.add(hpSprite);
+
+    // Scale by 3
+    g.scale.set(3, 3, 3);
+
+    // Position
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 50 + Math.random() * 30;
+    const bx = camera.position.x + Math.cos(angle)*dist;
+    const bz = camera.position.z + Math.sin(angle)*dist;
+    g.position.set(bx, getTerrainHeight(bx, bz), bz);
+    scene.add(g);
+
+    const bossName = isFinal ? 'Roi des Neiges' : 'Yeti Géant';
+    return {
+        mesh: g, type: 'boss', speed, hp, maxHp: hp, r: r*3+0.5, scoreVal: isFinal?100:50,
+        name: bossName, isBoss: true, bossWave: waveNum,
+        cooldown: 60, fireRate: isFinal ? 40 : 60,
+        strafeDir: Math.random() > 0.5 ? 1 : -1,
+        strafeTimer: 0,
+        spreadCount: isFinal ? 5 : 3,
+        hpCanvas, hpTex, hpSprite
+    };
+}
+
+let bossWaiting = false; // true when all normal enemies killed, waiting to spawn boss
 
 // ================================================================
 //  WAVE SYSTEM
@@ -2552,7 +4038,7 @@ function initMulti(code, hosting) {
             case 'enemy-hit': {
                 if (!isHost) {
                     const e = enemies[msg.idx];
-                    if (e) { e.hp -= msg.dmg; if (e.hp <= 0) { spawnImpact(e.mesh.position.clone().setY(1), 0xe94560); scene.remove(e.mesh); enemies.splice(msg.idx, 1); addKillMessage(msg.ename); } }
+                    if (e) { e.hp -= msg.dmg; if (e.hp <= 0) { spawnDeathExplosion(e.mesh.position.clone(), e.r || 1); spawnImpact(e.mesh.position.clone().setY(1), 0xe94560); scene.remove(e.mesh); if (e.isBoss) currentBoss = null; enemies.splice(msg.idx, 1); addKillMessage(msg.ename); } }
                 }
                 break;
             }
@@ -2642,8 +4128,19 @@ function addKillMessage(name) {
 
 function updateHUD() {
     document.getElementById('hud-kills').textContent = player.kills;
-    document.getElementById('hud-wave').textContent = `${wave}/${TOTAL_WAVES}`;
-    document.getElementById('hud-score').textContent = player.score;
+    // Mode-specific HUD labels
+    if (currentMode === 'ffa') {
+        const mins = Math.floor(ffaTimeLeft / 60);
+        const secs = Math.floor(ffaTimeLeft % 60);
+        document.getElementById('hud-wave').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        document.getElementById('hud-score').textContent = `${player.kills}/${ffaMaxKills}`;
+    } else if (currentMode === 'ctf') {
+        document.getElementById('hud-wave').textContent = `B${ctfScore.blue} - R${ctfScore.red}`;
+        document.getElementById('hud-score').textContent = ctfPlayerHasFlag ? 'DRAPEAU!' : 'CTF';
+    } else {
+        document.getElementById('hud-wave').textContent = `${wave}/${TOTAL_WAVES}`;
+        document.getElementById('hud-score').textContent = player.score;
+    }
 
     // Ammo balls
     const balls = document.querySelectorAll('.ammo-ball');
@@ -2691,6 +4188,17 @@ function drawMinimap() {
             mctx.beginPath(); mctx.arc(ex,ey,3.5,0,Math.PI*2); mctx.fill();
         }
     });
+    // Power-ups as colored diamonds
+    powerups.forEach(pu => {
+        const px = cx+(pu.mesh.position.x-camera.position.x)*scale;
+        const py = cy+(pu.mesh.position.z-camera.position.z)*scale;
+        if (px>0&&px<w&&py>0&&py<h) {
+            mctx.fillStyle = pu.type==='heal'?'#44cc66':pu.type==='speed'?'#ffdd00':pu.type==='damage'?'#dd2222':'#ff8800';
+            mctx.beginPath();
+            mctx.moveTo(px, py-5); mctx.lineTo(px+4, py); mctx.lineTo(px, py+5); mctx.lineTo(px-4, py);
+            mctx.closePath(); mctx.fill();
+        }
+    });
     // Other players
     Object.entries(multiPlayers).forEach(([id, p]) => {
         if (id === myId) return;
@@ -2701,6 +4209,48 @@ function drawMinimap() {
             mctx.strokeStyle = '#fff'; mctx.lineWidth = 1.5; mctx.stroke();
         }
     });
+    // FFA bots on minimap
+    if (currentMode === 'ffa') {
+        ffaBots.forEach(bot => {
+            if (!bot.alive) return;
+            const bx = cx+(bot.mesh.position.x-camera.position.x)*scale;
+            const by = cy+(bot.mesh.position.z-camera.position.z)*scale;
+            if (bx>0&&bx<w&&by>0&&by<h) {
+                mctx.fillStyle = PLAYER_COLORS[bot.colorIdx];
+                mctx.beginPath(); mctx.arc(bx,by,4,0,Math.PI*2); mctx.fill();
+            }
+        });
+    }
+    // CTF objects on minimap
+    if (currentMode === 'ctf') {
+        // Bases
+        [{c:'rgba(255,34,68,0.3)',p:ctfBases.red?.pos},{c:'rgba(74,158,255,0.3)',p:ctfBases.blue?.pos}].forEach(b => {
+            if (!b.p) return;
+            const bx = cx+(b.p.x-camera.position.x)*scale, by = cy+(b.p.z-camera.position.z)*scale;
+            if (bx>0&&bx<w&&by>0&&by<h) { mctx.fillStyle=b.c; mctx.beginPath(); mctx.arc(bx,by,8,0,Math.PI*2); mctx.fill(); }
+        });
+        // Flags
+        [{c:'#ff2244',f:ctfFlags.red},{c:'#4a9eff',f:ctfFlags.blue}].forEach(fl => {
+            if (!fl.f) return;
+            const fp = fl.f.mesh.position;
+            const fx = cx+(fp.x-camera.position.x)*scale, fy = cy+(fp.z-camera.position.z)*scale;
+            if (fx>0&&fx<w&&fy>0&&fy<h) {
+                mctx.fillStyle=fl.c; mctx.beginPath(); mctx.moveTo(fx,fy-6); mctx.lineTo(fx+5,fy-3); mctx.lineTo(fx,fy); mctx.fill();
+                mctx.strokeStyle='#fff'; mctx.lineWidth=1; mctx.stroke();
+            }
+        });
+        // Red & blue bots
+        ctfBots.forEach(bot => {
+            if (!bot.alive) return;
+            const bx = cx+(bot.mesh.position.x-camera.position.x)*scale, by = cy+(bot.mesh.position.z-camera.position.z)*scale;
+            if (bx>0&&bx<w&&by>0&&by<h) { mctx.fillStyle='#e94560'; mctx.beginPath(); mctx.arc(bx,by,3.5,0,Math.PI*2); mctx.fill(); }
+        });
+        ctfAllyBots.forEach(bot => {
+            if (!bot.alive) return;
+            const bx = cx+(bot.mesh.position.x-camera.position.x)*scale, by = cy+(bot.mesh.position.z-camera.position.z)*scale;
+            if (bx>0&&bx<w&&by>0&&by<h) { mctx.fillStyle='#4a9eff'; mctx.beginPath(); mctx.arc(bx,by,3.5,0,Math.PI*2); mctx.fill(); mctx.strokeStyle='#fff'; mctx.lineWidth=1; mctx.stroke(); }
+        });
+    }
     // Player
     mctx.fillStyle = PLAYER_COLORS[player.colorIdx];
     mctx.beginPath(); mctx.arc(cx,cy,5,0,Math.PI*2); mctx.fill();
@@ -2737,15 +4287,197 @@ function showLobby() {
 // ================================================================
 //  GAME LAUNCH & RESET
 // ================================================================
+// ================================================================
+//  FFA & CTF STATE
+// ================================================================
+let ffaBots = []; // AI bots for FFA
+let ffaScores = {}; // { name: kills }
+let ffaTimeLeft = 180; // 3 minutes
+let ffaMaxKills = 15;
+
+let ctfFlags = {}; // { red: {mesh, pos, carrier}, blue: {mesh, pos, carrier} }
+let ctfBases = {}; // { red: {mesh, pos}, blue: {mesh, pos} }
+let ctfTeam = 'blue'; // player is always blue
+let ctfBots = []; // red team bots
+let ctfAllyBots = []; // blue team bots
+let ctfScore = { red: 0, blue: 0 };
+let ctfMaxScore = 3;
+let ctfPlayerHasFlag = false;
+
+function createBot(name, colorIdx, team) {
+    const g = createPlayerMesh(colorIdx);
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 20 + Math.random() * 50;
+    const bx = Math.cos(angle) * dist;
+    const bz = Math.sin(angle) * dist;
+    g.position.set(bx, getTerrainHeight(bx, bz), bz);
+    scene.add(g);
+    return {
+        mesh: g, name, colorIdx, team: team || null,
+        hp: 100, maxHp: 100, kills: 0, score: 0,
+        speed: 4 + Math.random() * 2,
+        cooldown: 0, fireRate: 1.2 + Math.random() * 0.8,
+        targetAngle: Math.random() * Math.PI * 2,
+        moveTimer: 0, respawnTimer: 0, alive: true
+    };
+}
+
+function respawnBot(bot) {
+    bot.hp = bot.maxHp;
+    bot.alive = true;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 20 + Math.random() * 50;
+    const bx = Math.cos(angle) * dist;
+    const bz = Math.sin(angle) * dist;
+    bot.mesh.position.set(bx, getTerrainHeight(bx, bz), bz);
+    bot.mesh.visible = true;
+}
+
+function updateBotAI(bot, dt, targets) {
+    if (!bot.alive) {
+        bot.respawnTimer -= dt;
+        if (bot.respawnTimer <= 0) respawnBot(bot);
+        return;
+    }
+    const pos = bot.mesh.position;
+    // Find closest target
+    let closest = null, closestDist = Infinity;
+    targets.forEach(t => {
+        const tp = t.pos || t.mesh?.position;
+        if (!tp) return;
+        const d = pos.distanceTo(tp);
+        if (d < closestDist) { closestDist = d; closest = { pos: tp, obj: t }; }
+    });
+    // Movement
+    bot.moveTimer -= dt;
+    if (bot.moveTimer <= 0) {
+        bot.moveTimer = 1.5 + Math.random() * 2;
+        if (closest && closestDist < 50) {
+            bot.targetAngle = Math.atan2(closest.pos.x - pos.x, closest.pos.z - pos.z);
+        } else {
+            bot.targetAngle += (Math.random() - 0.5) * 2;
+        }
+    }
+    const mx = Math.sin(bot.targetAngle) * bot.speed * dt;
+    const mz = Math.cos(bot.targetAngle) * bot.speed * dt;
+    pos.x = Math.max(-MAP_SIZE * 0.8, Math.min(MAP_SIZE * 0.8, pos.x + mx));
+    pos.z = Math.max(-MAP_SIZE * 0.8, Math.min(MAP_SIZE * 0.8, pos.z + mz));
+    pos.y = getTerrainHeight(pos.x, pos.z);
+    bot.mesh.rotation.y = bot.targetAngle;
+    // Shoot at closest
+    bot.cooldown -= dt;
+    if (bot.cooldown <= 0 && closest && closestDist < 35) {
+        bot.cooldown = bot.fireRate;
+        const aimDir = new THREE.Vector3(
+            closest.pos.x - pos.x + (Math.random() - 0.5) * 3,
+            (closest.pos.y || 1.5) - pos.y + (Math.random() - 0.5) * 2,
+            closest.pos.z - pos.z + (Math.random() - 0.5) * 3
+        ).normalize();
+        const origin = pos.clone(); origin.y += 1.5;
+        shootSnowball(origin, aimDir, true, bot.name);
+    }
+}
+
+function initFFA() {
+    ffaBots = [];
+    ffaScores = { 'Vous': 0 };
+    ffaTimeLeft = 180;
+    const botNames = ['Olaf','Yeti','Flocon','Givre','Frostbite','Avalanche','Polaire','Glaçon'];
+    const botColors = [2, 3, 4, 5, 6, 7];
+    for (let i = 0; i < 5; i++) {
+        const bot = createBot(botNames[i], botColors[i % botColors.length]);
+        ffaBots.push(bot);
+        ffaScores[botNames[i]] = 0;
+    }
+}
+
+function initCTF() {
+    ctfScore = { red: 0, blue: 0 };
+    ctfPlayerHasFlag = false;
+    ctfBots = [];
+    ctfAllyBots = [];
+    // Create flags
+    const flagGeo = () => {
+        const g = new THREE.Group();
+        // Pole
+        g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 5, 8), new THREE.MeshToonMaterial({ color: 0x888888, gradientMap: toonGradient })));
+        g.children[0].position.y = 2.5;
+        return g;
+    };
+    // Red flag (south side)
+    const redFlag = flagGeo();
+    const rf = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1, 0.05), new THREE.MeshPhongMaterial({ color: 0xff2244, emissive: 0xff0000, emissiveIntensity: 0.3, side: THREE.DoubleSide }));
+    rf.position.set(0.75, 4, 0); redFlag.add(rf);
+    redFlag.position.set(0, getTerrainHeight(0, 60), 60);
+    scene.add(redFlag);
+    // Blue flag (north side)
+    const blueFlag = flagGeo();
+    const bf = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1, 0.05), new THREE.MeshPhongMaterial({ color: 0x4a9eff, emissive: 0x2244ff, emissiveIntensity: 0.3, side: THREE.DoubleSide }));
+    bf.position.set(0.75, 4, 0); blueFlag.add(bf);
+    blueFlag.position.set(0, getTerrainHeight(0, -60), -60);
+    scene.add(blueFlag);
+    // Bases (glowing circles)
+    const baseGeoR = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 0.3, 32), new THREE.MeshPhongMaterial({ color: 0xff2244, transparent: true, opacity: 0.3, emissive: 0xff0000, emissiveIntensity: 0.2 }));
+    baseGeoR.position.set(0, getTerrainHeight(0, 60) + 0.15, 60); scene.add(baseGeoR);
+    const baseGeoB = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 0.3, 32), new THREE.MeshPhongMaterial({ color: 0x4a9eff, transparent: true, opacity: 0.3, emissive: 0x2244ff, emissiveIntensity: 0.2 }));
+    baseGeoB.position.set(0, getTerrainHeight(0, -60) + 0.15, -60); scene.add(baseGeoB);
+    ctfFlags = {
+        red: { mesh: redFlag, basePos: new THREE.Vector3(0, getTerrainHeight(0, 60), 60), carrier: null },
+        blue: { mesh: blueFlag, basePos: new THREE.Vector3(0, getTerrainHeight(0, -60), -60), carrier: null }
+    };
+    ctfBases = {
+        red: { mesh: baseGeoR, pos: new THREE.Vector3(0, 0, 60) },
+        blue: { mesh: baseGeoB, pos: new THREE.Vector3(0, 0, -60) }
+    };
+    // Red team bots
+    const redNames = ['Olaf','Yeti','Givre'];
+    for (let i = 0; i < 3; i++) {
+        const bot = createBot(redNames[i], 3, 'red');
+        bot.mesh.position.set(10 * (i - 1), getTerrainHeight(10 * (i - 1), 50), 50);
+        ctfBots.push(bot);
+    }
+    // Blue team ally bots
+    const blueNames = ['Flocon','Polaire'];
+    for (let i = 0; i < 2; i++) {
+        const bot = createBot(blueNames[i], 0, 'blue');
+        bot.mesh.position.set(10 * (i - 0.5), getTerrainHeight(10 * (i - 0.5), -50), -50);
+        ctfAllyBots.push(bot);
+    }
+    // Player starts at blue base
+    camera.position.set(0, getTerrainHeight(0, -55) + player.height, -55);
+}
+
+function cleanupModeObjects() {
+    ffaBots.forEach(b => { if (b.mesh) scene.remove(b.mesh); });
+    ffaBots = [];
+    ctfBots.forEach(b => { if (b.mesh) scene.remove(b.mesh); });
+    ctfBots = [];
+    ctfAllyBots.forEach(b => { if (b.mesh) scene.remove(b.mesh); });
+    ctfAllyBots = [];
+    if (ctfFlags.red) { scene.remove(ctfFlags.red.mesh); scene.remove(ctfBases.red.mesh); }
+    if (ctfFlags.blue) { scene.remove(ctfFlags.blue.mesh); scene.remove(ctfBases.blue.mesh); }
+    ctfFlags = {}; ctfBases = {};
+    ctfPlayerHasFlag = false;
+}
+
 function resetGame() {
+    sessionDeathCount = 0;
+    sessionKillCount = 0;
+    sessionPowerupCount = 0;
     enemies.forEach(e => scene.remove(e.mesh));
     enemies = [];
     projectiles.forEach(p => scene.remove(p.mesh));
     projectiles = [];
     impacts.forEach(i => scene.remove(i.mesh));
     impacts = [];
+    powerups.forEach(pu => scene.remove(pu.mesh));
+    powerups = [];
+    powerupSpawnTimer = 20 + Math.random() * 10;
+    currentBoss = null;
+    bossWaiting = false;
     Object.values(otherPlayerMeshes).forEach(m => scene.remove(m));
     otherPlayerMeshes = {};
+    cleanupModeObjects();
     player.hp = player.maxHp;
     player.ammo = player.maxAmmo;
     player.kills = 0;
@@ -2753,8 +4485,11 @@ function resetGame() {
     player.reloading = false;
     player.invincible = 0;
     player.yVelocity = 0;
+    player.speedBoost = 0;
+    player.damageBoost = 0;
+    player.explosiveAmmo = 0;
     player.colorIdx = selectedSkin;
-    camera.position.set(0, player.height, 0);
+    camera.position.set(0, player.height + 0.5, 0);
     yawAngle = 0; pitchAngle = 0;
     wave = 0;
     betweenWaves = true;
@@ -2780,7 +4515,18 @@ function actuallyLaunchGame(mode) {
     initAmmoDisplay();
     document.getElementById('hud').classList.remove('hidden');
     gameRunning = false; // wait for click to lock pointer
-    startWave(1);
+
+    if (mode === 'ffa') {
+        initFFA();
+        // Hide wave progress, show FFA HUD
+        document.getElementById('wave-progress').style.display = 'none';
+    } else if (mode === 'ctf') {
+        initCTF();
+        document.getElementById('wave-progress').style.display = 'none';
+    } else {
+        document.getElementById('wave-progress').style.display = '';
+        startWave(1);
+    }
 
     if (isMobile) {
         // On mobile, start directly with touch controls
@@ -2804,11 +4550,78 @@ function actuallyLaunchGame(mode) {
 
 function showScoreDisplay(containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = `
-        <div class="score-item"><div class="score-num">${player.score}</div><div class="score-lbl">Score</div></div>
-        <div class="score-item"><div class="score-num">${player.kills}</div><div class="score-lbl">Éliminations</div></div>
-        <div class="score-item"><div class="score-num">${wave}/${TOTAL_WAVES}</div><div class="score-lbl">Vagues</div></div>
-    `;
+    if (currentMode === 'ffa') {
+        const sorted = Object.entries(ffaScores).sort((a, b) => b[1] - a[1]);
+        container.innerHTML = sorted.map(([name, kills], i) =>
+            `<div class="score-item" style="${name==='Vous'?'border-color:#4a9eff;':''}"><div class="score-num">${kills}</div><div class="score-lbl">${i + 1}. ${name}</div></div>`
+        ).join('');
+    } else if (currentMode === 'ctf') {
+        container.innerHTML = `
+            <div class="score-item" style="border-color:#4a9eff;"><div class="score-num" style="color:#4a9eff;">${ctfScore.blue}</div><div class="score-lbl">Equipe Bleue</div></div>
+            <div class="score-item" style="border-color:#e94560;"><div class="score-num" style="color:#e94560;">${ctfScore.red}</div><div class="score-lbl">Equipe Rouge</div></div>
+            <div class="score-item"><div class="score-num">${player.kills}</div><div class="score-lbl">Eliminations</div></div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="score-item"><div class="score-num">${player.score}</div><div class="score-lbl">Score</div></div>
+            <div class="score-item"><div class="score-num">${player.kills}</div><div class="score-lbl">Eliminations</div></div>
+            <div class="score-item"><div class="score-num">${wave}/${TOTAL_WAVES}</div><div class="score-lbl">Vagues</div></div>
+        `;
+    }
+}
+
+function showFFAResults() {
+    gameRunning = false;
+    document.exitPointerLock();
+    saveData.stats.games++;
+    saveData.stats.kills += player.kills;
+    const bonus = player.kills * 3;
+    earnCoins(bonus);
+    // Check if player won
+    const sorted = Object.entries(ffaScores).sort((a, b) => b[1] - a[1]);
+    const playerRank = sorted.findIndex(([n]) => n === 'Vous') + 1;
+    if (playerRank === 1) {
+        saveData.stats.wins++;
+        earnCoins(50);
+        updateQuestProgress('win', 1);
+        if (sessionDeathCount === 0) updateQuestProgress('win_no_death', 1);
+        addXP(100); addBattlePassXP(100); checkAchievements();
+        document.getElementById('victory-sub').textContent = `1ere place ! ${player.kills} eliminations (+${bonus + 50} pieces)`;
+        showScoreDisplay('victory-scores');
+        showGameOverlay('victory-screen');
+        spawnConfetti();
+    } else {
+        document.getElementById('gameover-sub').textContent = `${playerRank}e place - ${player.kills} eliminations (+${bonus} pieces)`;
+        showScoreDisplay('gameover-scores');
+        showGameOverlay('gameover-screen');
+    }
+    writeSave(saveData);
+}
+
+function showCTFResults() {
+    gameRunning = false;
+    document.exitPointerLock();
+    saveData.stats.games++;
+    saveData.stats.kills += player.kills;
+    if (ctfScore.blue >= ctfMaxScore) {
+        saveData.stats.wins++;
+        const bonus = 80;
+        earnCoins(bonus);
+        updateQuestProgress('win', 1);
+        if (sessionDeathCount === 0) updateQuestProgress('win_no_death', 1);
+        addXP(100); addBattlePassXP(100); checkAchievements();
+        document.getElementById('victory-sub').textContent = `Equipe Bleue gagne ${ctfScore.blue}-${ctfScore.red} ! (+${bonus} pieces)`;
+        showScoreDisplay('victory-scores');
+        showGameOverlay('victory-screen');
+        spawnConfetti();
+    } else {
+        const bonus = player.kills * 3;
+        earnCoins(bonus);
+        document.getElementById('gameover-sub').textContent = `Equipe Rouge gagne ${ctfScore.red}-${ctfScore.blue}. (+${bonus} pieces)`;
+        showScoreDisplay('gameover-scores');
+        showGameOverlay('gameover-screen');
+    }
+    writeSave(saveData);
 }
 
 function showGameOver() {
@@ -2834,6 +4647,11 @@ function showVictory() {
     saveData.stats.wins++;
     const victoryBonus = 100;
     earnCoins(victoryBonus);
+    // Quest tracking
+    updateQuestProgress('win', 1);
+    if (sessionDeathCount === 0) updateQuestProgress('win_no_death', 1);
+    addXP(100); addBattlePassXP(100);
+    checkAchievements();
     writeSave(saveData);
     let sub = `Tu as survécu aux 10 vagues ! (+${victoryBonus} pièces)`;
     if (currentMode === 'multi') {
@@ -2844,6 +4662,7 @@ function showVictory() {
     document.getElementById('victory-sub').textContent = sub;
     showScoreDisplay('victory-scores');
     showGameOverlay('victory-screen');
+    spawnConfetti();
 }
 
 // ================================================================
@@ -2935,7 +4754,7 @@ function animate() {
     camera.rotation.x = pitchAngle;
 
     // ---- Movement ----
-    const moveSpeed = 10;
+    const moveSpeed = 10 * (player.speedBoost > 0 ? 2 : 1);
     const fwd = new THREE.Vector3(-Math.sin(yawAngle), 0, -Math.cos(yawAngle));
     const right = new THREE.Vector3(Math.cos(yawAngle), 0, -Math.sin(yawAngle));
     const moveDir = new THREE.Vector3();
@@ -2950,11 +4769,12 @@ function animate() {
     }
     if (moveDir.length() > 0) { moveDir.normalize().multiplyScalar(moveSpeed*dt); camera.position.add(moveDir); }
 
-    // Jump
+    // Jump & terrain collision
     if (keys['Space'] && player.onGround) { player.yVelocity = 8; player.onGround = false; }
     player.yVelocity -= 20*dt;
     camera.position.y += player.yVelocity*dt;
-    if (camera.position.y <= player.height) { camera.position.y = player.height; player.yVelocity = 0; player.onGround = true; }
+    const groundH = getTerrainHeight(camera.position.x, camera.position.z) + player.height;
+    if (camera.position.y <= groundH) { camera.position.y = groundH; player.yVelocity = 0; player.onGround = true; }
 
     camera.position.x = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, camera.position.x));
     camera.position.z = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, camera.position.z));
@@ -2984,8 +4804,8 @@ function animate() {
         if (bc) bc.postMessage({type:'shoot',from:myId, ox:origin.x,oy:origin.y,oz:origin.z, dx:dir.x,dy:dir.y,dz:dir.z});
     }
 
-    // ---- Waves (host or solo) ----
-    if (isHost || currentMode === 'solo') {
+    // ---- Waves (host or solo, not FFA/CTF) ----
+    if ((isHost || currentMode === 'solo') && currentMode !== 'ffa' && currentMode !== 'ctf') {
         if (betweenWaves) {
             betweenWaveTimer -= dt;
             if (betweenWaveTimer <= 0) {
@@ -3012,17 +4832,222 @@ function animate() {
                 waveEnemiesLeft--;
                 if (bc) bc.postMessage({type:'enemy-spawn',from:myId, etype:type, ex:e.mesh.position.x, ez:e.mesh.position.z});
             }
-            if (waveEnemiesLeft <= 0 && enemies.length === 0) {
+            if (waveEnemiesLeft <= 0 && enemies.length === 0 && !currentBoss) {
+                // Boss wave check: spawn boss at waves 5 and 10
+                if ((wave === 5 || wave === 10) && !bossWaiting) {
+                    bossWaiting = true;
+                    const boss = createBoss(wave);
+                    enemies.push(boss);
+                    currentBoss = boss;
+                    const bannerText = wave === 10 ? 'BOSS FINAL: Roi des Neiges !' : 'BOSS: Yeti Géant !';
+                    showWaveBanner(bannerText);
+                } else if (!bossWaiting || (wave !== 5 && wave !== 10)) {
+                    bossWaiting = false;
+                    betweenWaves = true;
+                    betweenWaveTimer = 4;
+                    showWaveBanner(wave >= TOTAL_WAVES ? 'Dernière vague terminée !' : `Vague ${wave} terminée !`);
+                    updateWaveProgress();
+                    updateQuestProgress('wave', wave);
+                    addXP(20); addBattlePassXP(20);
+                    saveData.stats.maxWave = Math.max(saveData.stats.maxWave || 0, wave); writeSave(saveData);
+                    checkAchievements();
+                    if (bc) bc.postMessage({type:'wave',from:myId, wave, between:true, text:`Vague ${wave} terminée !`});
+                }
+            }
+            // Boss killed, wave ends
+            if (bossWaiting && !currentBoss && enemies.length === 0) {
+                bossWaiting = false;
                 betweenWaves = true;
                 betweenWaveTimer = 4;
                 showWaveBanner(wave >= TOTAL_WAVES ? 'Dernière vague terminée !' : `Vague ${wave} terminée !`);
                 updateWaveProgress();
+                updateQuestProgress('wave', wave);
+                addXP(20); addBattlePassXP(20);
+                saveData.stats.maxWave = Math.max(saveData.stats.maxWave || 0, wave); writeSave(saveData);
+                checkAchievements();
                 if (bc) bc.postMessage({type:'wave',from:myId, wave, between:true, text:`Vague ${wave} terminée !`});
             }
         }
     }
 
-    // ---- Enemy AI ----
+    // ---- FFA Mode Logic ----
+    if (currentMode === 'ffa' && gameRunning) {
+        ffaTimeLeft -= dt;
+        // Update bots
+        const playerTarget = { pos: camera.position, obj: 'player' };
+        const botTargets = ffaBots.filter(b => b.alive).map(b => ({ pos: b.mesh.position, obj: b }));
+        ffaBots.forEach(bot => {
+            // Targets: player + other bots
+            const targets = [playerTarget, ...botTargets.filter(t => t.obj !== bot)];
+            updateBotAI(bot, dt, targets);
+        });
+        // Check projectile hits on bots
+        projectiles = projectiles.filter(p => {
+            if (p.isEnemy) return true; // handled in normal projectile code
+            for (let i = ffaBots.length - 1; i >= 0; i--) {
+                const bot = ffaBots[i];
+                if (!bot.alive) continue;
+                const d = p.mesh.position.distanceTo(bot.mesh.position.clone().setY(bot.mesh.position.y + 1.2));
+                if (d < 1.5) {
+                    bot.hp -= 25;
+                    spawnImpact(p.mesh.position, 0xffffff);
+                    scene.remove(p.mesh);
+                    if (bot.hp <= 0) {
+                        bot.alive = false;
+                        bot.mesh.visible = false;
+                        bot.respawnTimer = 5;
+                        player.kills++;
+                        player.score += 10;
+                        ffaScores['Vous'] = player.kills;
+                        earnCoins(3);
+                        updateQuestProgress('kill', 1);
+                        addXP(10); addBattlePassXP(10); checkAchievements();
+                        addKillMessage(bot.name);
+                    }
+                    return false;
+                }
+            }
+            return true;
+        });
+        // Bot kills on player (handled via enemy projectile)
+        // Check bot-on-bot kills
+        projectiles = projectiles.filter(p => {
+            if (!p.isEnemy) return true;
+            // Check hit on other bots
+            for (const bot of ffaBots) {
+                if (!bot.alive || bot.name === p.shooterIdx) continue;
+                const d = p.mesh.position.distanceTo(bot.mesh.position.clone().setY(bot.mesh.position.y + 1.2));
+                if (d < 1.5) {
+                    bot.hp -= 15;
+                    scene.remove(p.mesh);
+                    if (bot.hp <= 0) {
+                        bot.alive = false;
+                        bot.mesh.visible = false;
+                        bot.respawnTimer = 5;
+                        // Credit kill to shooter bot
+                        const shooter = ffaBots.find(b => b.name === p.shooterIdx);
+                        if (shooter) { shooter.kills++; ffaScores[shooter.name] = shooter.kills; }
+                        addKillMessage(bot.name);
+                    }
+                    return false;
+                }
+            }
+            return true;
+        });
+        // FFA Victory/End
+        const anyMaxKills = player.kills >= ffaMaxKills || ffaBots.some(b => b.kills >= ffaMaxKills);
+        if (ffaTimeLeft <= 0 || anyMaxKills) {
+            showFFAResults();
+            return;
+        }
+    }
+
+    // ---- CTF Mode Logic ----
+    if (currentMode === 'ctf' && gameRunning) {
+        // Update red bots (enemies)
+        const playerTarget = { pos: camera.position };
+        const blueTargets = [playerTarget, ...ctfAllyBots.filter(b => b.alive).map(b => ({ pos: b.mesh.position }))];
+        ctfBots.forEach(bot => {
+            // Red bots: attack blue team or go for blue flag
+            let targets = blueTargets;
+            // If no flag carrier, sometimes go for flag
+            if (!ctfFlags.blue.carrier && Math.random() < 0.3) {
+                targets = [{ pos: ctfFlags.blue.basePos }];
+            }
+            updateBotAI(bot, dt, targets);
+            // Red bot picks up blue flag
+            if (!ctfFlags.blue.carrier && bot.alive) {
+                const d = bot.mesh.position.distanceTo(ctfFlags.blue.mesh.position);
+                if (d < 4) {
+                    ctfFlags.blue.carrier = bot;
+                    addKillMessage(bot.name + ' a pris le drapeau bleu !');
+                }
+            }
+            // Red bot captures at red base
+            if (ctfFlags.blue.carrier === bot && bot.alive) {
+                const d = bot.mesh.position.distanceTo(ctfBases.red.pos);
+                if (d < 8) {
+                    ctfScore.red++;
+                    addKillMessage('Equipe Rouge marque ! (' + ctfScore.red + '/' + ctfMaxScore + ')');
+                    ctfFlags.blue.carrier = null;
+                    ctfFlags.blue.mesh.position.copy(ctfFlags.blue.basePos);
+                    if (ctfScore.red >= ctfMaxScore) { showCTFResults(); return; }
+                }
+            }
+        });
+        // Update blue ally bots
+        const redTargets = ctfBots.filter(b => b.alive).map(b => ({ pos: b.mesh.position }));
+        ctfAllyBots.forEach(bot => {
+            updateBotAI(bot, dt, redTargets.length > 0 ? redTargets : [{ pos: ctfFlags.red.basePos }]);
+        });
+        // Projectile hits on CTF bots
+        projectiles = projectiles.filter(p => {
+            if (p.isEnemy) return true;
+            // Player hits red bots
+            for (const bot of ctfBots) {
+                if (!bot.alive) continue;
+                const d = p.mesh.position.distanceTo(bot.mesh.position.clone().setY(bot.mesh.position.y + 1.2));
+                if (d < 1.5) {
+                    bot.hp -= 25;
+                    scene.remove(p.mesh);
+                    if (bot.hp <= 0) {
+                        bot.alive = false;
+                        bot.mesh.visible = false;
+                        bot.respawnTimer = 6;
+                        player.kills++;
+                        earnCoins(3);
+                        updateQuestProgress('kill', 1);
+                        addXP(10); addBattlePassXP(10); checkAchievements();
+                        addKillMessage(bot.name);
+                        // Drop flag if carrier
+                        if (ctfFlags.blue.carrier === bot) {
+                            ctfFlags.blue.carrier = null;
+                            addKillMessage('Drapeau bleu lache !');
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        });
+        // Player picks up red flag
+        if (!ctfFlags.red.carrier && !ctfPlayerHasFlag) {
+            const d = camera.position.distanceTo(ctfFlags.red.mesh.position);
+            if (d < 4) {
+                ctfPlayerHasFlag = true;
+                ctfFlags.red.carrier = 'player';
+                addKillMessage('Vous avez pris le drapeau rouge !');
+            }
+        }
+        // Player captures at blue base
+        if (ctfPlayerHasFlag) {
+            ctfFlags.red.mesh.position.set(camera.position.x, camera.position.y - 0.5, camera.position.z);
+            const d = camera.position.distanceTo(new THREE.Vector3(ctfBases.blue.pos.x, camera.position.y, ctfBases.blue.pos.z));
+            if (d < 8) {
+                ctfScore.blue++;
+                ctfPlayerHasFlag = false;
+                ctfFlags.red.carrier = null;
+                ctfFlags.red.mesh.position.copy(ctfFlags.red.basePos);
+                earnCoins(20);
+                addKillMessage('Equipe Bleue marque ! (' + ctfScore.blue + '/' + ctfMaxScore + ')');
+                if (ctfScore.blue >= ctfMaxScore) { showCTFResults(); return; }
+            }
+        }
+        // Red bot carrying blue flag - flag follows bot
+        if (ctfFlags.blue.carrier && ctfFlags.blue.carrier !== 'player') {
+            ctfFlags.blue.mesh.position.copy(ctfFlags.blue.carrier.mesh.position);
+            ctfFlags.blue.mesh.position.y += 0.5;
+        }
+        // Flag wave animation
+        if (ctfFlags.red && ctfFlags.red.mesh.children[1]) {
+            ctfFlags.red.mesh.children[1].rotation.y = Math.sin(performance.now() * 0.003) * 0.3;
+        }
+        if (ctfFlags.blue && ctfFlags.blue.mesh.children[1]) {
+            ctfFlags.blue.mesh.children[1].rotation.y = Math.sin(performance.now() * 0.003 + 1) * 0.3;
+        }
+    }
+
+    // ---- Enemy AI (Solo/Team modes) ----
     enemies.forEach(e => {
         const pos = e.mesh.position;
         let targetPos = camera.position.clone();
@@ -3049,6 +5074,7 @@ function animate() {
 
         pos.x = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, pos.x));
         pos.z = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, pos.z));
+        pos.y = getTerrainHeight(pos.x, pos.z);
 
         // Idle animation
         e.mesh.children[0].position.y = e.r*1.3 + Math.sin(performance.now()*0.003 + e.fireRate)*0.1;
@@ -3060,15 +5086,89 @@ function animate() {
         e.cooldown -= dt*60;
         if (e.cooldown <= 0 && dist < 40) {
             e.cooldown = e.fireRate + Math.random()*30;
-            const aimDir = new THREE.Vector3(
-                targetPos.x - pos.x + (Math.random()-0.5)*3,
-                targetPos.y - pos.y - 0.5 + (Math.random()-0.5)*2,
-                targetPos.z - pos.z + (Math.random()-0.5)*3
+            const baseAimDir = new THREE.Vector3(
+                targetPos.x - pos.x,
+                targetPos.y - pos.y - 0.5,
+                targetPos.z - pos.z
             ).normalize();
             const origin = pos.clone(); origin.y += e.r*2.5;
-            shootSnowball(origin, aimDir, true);
+            if (e.isBoss) {
+                const count = e.spreadCount;
+                const spreadAngle = 0.15;
+                for (let si = 0; si < count; si++) {
+                    const offset = (si - (count-1)/2) * spreadAngle;
+                    const aimDir = baseAimDir.clone();
+                    aimDir.x += Math.sin(offset) + (Math.random()-0.5)*1;
+                    aimDir.z += Math.cos(offset)*offset + (Math.random()-0.5)*1;
+                    aimDir.normalize();
+                    shootSnowball(origin.clone(), aimDir, true);
+                }
+            } else {
+                const aimDir = baseAimDir.clone();
+                aimDir.x += (Math.random()-0.5)*3;
+                aimDir.y += (Math.random()-0.5)*2;
+                aimDir.z += (Math.random()-0.5)*3;
+                aimDir.normalize();
+                shootSnowball(origin, aimDir, true);
+            }
         }
     });
+
+    // ---- Power-ups ----
+    if (currentMode === 'solo' || currentMode === 'multi') {
+        // Countdown active effects
+        if (player.speedBoost > 0) player.speedBoost -= dt;
+        if (player.damageBoost > 0) player.damageBoost -= dt;
+
+        // Spawn powerups periodically
+        powerupSpawnTimer -= dt;
+        if (powerupSpawnTimer <= 0) {
+            powerupSpawnTimer = 20 + Math.random() * 10;
+            if (powerups.length < 5) spawnPowerup();
+        }
+
+        // Animate and collect powerups
+        for (let i = powerups.length - 1; i >= 0; i--) {
+            const pu = powerups[i];
+            pu.time += dt;
+            // Bob and rotate
+            pu.mesh.position.y = pu.baseY + Math.sin(pu.time * 2) * 0.3;
+            pu.mesh.rotation.y += dt * 1.5;
+
+            // Check player proximity
+            const dx = camera.position.x - pu.mesh.position.x;
+            const dz = camera.position.z - pu.mesh.position.z;
+            const dist = Math.sqrt(dx*dx + dz*dz);
+            if (dist < 3) {
+                // Collect
+                scene.remove(pu.mesh);
+                powerups.splice(i, 1);
+                let msg = '';
+                if (pu.type === 'heal') {
+                    player.hp = Math.min(player.maxHp, player.hp + 30);
+                    msg = '+30 PV !';
+                } else if (pu.type === 'speed') {
+                    player.speedBoost = 8;
+                    msg = 'Vitesse x2 (8s) !';
+                } else if (pu.type === 'damage') {
+                    player.damageBoost = 10;
+                    msg = 'Dégâts x2 (10s) !';
+                } else if (pu.type === 'explosive') {
+                    player.explosiveAmmo += 5;
+                    msg = 'Boules explosives x5 !';
+                }
+                updateQuestProgress('powerup', 1);
+                // Show notification
+                const feed = document.getElementById('killfeed');
+                const msgEl = document.createElement('div');
+                msgEl.className = 'kill-msg';
+                const color = pu.type==='heal'?'#44cc66':pu.type==='speed'?'#ffdd00':pu.type==='damage'?'#dd2222':'#ff8800';
+                msgEl.innerHTML = `<span style="color:${color}">${msg}</span>`;
+                feed.appendChild(msgEl);
+                setTimeout(() => msgEl.remove(), 2500);
+            }
+        }
+    }
 
     // ---- Projectiles ----
     projectiles = projectiles.filter(p => {
@@ -3078,9 +5178,10 @@ function animate() {
         p.trailTimer = (p.trailTimer || 0) - dt;
         if (p.trailTimer <= 0) {
             p.trailTimer = 0.03;
+            const tCol = p.isEnemy ? 0xffaaaa : (p.trailColor || 0xddeeff);
             const t = new THREE.Mesh(
-                new THREE.SphereGeometry(0.05, 4, 4),
-                new THREE.MeshBasicMaterial({color: p.isEnemy ? 0xffaaaa : 0xddeeff, transparent:true})
+                new THREE.SphereGeometry(0.08, 4, 4),
+                new THREE.MeshStandardMaterial({color: tCol, transparent:true, emissive: tCol, emissiveIntensity: 0.5})
             );
             t.position.copy(p.mesh.position); scene.add(t);
             impacts.push({mesh:t, velocity:new THREE.Vector3(0,0,0), life:0.2});
@@ -3092,19 +5193,61 @@ function animate() {
                 const e = enemies[i];
                 const d = p.mesh.position.distanceTo(new THREE.Vector3(e.mesh.position.x, e.mesh.position.y+e.r*2, e.mesh.position.z));
                 if (d < e.r+0.3) {
-                    e.hp -= 25;
+                    const baseDmg = 25 * (player.damageBoost > 0 ? 2 : 1);
+                    e.hp -= baseDmg;
                     spawnImpact(p.mesh.position, 0xffffff);
                     scene.remove(p.mesh);
+                    // Explosive ammo: area damage
+                    if (player.explosiveAmmo > 0) {
+                        player.explosiveAmmo--;
+                        spawnImpact(p.mesh.position, 0xff8800);
+                        spawnImpact(p.mesh.position, 0xffaa00);
+                        for (let j = enemies.length-1; j >= 0; j--) {
+                            if (j === i) continue;
+                            const ae = enemies[j];
+                            const ad = p.mesh.position.distanceTo(ae.mesh.position);
+                            if (ad < 5) {
+                                ae.hp -= baseDmg;
+                                spawnImpact(ae.mesh.position.clone().setY(1), 0xff8800);
+                                if (ae.hp <= 0) {
+                                    spawnDeathExplosion(ae.mesh.position.clone(), ae.r || 1);
+                                    spawnImpact(ae.mesh.position.clone().setY(1), ae.type==='fast'?0xf0a500:ae.type==='tank'?0x8844aa:0xe94560);
+                                    scene.remove(ae.mesh);
+                                    if (p.shooterIdx === myId || currentMode === 'solo') {
+                                        player.kills++; player.score += ae.scoreVal;
+                                        const cr = ae.isBoss?(ae.bossWave===10?100:50):ae.type==='tank'?3:ae.type==='fast'?2:1;
+                                        earnCoins(cr);
+                                        updateQuestProgress('kill', 1);
+                                        addXP(ae.isBoss ? 50 : 10); addBattlePassXP(ae.isBoss ? 50 : 10);
+                                        if (ae.isBoss) { saveData.stats.bossKills = (saveData.stats.bossKills||0)+1; updateQuestProgress('boss_kill', 1); }
+                                        if (ae.type === 'fast') updateQuestProgress('fast_kill', 1);
+                                        checkAchievements();
+                                    }
+                                    addKillMessage(ae.name);
+                                    if (ae.isBoss) currentBoss = null;
+                                    enemies.splice(j, 1);
+                                    if (j < i) i--;
+                                }
+                            }
+                        }
+                    }
                     if (e.hp <= 0) {
-                        spawnImpact(e.mesh.position.clone().setY(1), e.type==='fast'?0xf0a500:e.type==='tank'?0x8844aa:0xe94560);
+                        spawnDeathExplosion(e.mesh.position.clone(), e.r || 1);
+                        spawnImpact(e.mesh.position.clone().setY(1), e.type==='fast'?0xf0a500:e.type==='tank'?0x8844aa:e.isBoss?0xffcc00:0xe94560);
                         scene.remove(e.mesh);
                         if (p.shooterIdx === myId || currentMode === 'solo') {
                             player.kills++; player.score += e.scoreVal;
-                            const coinReward = e.type==='tank'?6:e.type==='fast'?3:2;
+                            const coinReward = e.isBoss?(e.bossWave===10?100:50):e.type==='tank'?3:e.type==='fast'?2:1;
                             earnCoins(coinReward);
+                            updateQuestProgress('kill', 1);
+                            addXP(e.isBoss ? 50 : 10); addBattlePassXP(e.isBoss ? 50 : 10);
+                            if (e.isBoss) { saveData.stats.bossKills = (saveData.stats.bossKills||0)+1; updateQuestProgress('boss_kill', 1); }
+                            if (e.type === 'fast') updateQuestProgress('fast_kill', 1);
+                            checkAchievements();
                         }
                         addKillMessage(e.name);
-                        if (bc) bc.postMessage({type:'enemy-hit',from:myId, idx:i, dmg:25, ename:e.name});
+                        if (e.isBoss) currentBoss = null;
+                        if (bc) bc.postMessage({type:'enemy-hit',from:myId, idx:i, dmg:baseDmg, ename:e.name});
                         enemies.splice(i, 1);
                     }
                     return false;
@@ -3120,7 +5263,31 @@ function animate() {
                 const flash = document.getElementById('damage-flash');
                 flash.style.opacity = 0.6;
                 setTimeout(() => flash.style.opacity = 0, 200);
-                if (player.hp <= 0) showGameOver();
+                if (player.hp <= 0) {
+                    sessionDeathCount++;
+                    if (currentMode === 'ffa') {
+                        // Respawn in FFA
+                        player.hp = player.maxHp;
+                        const ra = Math.random() * Math.PI * 2, rd = 30 + Math.random() * 40;
+                        camera.position.set(Math.cos(ra)*rd, getTerrainHeight(Math.cos(ra)*rd, Math.sin(ra)*rd) + player.height, Math.sin(ra)*rd);
+                        player.invincible = 2;
+                        addKillMessage('Vous avez ete elimine !');
+                    } else if (currentMode === 'ctf') {
+                        // Respawn at blue base in CTF, drop flag
+                        player.hp = player.maxHp;
+                        camera.position.set(0, getTerrainHeight(0, -55) + player.height, -55);
+                        player.invincible = 2;
+                        if (ctfPlayerHasFlag) {
+                            ctfPlayerHasFlag = false;
+                            ctfFlags.red.carrier = null;
+                            ctfFlags.red.mesh.position.copy(ctfFlags.red.basePos);
+                            addKillMessage('Drapeau rouge lache !');
+                        }
+                        addKillMessage('Vous reapparaissez a la base !');
+                    } else {
+                        showGameOver();
+                    }
+                }
                 return false;
             }
         }

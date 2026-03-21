@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "Bash(node -e \":*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\cleme\\projets claude\\bataille_boule_neige",
+      "c:\\Users\\cleme\\projets claude"
+    ]
+  }
+}
