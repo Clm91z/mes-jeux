@@ -2448,7 +2448,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 500);
 const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -2468,7 +2468,7 @@ addEventListener('resize', () => {
 scene.add(new THREE.AmbientLight(0xaaccee, 0.7));
 const dirLight = new THREE.DirectionalLight(0xfff0cc, 1.4);
 dirLight.position.set(60, 100, 40); dirLight.castShadow = true;
-dirLight.shadow.mapSize.set(4096, 4096);
+dirLight.shadow.mapSize.set(2048, 2048);
 dirLight.shadow.camera.near = 0.5; dirLight.shadow.camera.far = 300;
 dirLight.shadow.camera.left = dirLight.shadow.camera.bottom = -100;
 dirLight.shadow.camera.right = dirLight.shadow.camera.top = 100;
@@ -2785,6 +2785,35 @@ function buildMap(mapIdx) {
         addObj(sandPile);
     }
 
+    // ---- Map boundary markers ----
+    for (let i = 0; i < 40; i++) {
+        const angle = (i / 40) * Math.PI * 2;
+        const dist = MAP_SIZE * 0.85;
+        const bx = Math.cos(angle) * dist;
+        const bz = Math.sin(angle) * dist;
+        // Glowing post
+        const post = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.3, 0.3, 4, 8),
+            new THREE.MeshToonMaterial({color: 0x4a9eff, gradientMap: toonGradient})
+        );
+        post.position.set(bx, getTerrainHeight(bx, bz) + 2, bz);
+        addObj(post);
+        // Glowing top
+        const top = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 8, 8),
+            new THREE.MeshBasicMaterial({color: 0x4a9eff, transparent: true, opacity: 0.6})
+        );
+        top.position.set(bx, getTerrainHeight(bx, bz) + 4.5, bz);
+        addObj(top);
+    }
+    // Boundary line on ground (ring)
+    const ringGeo = new THREE.TorusGeometry(MAP_SIZE * 0.85, 0.5, 8, 64);
+    const ringMat = new THREE.MeshBasicMaterial({color: 0x4a9eff, transparent: true, opacity: 0.3});
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.5;
+    addObj(ring);
+
     // ---- Trees (varied types) ----
     for (let i = 0; i < m.trees; i++) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.4, z = (Math.random()-0.5)*MAP_SIZE*1.4;
@@ -2997,7 +3026,7 @@ function buildMap(mapIdx) {
     }
 
     // ---- Falling snow ----
-    snowCount = m.snowDensity * 2;
+    snowCount = Math.min(m.snowDensity, 2000);
     const sPosArr = new Float32Array(snowCount*3);
     for (let i = 0; i < snowCount; i++) {
         sPosArr[i*3]=(Math.random()-0.5)*250;
@@ -3160,7 +3189,7 @@ function buildMiniIsland(mapIdx) {
 
     // ---- Water disc ----
     const waterDisc = new THREE.Mesh(
-        new THREE.CircleGeometry(13, 32),
+        new THREE.CircleGeometry(10, 32),
         new THREE.MeshPhongMaterial({color:m.waterColor, shininess:120, specular:0x88aacc, transparent:true, opacity:0.75})
     );
     waterDisc.rotation.x = -Math.PI/2;
@@ -3273,6 +3302,9 @@ function buildMiniIsland(mapIdx) {
     spGeo.setAttribute('position', new THREE.BufferAttribute(spArr, 3));
     g.add(new THREE.Points(spGeo, new THREE.PointsMaterial({color:0xffffff, size:0.12, transparent:true, opacity:0.7})));
 
+    // Scale up mini island for better visibility in roulette
+    g.scale.set(1.2, 1.2, 1.2);
+
     return g;
 }
 
@@ -3339,7 +3371,7 @@ function showRoulette(mode) {
 
     // Connecting ring between islands
     const connectRing = new THREE.Mesh(
-        new THREE.TorusGeometry(30, 0.15, 6, 48),
+        new THREE.TorusGeometry(45, 0.15, 6, 48),
         new THREE.MeshPhongMaterial({color:0x4a9eff, emissive:0x2255aa, emissiveIntensity:0.5, transparent:true, opacity:0.4})
     );
     connectRing.rotation.x = Math.PI/2; connectRing.position.y = -1.5;
@@ -3362,7 +3394,7 @@ function showRoulette(mode) {
 
     // Place islands in a circle - well spaced
     const carouselGroup = new THREE.Group();
-    const radius = 30; // islands visible but not touching
+    const radius = 45; // islands visible but not touching
     const islandGroups = [];
 
     MAPS.forEach((m, idx) => {
@@ -3404,8 +3436,8 @@ function showRoulette(mode) {
     const winnerIdx = Math.floor(Math.random() * MAPS.length);
     const winnerAngle = (winnerIdx / MAPS.length) * Math.PI * 2;
 
-    // Spin: start fast, decelerate, stop on winner
-    const totalRotation = Math.PI * 2 * 3 + winnerAngle + Math.PI/2;
+    // Spin: start fast, decelerate, stop on winner (camera ends at winnerAngle so winner island is directly in front)
+    const totalRotation = Math.PI * 2 * 3 + winnerAngle;
     const duration = 5000;
     const startTime = performance.now();
     let finished = false;
@@ -3421,7 +3453,7 @@ function showRoulette(mode) {
 
         // Camera orbits around the center
         const currentAngle = easedT * totalRotation;
-        const camDist = 42;
+        const camDist = 60;
         const camHeight = 18 + (1-easedT) * 10;
         carouselCamera.position.set(
             Math.cos(currentAngle) * camDist,
@@ -3670,10 +3702,12 @@ function createEnemy(type, pos) {
 function updateEnemyHpBar(e) {
     const cw = e.hpCanvas.width, ch = e.hpCanvas.height;
     const ctx = e.hpCanvas.getContext('2d');
+    const pct = Math.max(0, e.hp / e.maxHp);
+    if (e._lastHpPct === pct) return;
+    e._lastHpPct = pct;
     ctx.clearRect(0,0,cw,ch);
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.beginPath(); ctx.roundRect(0,0,cw,ch,4); ctx.fill();
-    const pct = Math.max(0, e.hp / e.maxHp);
     const barColor = e.isBoss ? (pct > 0.5 ? '#ff4400' : '#ff0000') : (pct > 0.5 ? '#e94560' : '#ff2244');
     ctx.fillStyle = barColor;
     ctx.beginPath(); ctx.roundRect(2,2,(cw-4)*pct,ch-4,3); ctx.fill();
@@ -3708,6 +3742,7 @@ function shootSnowball(origin, direction, isEnemy, shooterIdx) {
 }
 
 function spawnImpact(position, color) {
+    if (impacts.length > 50) return;
     for (let i = 0; i < 14; i++) {
         const size = 0.04 + Math.random()*0.12;
         const m = new THREE.Mesh(
@@ -3728,7 +3763,7 @@ function spawnImpact(position, color) {
 //  DEATH EXPLOSION
 // ================================================================
 function spawnDeathExplosion(pos, size) {
-    const count = 12 + Math.floor(Math.random() * 8);
+    const count = 6 + Math.floor(Math.random() * 4);
     for (let i = 0; i < count; i++) {
         const chunkSize = (0.1 + Math.random() * 0.2) * size;
         const chunk = new THREE.Mesh(
@@ -5252,7 +5287,7 @@ function animate() {
         // Trail particles
         p.trailTimer = (p.trailTimer || 0) - dt;
         if (p.trailTimer <= 0) {
-            p.trailTimer = 0.03;
+            p.trailTimer = 0.08;
             const tCol = p.isEnemy ? 0xffaaaa : (p.trailColor || 0xddeeff);
             const t = new THREE.Mesh(
                 new THREE.SphereGeometry(0.08, 4, 4),
@@ -5385,7 +5420,7 @@ function animate() {
     // ---- Multi sync ----
     if (bc) {
         posTimer -= dt;
-        if (posTimer <= 0) { posTimer = 0.05; sendPos(); }
+        if (posTimer <= 0) { posTimer = 0.1; sendPos(); }
     }
 
     // ---- HUD ----
