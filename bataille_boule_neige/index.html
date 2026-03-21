@@ -1085,7 +1085,7 @@
     <div class="lobby-info-card">
         <div style="color:#8ab;font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;font-weight:700;">Code du salon</div>
         <div class="lobby-code" id="lobby-code">&mdash;</div>
-        <div style="color:#556;font-size:0.8rem;margin-bottom:14px;">Ouvrez un nouvel onglet et entrez ce code pour rejoindre</div>
+        <div style="color:#556;font-size:0.8rem;margin-bottom:14px;">Envoie ce code à ton ami pour qu'il te rejoigne !</div>
         <ul class="player-list" id="player-list"></ul>
     </div>
     <div>
@@ -1185,6 +1185,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 // Polyfill roundRect
 if (!CanvasRenderingContext2D.prototype.roundRect) {
@@ -3965,9 +3966,11 @@ function updateWaveProgress() {
 }
 
 // ================================================================
-//  MULTIPLAYER (BroadcastChannel)
+//  MULTIPLAYER (PeerJS)
 // ================================================================
-let bc = null;
+let peer = null;
+let connections = []; // array of DataConnection objects
+let bc = null; // compatibility wrapper that broadcasts to all connections
 let myId = Math.random().toString(36).substr(2, 8);
 let isHost = false;
 let lobbyCode = '';
@@ -3978,8 +3981,14 @@ let multiStarted = false;
 function generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let c = '';
-    for (let i = 0; i < 5; i++) c += chars[Math.floor(Math.random()*chars.length)];
+    for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
     return c;
+}
+
+function broadcastMessage(msg) {
+    connections.forEach(conn => {
+        if (conn.open) conn.send(msg);
+    });
 }
 
 function createPlayerMesh(colorIdx) {
@@ -3988,72 +3997,138 @@ function createPlayerMesh(colorIdx) {
     return g;
 }
 
+function handleMultiMessage(msg) {
+    if (msg.from === myId) return;
+    // Host relays messages to all other connections
+    if (isHost) {
+        connections.forEach(conn => {
+            if (conn.open && conn.peer !== 'snowball-' + lobbyCode + '-' + msg.from) {
+                conn.send(msg);
+            }
+        });
+    }
+    switch (msg.type) {
+        case 'join': {
+            if (isHost) {
+                const idx = Object.keys(multiPlayers).length + 1;
+                multiPlayers[msg.from] = { name: PLAYER_NAMES[idx], colorIdx: idx, x:0, y:1.7, z:0, yaw:0, hp:100, kills:0 };
+                bc.postMessage({ type:'lobby-state', from:myId, players: {...multiPlayers, [myId]:{name:PLAYER_NAMES[0],colorIdx:selectedSkin}} });
+                updateLobbyUI();
+            }
+            break;
+        }
+        case 'lobby-state': {
+            multiPlayers = msg.players;
+            if (multiPlayers[myId]) player.colorIdx = multiPlayers[myId].colorIdx;
+            updateLobbyUI();
+            break;
+        }
+        case 'start': {
+            if (!isHost) { multiStarted = true; launchGame('multi'); }
+            break;
+        }
+        case 'pos': {
+            if (multiPlayers[msg.from]) {
+                Object.assign(multiPlayers[msg.from], {x:msg.x, y:msg.y, z:msg.z, yaw:msg.yaw, hp:msg.hp, kills:msg.kills});
+            }
+            if (!otherPlayerMeshes[msg.from] && msg.from !== myId) {
+                otherPlayerMeshes[msg.from] = createPlayerMesh(multiPlayers[msg.from]?.colorIdx || 0);
+            }
+            const m = otherPlayerMeshes[msg.from];
+            if (m) { m.position.set(msg.x, 0, msg.z); m.rotation.y = msg.yaw; m.visible = msg.hp > 0; }
+            break;
+        }
+        case 'shoot': {
+            shootSnowball(new THREE.Vector3(msg.ox,msg.oy,msg.oz), new THREE.Vector3(msg.dx,msg.dy,msg.dz), false, msg.from);
+            break;
+        }
+        case 'enemy-spawn': {
+            if (!isHost) enemies.push(createEnemy(msg.etype, {x:msg.ex, z:msg.ez}));
+            break;
+        }
+        case 'enemy-hit': {
+            if (!isHost) {
+                const e = enemies[msg.idx];
+                if (e) { e.hp -= msg.dmg; if (e.hp <= 0) { spawnDeathExplosion(e.mesh.position.clone(), e.r || 1); spawnImpact(e.mesh.position.clone().setY(1), 0xe94560); scene.remove(e.mesh); if (e.isBoss) currentBoss = null; enemies.splice(msg.idx, 1); addKillMessage(msg.ename); } }
+            }
+            break;
+        }
+        case 'wave': {
+            if (!isHost) { wave = msg.wave; betweenWaves = msg.between; showWaveBanner(msg.text); updateWaveProgress(); }
+            break;
+        }
+        case 'victory': { showVictory(); break; }
+        case 'leave': {
+            if (otherPlayerMeshes[msg.from]) { scene.remove(otherPlayerMeshes[msg.from]); delete otherPlayerMeshes[msg.from]; }
+            delete multiPlayers[msg.from];
+            break;
+        }
+    }
+}
+
+function setupConnection(conn) {
+    conn.on('open', () => {
+        console.log('Connection established with:', conn.peer);
+        if (!connections.includes(conn)) connections.push(conn);
+        // If joining, send join message
+        if (!isHost) {
+            conn.send({ type: 'join', from: myId });
+        }
+    });
+    conn.on('data', (msg) => {
+        handleMultiMessage(msg);
+    });
+    conn.on('close', () => {
+        connections = connections.filter(c => c !== conn);
+        handleMultiMessage({ type: 'leave', from: conn.peer });
+    });
+    conn.on('error', (err) => {
+        console.error('Connection error:', err);
+    });
+}
+
 function initMulti(code, hosting) {
     lobbyCode = code;
     isHost = hosting;
-    bc = new BroadcastChannel('snowball_' + code);
 
-    bc.onmessage = (ev) => {
-        const msg = ev.data;
-        if (msg.from === myId) return;
-        switch (msg.type) {
-            case 'join': {
-                if (isHost) {
-                    const idx = Object.keys(multiPlayers).length + 1;
-                    multiPlayers[msg.from] = { name: PLAYER_NAMES[idx], colorIdx: idx, x:0, y:1.7, z:0, yaw:0, hp:100, kills:0 };
-                    bc.postMessage({ type:'lobby-state', from:myId, players: {...multiPlayers, [myId]:{name:PLAYER_NAMES[0],colorIdx:selectedSkin}} });
-                    updateLobbyUI();
-                }
-                break;
-            }
-            case 'lobby-state': {
-                multiPlayers = msg.players;
-                if (multiPlayers[myId]) player.colorIdx = multiPlayers[myId].colorIdx;
-                updateLobbyUI();
-                break;
-            }
-            case 'start': {
-                if (!isHost) { multiStarted = true; launchGame('multi'); }
-                break;
-            }
-            case 'pos': {
-                if (multiPlayers[msg.from]) {
-                    Object.assign(multiPlayers[msg.from], {x:msg.x, y:msg.y, z:msg.z, yaw:msg.yaw, hp:msg.hp, kills:msg.kills});
-                }
-                if (!otherPlayerMeshes[msg.from] && msg.from !== myId) {
-                    otherPlayerMeshes[msg.from] = createPlayerMesh(multiPlayers[msg.from]?.colorIdx || 0);
-                }
-                const m = otherPlayerMeshes[msg.from];
-                if (m) { m.position.set(msg.x, 0, msg.z); m.rotation.y = msg.yaw; m.visible = msg.hp > 0; }
-                break;
-            }
-            case 'shoot': {
-                shootSnowball(new THREE.Vector3(msg.ox,msg.oy,msg.oz), new THREE.Vector3(msg.dx,msg.dy,msg.dz), false, msg.from);
-                break;
-            }
-            case 'enemy-spawn': {
-                if (!isHost) enemies.push(createEnemy(msg.etype, {x:msg.ex, z:msg.ez}));
-                break;
-            }
-            case 'enemy-hit': {
-                if (!isHost) {
-                    const e = enemies[msg.idx];
-                    if (e) { e.hp -= msg.dmg; if (e.hp <= 0) { spawnDeathExplosion(e.mesh.position.clone(), e.r || 1); spawnImpact(e.mesh.position.clone().setY(1), 0xe94560); scene.remove(e.mesh); if (e.isBoss) currentBoss = null; enemies.splice(msg.idx, 1); addKillMessage(msg.ename); } }
-                }
-                break;
-            }
-            case 'wave': {
-                if (!isHost) { wave = msg.wave; betweenWaves = msg.between; showWaveBanner(msg.text); updateWaveProgress(); }
-                break;
-            }
-            case 'victory': { showVictory(); break; }
-            case 'leave': {
-                if (otherPlayerMeshes[msg.from]) { scene.remove(otherPlayerMeshes[msg.from]); delete otherPlayerMeshes[msg.from]; }
-                delete multiPlayers[msg.from];
-                break;
-            }
+    // Create a fake bc object for compatibility with existing code
+    bc = {
+        postMessage: function(msg) { broadcastMessage(msg); },
+        close: function() {
+            connections.forEach(c => c.close());
+            connections = [];
+            if (peer) { peer.destroy(); peer = null; }
         }
     };
+
+    const peerId = 'snowball-' + code + (hosting ? '-host' : '-' + myId);
+
+    peer = new Peer(peerId);
+
+    peer.on('error', (err) => {
+        console.error('PeerJS error:', err);
+        if (err.type === 'unavailable-id') {
+            if (!hosting) {
+                const hostId = 'snowball-' + code + '-host';
+                const conn = peer.connect(hostId, {reliable: true});
+                setupConnection(conn);
+            }
+        }
+    });
+
+    peer.on('open', (id) => {
+        console.log('PeerJS connected with ID:', id);
+        if (hosting) {
+            peer.on('connection', (conn) => {
+                connections.push(conn);
+                setupConnection(conn);
+            });
+        } else {
+            const hostId = 'snowball-' + code + '-host';
+            const conn = peer.connect(hostId, {reliable: true});
+            setupConnection(conn);
+        }
+    });
 }
 
 function updateLobbyUI() {
@@ -4683,7 +4758,7 @@ document.getElementById('btn-join-confirm').onclick = () => {
     const code = document.getElementById('join-code-input').value.trim().toUpperCase();
     if (code.length < 3) return;
     initMulti(code, false);
-    bc.postMessage({ type: 'join', from: myId });
+    // Join message is sent automatically by setupConnection when connection opens
     document.getElementById('lobby-code').textContent = code;
     document.getElementById('btn-lobby-start').style.display = 'none';
     showModal('lobby-screen');
