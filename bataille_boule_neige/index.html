@@ -323,6 +323,73 @@
             100% { transform: translateY(calc(100vh + 20px)) rotate(360deg); opacity: 0; }
         }
 
+        /* ---- SHOP ---- */
+        #shop-screen {
+            background: linear-gradient(180deg, #0d1a30 0%, #1a2a4a 100%);
+            overflow-y: auto;
+        }
+        .shop-header {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 15px 25px; position: sticky; top: 0;
+            background: rgba(13,26,48,0.95); z-index: 10; backdrop-filter: blur(8px);
+        }
+        .shop-title { font-family: 'Lilita One', sans-serif; font-size: 1.5rem; color: #ffd700; }
+        .coin-display {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,215,0,0.15); border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 25px; padding: 6px 16px; font-weight: 900; color: #ffd700; font-size: 1.1rem;
+        }
+        .coin-icon { font-size: 1.2rem; }
+        .shop-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 14px; padding: 15px 25px; width: 100%; max-width: 700px;
+        }
+        .shop-card {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 14px; text-align: center; cursor: pointer;
+            transition: all 0.25s; position: relative; overflow: hidden;
+        }
+        .shop-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); }
+        .shop-card.owned { border-color: rgba(78,204,163,0.3); }
+        .shop-card.selected { border-color: #4a9eff; box-shadow: 0 0 20px rgba(74,158,255,0.3); }
+        .shop-card-preview {
+            width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 8px;
+            border: 3px solid rgba(255,255,255,0.15); position: relative;
+        }
+        .shop-card-name { font-weight: 900; font-size: 0.9rem; margin-bottom: 2px; }
+        .shop-card-rarity { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .shop-card-price {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(255,215,0,0.15); border-radius: 12px; padding: 3px 10px;
+            font-size: 0.75rem; font-weight: 900; color: #ffd700;
+        }
+        .shop-card-owned {
+            background: rgba(78,204,163,0.2); color: #4ecca3; border-radius: 12px;
+            padding: 3px 10px; font-size: 0.7rem; font-weight: 900;
+        }
+        .shop-buy-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: linear-gradient(180deg, #ffd700, #cc9900); color: #1a1a2a;
+            border: none; border-radius: 12px; padding: 5px 14px; font-size: 0.75rem;
+            font-weight: 900; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 3px 0 #997700;
+        }
+        .shop-buy-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #997700; }
+        .shop-buy-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #997700; }
+        .shop-buy-btn:disabled { background: #555; color: #888; box-shadow: 0 3px 0 #333; cursor: not-allowed; }
+        .shop-stats {
+            display: flex; gap: 20px; justify-content: center; padding: 10px;
+            color: #8ab; font-size: 0.8rem;
+        }
+        .shop-stats span { font-weight: 900; color: #fff; }
+        .coin-popup {
+            position: fixed; z-index: 300; font-family: 'Lilita One', sans-serif;
+            font-size: 1.5rem; color: #ffd700; pointer-events: none;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            animation: coinPop 1.5s forwards;
+        }
+        @keyframes coinPop { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
+
         /* ---- MOBILE CONTROLS ---- */
         #mobile-controls { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; pointer-events: none; z-index: 55; }
         #mobile-controls.active { display: block; }
@@ -516,8 +583,9 @@
 <div class="screen-overlay hidden" id="lobby-main">
     <div class="lobby-snow" id="lobby-snow-2"></div>
 
-    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;">
+    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;gap:10px;">
         <div class="lobby-title">&#10052; Choisis ton style</div>
+        <div class="coin-display" style="font-size:0.9rem;padding:4px 12px;"><span class="coin-icon">&#129689;</span><span id="lobby-coins">0</span></div>
         <button class="lobby-back-btn" onclick="backToTitle()">&#8592; Retour</button>
     </div>
 
@@ -550,6 +618,23 @@
     </div>
 
     <div class="controls-hint" style="margin-top:5px;margin-bottom:10px;">ZQSD — Bouger &nbsp;|&nbsp; ESPACE — Sauter &nbsp;|&nbsp; SOURIS — Viser &nbsp;|&nbsp; CLIC — Lancer &nbsp;|&nbsp; R — Recharger</div>
+
+    <button class="btn btn-orange" style="margin-top:5px;padding:8px 25px;font-size:0.85rem;" onclick="openShop()">&#128722; BOUTIQUE</button>
+</div>
+
+<!-- ============ BOUTIQUE ============ -->
+<div class="screen-overlay hidden" id="shop-screen">
+    <div class="shop-header">
+        <div class="shop-title">&#128722; Boutique</div>
+        <div class="coin-display"><span class="coin-icon">&#129689;</span><span id="shop-coins">0</span></div>
+        <button class="lobby-back-btn" onclick="closeShop()">&#8592; Retour</button>
+    </div>
+    <div class="shop-stats">
+        Parties: <span id="stat-games">0</span> &nbsp;|&nbsp;
+        Kills: <span id="stat-kills">0</span> &nbsp;|&nbsp;
+        Victoires: <span id="stat-wins">0</span>
+    </div>
+    <div class="shop-grid" id="shop-grid"></div>
 </div>
 
 <!-- ============ MULTI CHOICE MODAL ============ -->
@@ -690,10 +775,23 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 // ================================================================
 const TOTAL_WAVES = 10;
 const MAP_SIZE = 120;
-const PLAYER_COLORS = ['#4a9eff','#4ecca3','#f0a500','#e94560','#aa66ff'];
-const PLAYER_COLOR_HEX = [0x4a9eff, 0x4ecca3, 0xf0a500, 0xe94560, 0xaa66ff];
+const PLAYER_COLORS = ['#4a9eff','#4ecca3','#f0a500','#e94560','#aa66ff','#ff69b4','#00ced1','#ff4500','#7fff00','#ffd700','#dc143c','#1e90ff'];
+const PLAYER_COLOR_HEX = [0x4a9eff, 0x4ecca3, 0xf0a500, 0xe94560, 0xaa66ff, 0xff69b4, 0x00ced1, 0xff4500, 0x7fff00, 0xffd700, 0xdc143c, 0x1e90ff];
 const PLAYER_NAMES = ['Joueur 1','Joueur 2','Joueur 3','Joueur 4','Joueur 5'];
-const SKIN_NAMES = ['Blizzard','Menthe','Soleil','Flamme','Mystic'];
+const SKIN_NAMES = ['Blizzard','Menthe','Soleil','Flamme','Mystic','Sakura','Glacier','Inferno','Toxic','Royal','Rubis','Arctique'];
+const SKIN_PRICES = [0, 0, 0, 0, 0, 150, 200, 250, 300, 500, 400, 350]; // 0 = free (starter skins)
+const SKIN_RARITY = ['Commun','Commun','Commun','Commun','Commun','Rare','Rare','Épique','Épique','Légendaire','Épique','Rare'];
+const RARITY_COLORS = {'Commun':'#8ab','Rare':'#4a9eff','Épique':'#aa66ff','Légendaire':'#ffd700'};
+
+// ---- SAVE SYSTEM (localStorage) ----
+function loadSave() {
+    try {
+        const s = JSON.parse(localStorage.getItem('snowball_save') || '{}');
+        return { coins: s.coins || 0, owned: s.owned || [0,1,2,3,4], stats: s.stats || {games:0,kills:0,wins:0} };
+    } catch(e) { return { coins: 0, owned: [0,1,2,3,4], stats:{games:0,kills:0,wins:0} }; }
+}
+function writeSave(data) { localStorage.setItem('snowball_save', JSON.stringify(data)); }
+let saveData = loadSave();
 const enemyNames = ['Olaf','Yeti','Flocon','Givre','Blizzard','Glaçon','Frostbite','Avalanche','Polaire','Stalactite'];
 
 let selectedSkin = 0;
@@ -916,22 +1014,137 @@ lobbyScene.add(lobbyCharacter);
 //  SKIN SELECTOR UI
 // ================================================================
 const skinSelector = document.getElementById('skin-selector');
-PLAYER_COLORS.forEach((col, i) => {
-    const btn = document.createElement('div');
-    btn.className = 'skin-btn' + (i === 0 ? ' active' : '');
-    btn.innerHTML = `<div class="skin-color" style="background:${col}"></div>`;
-    btn.onclick = () => {
-        selectedSkin = i;
-        document.querySelectorAll('.skin-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        // Update lobby character
-        lobbyScene.remove(lobbyCharacter);
-        lobbyCharacter = createCharacterModel(i, true);
-        lobbyScene.add(lobbyCharacter);
-        document.getElementById('char-name').textContent = SKIN_NAMES[i];
-    };
-    skinSelector.appendChild(btn);
-});
+function buildSkinSelector() {
+    skinSelector.innerHTML = '';
+    saveData.owned.forEach(i => {
+        const col = PLAYER_COLORS[i];
+        const btn = document.createElement('div');
+        btn.className = 'skin-btn' + (i === selectedSkin ? ' active' : '');
+        btn.innerHTML = `<div class="skin-color" style="background:${col}"></div>`;
+        btn.onclick = () => {
+            selectedSkin = i;
+            document.querySelectorAll('#skin-selector .skin-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            lobbyScene.remove(lobbyCharacter);
+            lobbyCharacter = createCharacterModel(i, true);
+            lobbyScene.add(lobbyCharacter);
+            document.getElementById('char-name').textContent = SKIN_NAMES[i];
+            document.getElementById('char-subtitle').textContent = SKIN_RARITY[i];
+            document.getElementById('char-subtitle').style.color = RARITY_COLORS[SKIN_RARITY[i]];
+        };
+        skinSelector.appendChild(btn);
+    });
+}
+buildSkinSelector();
+
+// ================================================================
+//  SHOP SYSTEM
+// ================================================================
+function updateCoinDisplays() {
+    const c = saveData.coins;
+    const el1 = document.getElementById('shop-coins');
+    const el2 = document.getElementById('lobby-coins');
+    if (el1) el1.textContent = c;
+    if (el2) el2.textContent = c;
+}
+updateCoinDisplays();
+
+function earnCoins(amount, x, y) {
+    saveData.coins += amount;
+    writeSave(saveData);
+    updateCoinDisplays();
+    // Popup animation
+    const pop = document.createElement('div');
+    pop.className = 'coin-popup';
+    pop.textContent = `+${amount} \u{1FA99}`;
+    pop.style.left = (x || window.innerWidth/2) + 'px';
+    pop.style.top = (y || window.innerHeight/2) + 'px';
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 1500);
+}
+
+function buildShopGrid() {
+    const grid = document.getElementById('shop-grid');
+    grid.innerHTML = '';
+    SKIN_NAMES.forEach((name, i) => {
+        const owned = saveData.owned.includes(i);
+        const selected = i === selectedSkin;
+        const price = SKIN_PRICES[i];
+        const rarity = SKIN_RARITY[i];
+        const canBuy = !owned && saveData.coins >= price;
+
+        const card = document.createElement('div');
+        card.className = 'shop-card' + (owned ? ' owned' : '') + (selected ? ' selected' : '');
+
+        card.innerHTML = `
+            <div class="shop-card-preview" style="background:${PLAYER_COLORS[i]};border-color:${RARITY_COLORS[rarity]}"></div>
+            <div class="shop-card-name">${name}</div>
+            <div class="shop-card-rarity" style="color:${RARITY_COLORS[rarity]}">${rarity}</div>
+            ${owned
+                ? (selected ? '<div class="shop-card-owned">Équipé</div>' : '<div class="shop-card-owned">Possédé</div>')
+                : (price === 0
+                    ? '<div class="shop-card-owned">Gratuit</div>'
+                    : `<button class="shop-buy-btn" ${canBuy?'':'disabled'} data-idx="${i}">\u{1FA99} ${price}</button>`
+                )
+            }
+        `;
+
+        if (owned) {
+            card.onclick = () => {
+                selectedSkin = i;
+                lobbyScene.remove(lobbyCharacter);
+                lobbyCharacter = createCharacterModel(i, true);
+                lobbyScene.add(lobbyCharacter);
+                document.getElementById('char-name').textContent = SKIN_NAMES[i];
+                buildShopGrid();
+                buildSkinSelector();
+            };
+        }
+        grid.appendChild(card);
+    });
+
+    // Buy button handlers
+    grid.querySelectorAll('.shop-buy-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.idx);
+            const price = SKIN_PRICES[idx];
+            if (saveData.coins >= price) {
+                saveData.coins -= price;
+                saveData.owned.push(idx);
+                saveData.owned.sort((a,b) => a-b);
+                writeSave(saveData);
+                updateCoinDisplays();
+                // Select the newly bought skin
+                selectedSkin = idx;
+                lobbyScene.remove(lobbyCharacter);
+                lobbyCharacter = createCharacterModel(idx, true);
+                lobbyScene.add(lobbyCharacter);
+                document.getElementById('char-name').textContent = SKIN_NAMES[idx];
+                buildShopGrid();
+                buildSkinSelector();
+            }
+        };
+    });
+
+    // Update stats
+    document.getElementById('stat-games').textContent = saveData.stats.games;
+    document.getElementById('stat-kills').textContent = saveData.stats.kills;
+    document.getElementById('stat-wins').textContent = saveData.stats.wins;
+}
+
+function openShop() {
+    document.getElementById('lobby-main').classList.add('hidden');
+    document.getElementById('shop-screen').classList.remove('hidden');
+    buildShopGrid();
+}
+
+function closeShop() {
+    document.getElementById('shop-screen').classList.add('hidden');
+    document.getElementById('lobby-main').classList.remove('hidden');
+    buildSkinSelector();
+    updateCoinDisplays();
+}
 
 // ================================================================
 //  MODE SELECTOR
@@ -2601,7 +2814,13 @@ function showScoreDisplay(containerId) {
 function showGameOver() {
     gameRunning = false;
     document.exitPointerLock();
-    document.getElementById('gameover-sub').textContent = `Tu as survécu jusqu'à la vague ${wave} / ${TOTAL_WAVES}`;
+    // Save stats & earn coins for waves completed
+    saveData.stats.games++;
+    saveData.stats.kills += player.kills;
+    const waveBonus = wave * 5;
+    earnCoins(waveBonus);
+    writeSave(saveData);
+    document.getElementById('gameover-sub').textContent = `Tu as survécu jusqu'à la vague ${wave} / ${TOTAL_WAVES} (+${waveBonus} pièces)`;
     showScoreDisplay('gameover-scores');
     showGameOverlay('gameover-screen');
 }
@@ -2609,7 +2828,14 @@ function showGameOver() {
 function showVictory() {
     gameRunning = false;
     document.exitPointerLock();
-    let sub = 'Tu as survécu aux 10 vagues !';
+    // Save stats & earn big victory bonus
+    saveData.stats.games++;
+    saveData.stats.kills += player.kills;
+    saveData.stats.wins++;
+    const victoryBonus = 100;
+    earnCoins(victoryBonus);
+    writeSave(saveData);
+    let sub = `Tu as survécu aux 10 vagues ! (+${victoryBonus} pièces)`;
     if (currentMode === 'multi') {
         let totalKills = player.kills;
         Object.values(multiPlayers).forEach(p => { if (p.kills) totalKills += p.kills; });
@@ -2874,6 +3100,8 @@ function animate() {
                         scene.remove(e.mesh);
                         if (p.shooterIdx === myId || currentMode === 'solo') {
                             player.kills++; player.score += e.scoreVal;
+                            const coinReward = e.type==='tank'?6:e.type==='fast'?3:2;
+                            earnCoins(coinReward);
                         }
                         addKillMessage(e.name);
                         if (bc) bc.postMessage({type:'enemy-hit',from:myId, idx:i, dmg:25, ename:e.name});
