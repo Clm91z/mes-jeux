@@ -4035,34 +4035,55 @@ function buildMiniIsland(mapIdx) {
 
     } else if (mapIdx === 3) {
         // ---- LAVE (Lava/Volcano) ----
-        // Volcano peak in center
+        // Volcano peak in center - positioned above terrain
+        const vBase = 0.5; // fixed base height
         const volcano = new THREE.Mesh(
-            new THREE.ConeGeometry(3, 6, 12),
-            new THREE.MeshToonMaterial({color:0x3a2218, gradientMap:toonGradient})
+            new THREE.ConeGeometry(3.5, 7, 12),
+            new THREE.MeshToonMaterial({color:0x3a2218, gradientMap:toonGradient, flatShading:true})
         );
-        const vh = heightAt(1, -1, mapIdx);
-        volcano.position.set(1, vh+1.5, -1);
+        volcano.position.set(1, vBase+3.5, -1);
         g.add(volcano);
+        // Rocky texture layer
+        const volcRock = new THREE.Mesh(
+            new THREE.ConeGeometry(3.2, 6.5, 8),
+            new THREE.MeshToonMaterial({color:0x2a1810, gradientMap:toonGradient, flatShading:true, transparent:true, opacity:0.6})
+        );
+        volcRock.position.set(1, vBase+3.3, -1);
+        volcRock.rotation.y = 0.4;
+        g.add(volcRock);
         // Glowing crater at top
         const crater = new THREE.Mesh(
-            new THREE.CylinderGeometry(1.0, 0.6, 0.6, 10),
+            new THREE.CylinderGeometry(1.2, 0.8, 0.8, 10),
             new THREE.MeshBasicMaterial({color:0xff4400})
         );
-        crater.position.set(1, vh+5.0, -1);
+        crater.position.set(1, vBase+7.2, -1);
         g.add(crater);
+        // Lava glow light
+        const lavaLight = new THREE.PointLight(0xff4400, 1.5, 12);
+        lavaLight.position.set(1, vBase+7.5, -1);
+        g.add(lavaLight);
         // Lava rivers (winding orange emissive planes)
-        for (let i = 0; i < 3; i++) {
-            const la = (i/3)*Math.PI*2, ld = 2+i*1.5;
+        for (let i = 0; i < 4; i++) {
+            const la = (i/4)*Math.PI*2 + 0.3, ld = 3+i*1.2;
             const lx = Math.cos(la)*ld+1, lz = Math.sin(la)*ld-1;
             const lh = heightAt(lx, lz, mapIdx);
             const lava = new THREE.Mesh(
-                new THREE.PlaneGeometry(0.5, 3),
-                new THREE.MeshBasicMaterial({color:0xff5500, transparent:true, opacity:0.9})
+                new THREE.PlaneGeometry(0.6, 3.5),
+                new THREE.MeshBasicMaterial({color:0xff5500, transparent:true, opacity:0.85, side:THREE.DoubleSide})
             );
             lava.rotation.x = -Math.PI/2;
             lava.rotation.z = la;
-            lava.position.set(lx, lh+0.1, lz);
+            lava.position.set(lx, Math.max(lh, 0.3)+0.15, lz);
             g.add(lava);
+            // Lava glow on river
+            const lavaGlow = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.8, 3.8),
+                new THREE.MeshBasicMaterial({color:0xff2200, transparent:true, opacity:0.3, side:THREE.DoubleSide})
+            );
+            lavaGlow.rotation.x = -Math.PI/2;
+            lavaGlow.rotation.z = la;
+            lavaGlow.position.set(lx, Math.max(lh, 0.3)+0.12, lz);
+            g.add(lavaGlow);
         }
         // Dead burnt trees
         for (let i = 0; i < 5; i++) {
@@ -4079,12 +4100,12 @@ function buildMiniIsland(mapIdx) {
             g.add(trunk);
         }
         // Smoke particles (grey spheres floating up)
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 8; i++) {
             const smoke = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2+Math.random()*0.3, 6, 6),
-                new THREE.MeshToonMaterial({color:0x555555, transparent:true, opacity:0.4, gradientMap:toonGradient})
+                new THREE.SphereGeometry(0.15+Math.random()*0.35, 6, 6),
+                new THREE.MeshToonMaterial({color:0x555555, transparent:true, opacity:0.3+Math.random()*0.2, gradientMap:toonGradient})
             );
-            smoke.position.set(1+(Math.random()-0.5)*1.5, vh+5.5+Math.random()*3, -1+(Math.random()-0.5)*1.5);
+            smoke.position.set(1+(Math.random()-0.5)*1.2, vBase+7.5+Math.random()*4, -1+(Math.random()-0.5)*1.2);
             g.add(smoke);
         }
         // Orange/red PointLight for glow
