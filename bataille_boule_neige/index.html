@@ -3834,9 +3834,10 @@ function buildMiniIsland(mapIdx) {
     }
     terrGeo.setAttribute('color', new THREE.Float32BufferAttribute(tColors, 3));
     terrGeo.computeVertexNormals();
-    const terrainShininess = mapIdx === 2 ? 120 : mapIdx === 0 ? 60 : 30;
-    const terrain = new THREE.Mesh(terrGeo, new THREE.MeshPhongMaterial({
-        vertexColors:true, shininess:terrainShininess, flatShading:false
+    const terrainRoughness = mapIdx === 2 ? 0.2 : 0.75;
+    const terrainMetalness = mapIdx === 2 ? 0.15 : mapIdx === 3 ? 0.1 : 0.02;
+    const terrain = new THREE.Mesh(terrGeo, new THREE.MeshStandardMaterial({
+        vertexColors:true, roughness:terrainRoughness, metalness:terrainMetalness, flatShading:false
     }));
     terrain.rotation.x = -Math.PI/2;
     g.add(terrain);
@@ -3867,8 +3868,8 @@ function buildMiniIsland(mapIdx) {
     }
     cliffGeo.setAttribute('color', new THREE.Float32BufferAttribute(cliffColors, 3));
     cliffGeo.computeVertexNormals();
-    const cliff = new THREE.Mesh(cliffGeo, new THREE.MeshPhongMaterial({
-        vertexColors:true, shininess:8, flatShading:true, side:THREE.DoubleSide
+    const cliff = new THREE.Mesh(cliffGeo, new THREE.MeshStandardMaterial({
+        vertexColors:true, roughness:0.9, metalness:0.05, flatShading:true, side:THREE.DoubleSide
     }));
     cliff.position.y = -2.5;
     g.add(cliff);
@@ -3886,7 +3887,7 @@ function buildMiniIsland(mapIdx) {
         }
     }
     const bottomColor = mapIdx===3 ? 0x1a0a05 : mapIdx===4 ? 0x0a0520 : mapIdx===7 ? 0x5a2040 : 0x3a2a1a;
-    const bottom = new THREE.Mesh(bottomGeo, new THREE.MeshToonMaterial({color:bottomColor, side:THREE.DoubleSide, gradientMap: toonGradient}));
+    const bottom = new THREE.Mesh(bottomGeo, new THREE.MeshStandardMaterial({color:bottomColor, side:THREE.DoubleSide, roughness:0.85, metalness:0.05}));
     bottom.rotation.x = Math.PI/2;
     bottom.position.y = -5;
     g.add(bottom);
@@ -3895,12 +3896,12 @@ function buildMiniIsland(mapIdx) {
     const wColor = waterThemeColors[m.theme] || 0x2277aa;
     const isLava = m.theme === 'lave';
     const waterMat = isLava
-        ? new THREE.MeshBasicMaterial({color:wColor, transparent:true, opacity:0.9})
+        ? new THREE.MeshStandardMaterial({color:0xff3300, roughness:0.3, metalness:0.1, emissive:0xff2200, emissiveIntensity:0.6, transparent:true, opacity:0.9})
         : m.theme === 'meteorite'
-            ? new THREE.MeshPhongMaterial({color:wColor, shininess:100, emissive:0x110022, emissiveIntensity:0.3, transparent:true, opacity:0.85})
+            ? new THREE.MeshStandardMaterial({color:wColor, roughness:0.1, metalness:0.3, emissive:0x110022, emissiveIntensity:0.3, transparent:true, opacity:0.85})
             : m.theme === 'bonbon'
-                ? new THREE.MeshPhongMaterial({color:wColor, shininess:150, specular:0xffaadd, transparent:true, opacity:0.8})
-                : new THREE.MeshPhongMaterial({color:wColor, shininess:200, specular:0x88aacc, transparent:true, opacity:0.85});
+                ? new THREE.MeshStandardMaterial({color:wColor, roughness:0.1, metalness:0.3, transparent:true, opacity:0.8})
+                : new THREE.MeshStandardMaterial({color:wColor, roughness:0.1, metalness:0.3, transparent:true, opacity:0.85});
     const waterDisc = new THREE.Mesh(new THREE.CircleGeometry(10, seg), waterMat);
     waterDisc.rotation.x = -Math.PI/2;
     waterDisc.position.y = -0.5;
@@ -3908,7 +3909,7 @@ function buildMiniIsland(mapIdx) {
     // Depth layer - slightly lower, darker, more transparent
     const deepColor = isLava ? 0xaa1100 : m.theme==='meteorite' ? 0x0a0020 : m.theme==='bonbon' ? 0xcc5599 : 0x0a3355;
     const deepDisc = new THREE.Mesh(new THREE.CircleGeometry(10.5, seg),
-        new THREE.MeshPhongMaterial({color:deepColor, transparent:true, opacity:0.5, shininess:50}));
+        new THREE.MeshStandardMaterial({color:deepColor, transparent:true, opacity:0.5, roughness:0.15, metalness:0.2}));
     deepDisc.rotation.x = -Math.PI/2;
     deepDisc.position.y = -0.9;
     g.add(deepDisc);
@@ -3928,17 +3929,17 @@ function buildMiniIsland(mapIdx) {
             const tg = new THREE.Group();
             const sc = 0.5+Math.random()*0.5;
             // Trunk with slight taper
-            tg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.12,1.1*sc,6), new THREE.MeshToonMaterial({color:0x4a2a10, gradientMap:toonGradient})));
+            tg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.12,1.1*sc,6), new THREE.MeshStandardMaterial({color:0x4a2a10, roughness:0.9, metalness:0.0})));
             tg.children[0].position.y = 0.55*sc;
             // 3 tiers of round puffy foliage
             for (let j = 0; j < 3; j++) {
                 const fr = (0.75-j*0.2)*sc;
-                const foliage = new THREE.Mesh(new THREE.SphereGeometry(fr, 10, 8), new THREE.MeshToonMaterial({color:0x1d6a22, gradientMap:toonGradient}));
+                const foliage = new THREE.Mesh(new THREE.SphereGeometry(fr, 10, 8), new THREE.MeshStandardMaterial({color:0x1d6a22, roughness:0.8, metalness:0.0}));
                 foliage.position.y = (1.0+j*0.6)*sc;
                 foliage.scale.y = 0.7;
                 tg.add(foliage);
                 // Thick snow cap on each tier
-                const snowCap = new THREE.Mesh(new THREE.SphereGeometry(fr*0.9, 10, 6, 0, Math.PI*2, 0, Math.PI*0.4), new THREE.MeshToonMaterial({color:0xf2f6fa, gradientMap:toonGradient}));
+                const snowCap = new THREE.Mesh(new THREE.SphereGeometry(fr*0.9, 10, 6, 0, Math.PI*2, 0, Math.PI*0.4), new THREE.MeshStandardMaterial({color:0xf2f6fa, roughness:0.3, metalness:0.1}));
                 snowCap.position.y = (1.15+j*0.6)*sc;
                 tg.add(snowCap);
             }
@@ -3952,13 +3953,13 @@ function buildMiniIsland(mapIdx) {
             const lakeR = 1.5 + li*0.5;
             // White ice border ring
             const border = new THREE.Mesh(new THREE.RingGeometry(lakeR-0.15, lakeR+0.1, 24),
-                new THREE.MeshToonMaterial({color:0xe8eef8, gradientMap:toonGradient, side:THREE.DoubleSide}));
+                new THREE.MeshStandardMaterial({color:0xe8eef8, roughness:0.3, metalness:0.1, side:THREE.DoubleSide}));
             border.rotation.x = -Math.PI/2;
             border.position.set(lkx, lkh+0.06, lkz);
             g.add(border);
             // Shiny transparent blue ice surface
             const lake = new THREE.Mesh(new THREE.CircleGeometry(lakeR, 24),
-                new THREE.MeshPhongMaterial({color:0x88bbdd, shininess:300, specular:0xffffff, transparent:true, opacity:0.7}));
+                new THREE.MeshStandardMaterial({color:0x88bbdd, roughness:0.1, metalness:0.3, transparent:true, opacity:0.7}));
             lake.rotation.x = -Math.PI/2;
             lake.position.set(lkx, lkh+0.05, lkz);
             g.add(lake);
@@ -3971,12 +3972,12 @@ function buildMiniIsland(mapIdx) {
             if (ih < 0.5 || ih > 3) continue;
             // Dome
             const igloo = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 8, 0, Math.PI*2, 0, Math.PI*0.5),
-                new THREE.MeshToonMaterial({color:0xe8eef4, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0xe8eef4, roughness:0.3, metalness:0.1}));
             igloo.position.set(ix, ih, iz);
             g.add(igloo);
             // Entrance tunnel (small cylinder)
             const tunnel = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.4, 8),
-                new THREE.MeshToonMaterial({color:0xdde4ea, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0xdde4ea, roughness:0.3, metalness:0.1}));
             tunnel.rotation.z = Math.PI/2;
             tunnel.position.set(ix+0.55, ih+0.15, iz);
             g.add(tunnel);
@@ -3988,13 +3989,13 @@ function buildMiniIsland(mapIdx) {
             const rh = heightAt(rx, rz, mapIdx);
             if (rh < 0.3) continue;
             const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.25+Math.random()*0.15, 0),
-                new THREE.MeshToonMaterial({color:0x778088, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x778088, roughness:0.85, metalness:0.05}));
             rock.position.set(rx, rh+0.15, rz);
             rock.rotation.set(Math.random(), Math.random(), Math.random());
             g.add(rock);
             // White snow cap on rock
             const snowTop = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 4, 0, Math.PI*2, 0, Math.PI*0.4),
-                new THREE.MeshToonMaterial({color:0xf4f8fc, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0xf4f8fc, roughness:0.3, metalness:0.1}));
             snowTop.position.set(rx, rh+0.32, rz);
             g.add(snowTop);
         }
@@ -4005,7 +4006,7 @@ function buildMiniIsland(mapIdx) {
             const sh = heightAt(sx, sz, mapIdx);
             if (sh < 0.3) continue;
             const drift = new THREE.Mesh(new THREE.SphereGeometry(0.4+Math.random()*0.3, 8, 6, 0, Math.PI*2, 0, Math.PI*0.45),
-                new THREE.MeshToonMaterial({color:0xeef2f8, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0xeef2f8, roughness:0.3, metalness:0.1}));
             drift.position.set(sx, sh, sz);
             drift.scale.set(1.5, 0.5, 0.8);
             drift.rotation.y = Math.random()*Math.PI;
@@ -4017,13 +4018,13 @@ function buildMiniIsland(mapIdx) {
         if (cbh > 0.5 && cbh < 3.5) {
             const cabin = new THREE.Group();
             // Brown walls
-            cabin.add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.7, 0.8), new THREE.MeshToonMaterial({color:0x6a4420, gradientMap:toonGradient})));
+            cabin.add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.7, 0.8), new THREE.MeshStandardMaterial({color:0x6a4420, roughness:0.9, metalness:0.0})));
             cabin.children[0].position.y = 0.35;
             // Dark red roof
-            cabin.add(new THREE.Mesh(new THREE.ConeGeometry(0.75, 0.5, 4), new THREE.MeshToonMaterial({color:0x8a2222, gradientMap:toonGradient})));
+            cabin.add(new THREE.Mesh(new THREE.ConeGeometry(0.75, 0.5, 4), new THREE.MeshStandardMaterial({color:0x8a2222, roughness:0.7, metalness:0.05})));
             cabin.children[1].position.y = 0.95; cabin.children[1].rotation.y = Math.PI/4;
             // Chimney
-            cabin.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.4, 6), new THREE.MeshToonMaterial({color:0x555555, gradientMap:toonGradient})));
+            cabin.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.4, 6), new THREE.MeshStandardMaterial({color:0x555555, roughness:0.85, metalness:0.05})));
             cabin.children[2].position.set(0.25, 1.15, 0.15);
             // Yellow glowing window
             cabin.add(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, 0.02), new THREE.MeshBasicMaterial({color:0xffee44})));
@@ -4039,12 +4040,12 @@ function buildMiniIsland(mapIdx) {
         // BIG decorated Christmas tree in center
         const ctr = new THREE.Group();
         // Trunk
-        ctr.add(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.25, 1.8, 8), new THREE.MeshToonMaterial({color:0x5a3a1a, gradientMap:toonGradient})));
+        ctr.add(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.25, 1.8, 8), new THREE.MeshStandardMaterial({color:0x5a3a1a, roughness:0.9, metalness:0.0})));
         ctr.children[0].position.y = 0.9;
         // 4 green cone tiers
         for (let j = 0; j < 4; j++) {
             const cone = new THREE.Mesh(new THREE.ConeGeometry(1.6-j*0.35, 1.3-j*0.15, 12),
-                new THREE.MeshToonMaterial({color:0x156a20, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x156a20, roughness:0.8, metalness:0.0}));
             cone.position.y = 2.0+j*0.95;
             ctr.add(cone);
         }
@@ -4076,13 +4077,13 @@ function buildMiniIsland(mapIdx) {
             const hg = new THREE.Group();
             const hw = 0.7+Math.random()*0.3, hht = 0.7+Math.random()*0.3;
             // Walls
-            hg.add(new THREE.Mesh(new THREE.BoxGeometry(hw,hht,hw), new THREE.MeshToonMaterial({color:houseColors[i%5], gradientMap:toonGradient})));
+            hg.add(new THREE.Mesh(new THREE.BoxGeometry(hw,hht,hw), new THREE.MeshStandardMaterial({color:houseColors[i%5], roughness:0.7, metalness:0.05})));
             hg.children[0].position.y = hht/2;
             // Snow roof
-            hg.add(new THREE.Mesh(new THREE.ConeGeometry(hw*0.75, 0.5, 4), new THREE.MeshToonMaterial({color:0xf0f0f8, gradientMap:toonGradient})));
+            hg.add(new THREE.Mesh(new THREE.ConeGeometry(hw*0.75, 0.5, 4), new THREE.MeshStandardMaterial({color:0xf0f0f8, roughness:0.3, metalness:0.1})));
             hg.children[1].position.y = hht+0.25; hg.children[1].rotation.y = Math.PI/4;
             // Chimney
-            hg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.3, 5), new THREE.MeshToonMaterial({color:0x884422, gradientMap:toonGradient})));
+            hg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.3, 5), new THREE.MeshStandardMaterial({color:0x884422, roughness:0.9, metalness:0.0})));
             hg.children[2].position.set(hw*0.25, hht+0.4, hw*0.1);
             // Glowing yellow windows
             const winMat = new THREE.MeshBasicMaterial({color:0xffee44});
@@ -4102,12 +4103,12 @@ function buildMiniIsland(mapIdx) {
             if (gh < 0.5 || gh > 3) continue;
             const giftCol = [0xff2244, 0x22cc44, 0x2244ff, 0xffaa22][i%4];
             const gsz = 0.2+Math.random()*0.15;
-            const gift = new THREE.Mesh(new THREE.BoxGeometry(gsz, gsz, gsz), new THREE.MeshToonMaterial({color:giftCol, gradientMap:toonGradient}));
+            const gift = new THREE.Mesh(new THREE.BoxGeometry(gsz, gsz, gsz), new THREE.MeshStandardMaterial({color:giftCol, roughness:0.4, metalness:0.1}));
             gift.position.set(gx, gh+gsz/2, gz);
             gift.rotation.y = Math.random()*Math.PI;
             g.add(gift);
             // Ribbon cross
-            const ribMat = new THREE.MeshToonMaterial({color:0xffdd00, gradientMap:toonGradient});
+            const ribMat = new THREE.MeshStandardMaterial({color:0xffdd00, roughness:0.3, metalness:0.8});
             const rib1 = new THREE.Mesh(new THREE.BoxGeometry(gsz+0.02, 0.03, 0.03), ribMat);
             rib1.position.set(gx, gh+gsz*0.8, gz);
             g.add(rib1);
@@ -4131,25 +4132,25 @@ function buildMiniIsland(mapIdx) {
         if (smh > 0.3 && smh < 3) {
             const snowman = new THREE.Group();
             // Bottom ball
-            snowman.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), new THREE.MeshStandardMaterial({color:0xf0f4f8, roughness:0.3, metalness:0.1})));
             snowman.children[0].position.y = 0.35;
             // Middle ball
-            snowman.add(new THREE.Mesh(new THREE.SphereGeometry(0.25, 10, 8), new THREE.MeshToonMaterial({color:0xf2f6fa, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.SphereGeometry(0.25, 10, 8), new THREE.MeshStandardMaterial({color:0xf2f6fa, roughness:0.3, metalness:0.1})));
             snowman.children[1].position.y = 0.8;
             // Head
-            snowman.add(new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), new THREE.MeshToonMaterial({color:0xf4f8fc, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), new THREE.MeshStandardMaterial({color:0xf4f8fc, roughness:0.3, metalness:0.1})));
             snowman.children[2].position.y = 1.15;
             // Top hat
-            snowman.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.2, 8), new THREE.MeshToonMaterial({color:0x1a1a1a, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.2, 8), new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.7, metalness:0.05})));
             snowman.children[3].position.y = 1.4;
-            snowman.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 8), new THREE.MeshToonMaterial({color:0x1a1a1a, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 8), new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.7, metalness:0.05})));
             snowman.children[4].position.y = 1.3;
             // Carrot nose
-            snowman.add(new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.2, 6), new THREE.MeshToonMaterial({color:0xff8833, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.2, 6), new THREE.MeshStandardMaterial({color:0xff8833, roughness:0.7, metalness:0.0})));
             snowman.children[5].position.set(0, 1.15, 0.2);
             snowman.children[5].rotation.x = Math.PI/2;
             // Red scarf
-            snowman.add(new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.04, 6, 12), new THREE.MeshToonMaterial({color:0xdd2222, gradientMap:toonGradient})));
+            snowman.add(new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.04, 6, 12), new THREE.MeshStandardMaterial({color:0xdd2222, roughness:0.7, metalness:0.05})));
             snowman.children[6].position.y = 0.95;
             snowman.children[6].rotation.x = Math.PI/2;
             snowman.position.set(smx, smh, smz);
@@ -4161,13 +4162,13 @@ function buildMiniIsland(mapIdx) {
             const cch = heightAt(ccx, ccz, mapIdx);
             if (cch < 0.3) continue;
             const cane = new THREE.Group();
-            cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.7, 6), new THREE.MeshToonMaterial({color:0xff2222, gradientMap:toonGradient})));
+            cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.7, 6), new THREE.MeshStandardMaterial({color:0xff2222, roughness:0.4, metalness:0.1})));
             cane.children[0].position.y = 0.35;
-            cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.08, 6), new THREE.MeshToonMaterial({color:0xffffff, gradientMap:toonGradient})));
+            cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.08, 6), new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4, metalness:0.1})));
             cane.children[1].position.y = 0.25;
-            cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.08, 6), new THREE.MeshToonMaterial({color:0xffffff, gradientMap:toonGradient})));
+            cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.08, 6), new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4, metalness:0.1})));
             cane.children[2].position.y = 0.5;
-            cane.add(new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.04, 6, 8, Math.PI), new THREE.MeshToonMaterial({color:0xff2222, gradientMap:toonGradient})));
+            cane.add(new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.04, 6, 8, Math.PI), new THREE.MeshStandardMaterial({color:0xff2222, roughness:0.4, metalness:0.1})));
             cane.children[3].position.set(0.1, 0.7, 0); cane.children[3].rotation.z = Math.PI/2;
             cane.position.set(ccx, cch, ccz);
             g.add(cane);
@@ -4175,7 +4176,7 @@ function buildMiniIsland(mapIdx) {
 
     } else if (mapIdx === 2) {
         // ---- GLACE (Frozen Ice World Diorama) ----
-        const iceMat = (op) => new THREE.MeshPhongMaterial({color:0x88ccff, shininess:300, specular:0xffffff, transparent:true, opacity:op||0.6});
+        const iceMat = (op) => new THREE.MeshStandardMaterial({color:0x88ccff, roughness:0.1, metalness:0.3, transparent:true, opacity:op||0.6});
         // 6 giant ice crystals (OctahedronGeometry)
         for (let i = 0; i < 6; i++) {
             const a = (i/6)*Math.PI*2+Math.random()*0.5, d = 1.5+Math.random()*5;
@@ -4190,7 +4191,7 @@ function buildMiniIsland(mapIdx) {
             g.add(crystal);
             // Inner glow crystal (smaller, brighter)
             const inner = new THREE.Mesh(new THREE.OctahedronGeometry(csz*0.5, 0),
-                new THREE.MeshPhongMaterial({color:0xbbddff, shininess:400, specular:0xffffff, transparent:true, opacity:0.3}));
+                new THREE.MeshStandardMaterial({color:0xbbddff, roughness:0.05, metalness:0.35, transparent:true, opacity:0.3}));
             inner.position.copy(crystal.position);
             inner.rotation.copy(crystal.rotation);
             inner.scale.copy(crystal.scale);
@@ -4203,7 +4204,7 @@ function buildMiniIsland(mapIdx) {
             if (ah < 0.3) continue;
             const arch = new THREE.Mesh(
                 new THREE.TorusGeometry(1.0+Math.random()*0.4, 0.12, 8, 16, Math.PI),
-                new THREE.MeshPhongMaterial({color:0x99ddff, shininess:300, specular:0xffffff, transparent:true, opacity:0.45}));
+                new THREE.MeshStandardMaterial({color:0x99ddff, roughness:0.1, metalness:0.3, transparent:true, opacity:0.45}));
             arch.position.set(ax, ah+0.3, az);
             arch.rotation.y = i*1.2;
             g.add(arch);
@@ -4214,14 +4215,14 @@ function buildMiniIsland(mapIdx) {
             const fx = Math.cos(fa)*fd, fz = Math.sin(fa)*fd;
             const fh = heightAt(fx, fz, mapIdx);
             const wf = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 2.8),
-                new THREE.MeshPhongMaterial({color:0xaaddff, shininess:200, transparent:true, opacity:0.45, side:THREE.DoubleSide}));
+                new THREE.MeshStandardMaterial({color:0xaaddff, roughness:0.1, metalness:0.3, transparent:true, opacity:0.45, side:THREE.DoubleSide}));
             wf.position.set(fx, fh-0.3, fz);
             wf.rotation.y = fa;
             g.add(wf);
             // Icicle details at bottom
             for (let j = 0; j < 3; j++) {
                 const icicle = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.3+Math.random()*0.2, 5),
-                    new THREE.MeshPhongMaterial({color:0xcceeFF, shininess:350, specular:0xffffff, transparent:true, opacity:0.6}));
+                    new THREE.MeshStandardMaterial({color:0xcceeFF, roughness:0.05, metalness:0.35, transparent:true, opacity:0.6}));
                 icicle.position.set(fx+(j-1)*0.2, fh-1.5, fz);
                 icicle.rotation.x = Math.PI;
                 g.add(icicle);
@@ -4235,7 +4236,7 @@ function buildMiniIsland(mapIdx) {
             if (ph < 0.3) continue;
             const pillarH = 0.8+Math.random()*1.5;
             const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, pillarH, 8),
-                new THREE.MeshPhongMaterial({color:0x88ccee, shininess:300, specular:0xffffff, transparent:true, opacity:0.5}));
+                new THREE.MeshStandardMaterial({color:0x88ccee, roughness:0.1, metalness:0.3, transparent:true, opacity:0.5}));
             pillar.position.set(px, ph+pillarH/2, pz);
             g.add(pillar);
         }
@@ -4246,7 +4247,7 @@ function buildMiniIsland(mapIdx) {
             const ph = heightAt(px, pz, mapIdx);
             if (ph < 0.3) continue;
             const ring = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.5+Math.random()*0.3, 12),
-                new THREE.MeshPhongMaterial({color:0xddeeff, shininess:200, transparent:true, opacity:0.6, side:THREE.DoubleSide}));
+                new THREE.MeshStandardMaterial({color:0xddeeff, roughness:0.1, metalness:0.3, transparent:true, opacity:0.6, side:THREE.DoubleSide}));
             ring.rotation.x = -Math.PI/2;
             ring.position.set(px, ph+0.03, pz);
             g.add(ring);
@@ -4266,7 +4267,7 @@ function buildMiniIsland(mapIdx) {
             volcColors.push((0.2+yN*0.15)*nf, (0.1+yN*0.06)*nf, (0.06+yN*0.03)*nf);
         }
         volcGeo.setAttribute('color', new THREE.Float32BufferAttribute(volcColors, 3));
-        const volcano = new THREE.Mesh(volcGeo, new THREE.MeshToonMaterial({vertexColors:true, gradientMap:toonGradient, flatShading:true}));
+        const volcano = new THREE.Mesh(volcGeo, new THREE.MeshStandardMaterial({vertexColors:true, roughness:0.9, metalness:0.1, flatShading:true}));
         volcano.position.set(1, vBase+3.5, -1);
         g.add(volcano);
         // Glowing crater at top (orange emissive)
@@ -4310,7 +4311,7 @@ function buildMiniIsland(mapIdx) {
             const th = heightAt(tx, tz, mapIdx);
             if (th < 0.3 || th > 5) continue;
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.1, 0.7+Math.random()*0.5, 5),
-                new THREE.MeshToonMaterial({color:0x1a0a05, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x1a0a05, roughness:0.9, metalness:0.0}));
             trunk.position.set(tx, th+0.35, tz);
             trunk.rotation.z = (Math.random()-0.5)*0.5;
             trunk.rotation.x = (Math.random()-0.5)*0.2;
@@ -4318,7 +4319,7 @@ function buildMiniIsland(mapIdx) {
             // Dead branch
             if (Math.random() > 0.4) {
                 const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.03, 0.3, 4),
-                    new THREE.MeshToonMaterial({color:0x1a0a05, gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:0x1a0a05, roughness:0.9, metalness:0.0}));
                 branch.position.set(tx+0.1, th+0.5, tz);
                 branch.rotation.z = -Math.PI/4;
                 g.add(branch);
@@ -4327,7 +4328,7 @@ function buildMiniIsland(mapIdx) {
         // Smoke above crater (8 grey semi-transparent spheres)
         for (let i = 0; i < 8; i++) {
             const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2+Math.random()*0.4, 8, 6),
-                new THREE.MeshToonMaterial({color:0x555555, transparent:true, opacity:0.25+Math.random()*0.15, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x555555, transparent:true, opacity:0.25+Math.random()*0.15, roughness:0.7, metalness:0.0}));
             smoke.position.set(1+(Math.random()-0.5)*1.5, vBase+8+Math.random()*4, -1+(Math.random()-0.5)*1.5);
             g.add(smoke);
         }
@@ -4338,7 +4339,7 @@ function buildMiniIsland(mapIdx) {
             const rh = heightAt(rx, rz, mapIdx);
             if (rh < 0.3) continue;
             const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2+Math.random()*0.15, 0),
-                new THREE.MeshToonMaterial({color:0x221510, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x221510, roughness:0.9, metalness:0.1}));
             rock.position.set(rx, rh+0.12, rz);
             rock.rotation.set(Math.random(), Math.random(), Math.random());
             g.add(rock);
@@ -4360,13 +4361,13 @@ function buildMiniIsland(mapIdx) {
             if (ch < 0.3) continue;
             const csz = 0.4+Math.random()*0.5;
             const crystal = new THREE.Mesh(new THREE.DodecahedronGeometry(csz, 0),
-                new THREE.MeshPhongMaterial({color:0x8855cc, emissive:0x4422aa, emissiveIntensity:0.4, shininess:120}));
+                new THREE.MeshStandardMaterial({color:0x8855cc, emissive:0x4422aa, emissiveIntensity:0.4, roughness:0.3, metalness:0.2}));
             crystal.position.set(cx, ch+1.8+Math.random()*1.5, cz);
             crystal.rotation.set(Math.random(), Math.random(), Math.random());
             g.add(crystal);
             // Small orbiting shard
             const shard = new THREE.Mesh(new THREE.OctahedronGeometry(csz*0.3, 0),
-                new THREE.MeshPhongMaterial({color:0xaa77ee, emissive:0x5533bb, emissiveIntensity:0.3, shininess:80}));
+                new THREE.MeshStandardMaterial({color:0xaa77ee, emissive:0x5533bb, emissiveIntensity:0.3, roughness:0.3, metalness:0.2}));
             shard.position.set(cx+0.5, ch+2.2+Math.random(), cz+0.3);
             g.add(shard);
         }
@@ -4378,13 +4379,13 @@ function buildMiniIsland(mapIdx) {
             if (ch < 0.3) continue;
             // Dark crater disc
             const craterDisc = new THREE.Mesh(new THREE.CircleGeometry(0.6+Math.random()*0.4, 16),
-                new THREE.MeshToonMaterial({color:0x0a0515, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x0a0515, roughness:0.85, metalness:0.05}));
             craterDisc.rotation.x = -Math.PI/2;
             craterDisc.position.set(cx, ch+0.02, cz);
             g.add(craterDisc);
             // Rim ring
             const rim = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.7+Math.random()*0.3, 16),
-                new THREE.MeshToonMaterial({color:0x2a1535, gradientMap:toonGradient, side:THREE.DoubleSide}));
+                new THREE.MeshStandardMaterial({color:0x2a1535, roughness:0.85, metalness:0.05, side:THREE.DoubleSide}));
             rim.rotation.x = -Math.PI/2;
             rim.position.set(cx, ch+0.04, cz);
             g.add(rim);
@@ -4399,7 +4400,7 @@ function buildMiniIsland(mapIdx) {
             const msc = 0.7+Math.random()*0.5;
             // Thin stem
             mg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.06, 0.4*msc, 6),
-                new THREE.MeshToonMaterial({color:0x553388, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x553388, roughness:0.7, metalness:0.0})));
             mg.children[0].position.y = 0.2*msc;
             // Glowing cap
             mg.add(new THREE.Mesh(new THREE.SphereGeometry(0.18*msc, 10, 8, 0, Math.PI*2, 0, Math.PI*0.55),
@@ -4420,7 +4421,7 @@ function buildMiniIsland(mapIdx) {
             if (rh < 0.3) continue;
             const pH = 0.8+Math.random()*0.8;
             const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, pH, 6),
-                new THREE.MeshToonMaterial({color:0x444450, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x444450, roughness:0.85, metalness:0.05}));
             pillar.position.set(rx, rh+pH/2, rz);
             pillar.rotation.z = (Math.random()-0.5)*0.4;
             pillar.rotation.x = (Math.random()-0.5)*0.3;
@@ -4459,7 +4460,7 @@ function buildMiniIsland(mapIdx) {
             if (ch < 0.3 || ch > 4) continue;
             const cg2 = new THREE.Group();
             const cHeight = 0.7+Math.random()*0.6;
-            const cactusMat = new THREE.MeshToonMaterial({color:0x2a8a2a, gradientMap:toonGradient});
+            const cactusMat = new THREE.MeshStandardMaterial({color:0x2a8a2a, roughness:0.8, metalness:0.0});
             // Main trunk
             cg2.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, cHeight, 8), cactusMat));
             cg2.children[0].position.y = cHeight/2;
@@ -4474,7 +4475,7 @@ function buildMiniIsland(mapIdx) {
             // Tiny flower on top
             if (Math.random() > 0.5) {
                 const flower = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6),
-                    new THREE.MeshToonMaterial({color:0xff4488, gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:0xff4488, roughness:0.7, metalness:0.0}));
                 flower.position.y = cHeight+0.05;
                 cg2.add(flower);
             }
@@ -4487,13 +4488,13 @@ function buildMiniIsland(mapIdx) {
             const ph = heightAt(px, pz, mapIdx);
             const pSize = 1.3-i*0.3;
             const pyramid = new THREE.Mesh(new THREE.ConeGeometry(pSize, 2.2-i*0.4, 4),
-                new THREE.MeshToonMaterial({color:0xccaa44, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0xccaa44, roughness:0.3, metalness:0.8}));
             pyramid.position.set(px, ph+1.1-i*0.2, pz);
             pyramid.rotation.y = Math.PI/4;
             g.add(pyramid);
             // Darker edge lines
             const pyEdge = new THREE.Mesh(new THREE.ConeGeometry(pSize+0.02, 2.22-i*0.4, 4),
-                new THREE.MeshToonMaterial({color:0xaa8833, gradientMap:toonGradient, wireframe:true}));
+                new THREE.MeshStandardMaterial({color:0xaa8833, roughness:0.3, metalness:0.8, wireframe:true}));
             pyEdge.position.copy(pyramid.position);
             pyEdge.rotation.y = Math.PI/4;
             g.add(pyEdge);
@@ -4501,13 +4502,13 @@ function buildMiniIsland(mapIdx) {
         // Oasis: blue water circle + 2 palm trees
         const oasisH = heightAt(-4, 3, mapIdx);
         const oasis = new THREE.Mesh(new THREE.CircleGeometry(1.5, 20),
-            new THREE.MeshPhongMaterial({color:0x22aacc, shininess:200, specular:0x88ccee, transparent:true, opacity:0.8}));
+            new THREE.MeshStandardMaterial({color:0x22aacc, roughness:0.1, metalness:0.3, transparent:true, opacity:0.85}));
         oasis.rotation.x = -Math.PI/2;
         oasis.position.set(-4, oasisH+0.05, 3);
         g.add(oasis);
         // Oasis edge (sandy ring)
         const oasisRim = new THREE.Mesh(new THREE.RingGeometry(1.4, 1.7, 20),
-            new THREE.MeshToonMaterial({color:0xaa9955, gradientMap:toonGradient, side:THREE.DoubleSide}));
+            new THREE.MeshStandardMaterial({color:0xaa9955, roughness:0.95, metalness:0.0, side:THREE.DoubleSide}));
         oasisRim.rotation.x = -Math.PI/2;
         oasisRim.position.set(-4, oasisH+0.03, 3);
         g.add(oasisRim);
@@ -4516,18 +4517,18 @@ function buildMiniIsland(mapIdx) {
             const palm = new THREE.Group();
             const pTrunkH = 1.5+Math.random()*0.5;
             palm.add(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.12, pTrunkH, 6),
-                new THREE.MeshToonMaterial({color:0x8a6a3a, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x8a6a3a, roughness:0.9, metalness:0.0})));
             palm.children[0].position.y = pTrunkH/2;
             palm.children[0].rotation.z = 0.1+Math.random()*0.1;
             // Green sphere canopy
             palm.add(new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 6),
-                new THREE.MeshToonMaterial({color:0x33aa33, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x33aa33, roughness:0.8, metalness:0.0})));
             palm.children[1].position.y = pTrunkH+0.1;
             // Drooping leaf cones
             for (let lf = 0; lf < 5; lf++) {
                 const lfA = (lf/5)*Math.PI*2;
                 const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.6, 4),
-                    new THREE.MeshToonMaterial({color:0x28aa28, gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:0x28aa28, roughness:0.8, metalness:0.0}));
                 leaf.position.set(Math.cos(lfA)*0.4+0, pTrunkH-0.1, Math.sin(lfA)*0.4);
                 leaf.rotation.x = Math.cos(lfA)*0.8;
                 leaf.rotation.z = Math.sin(lfA)*0.8;
@@ -4542,7 +4543,7 @@ function buildMiniIsland(mapIdx) {
             const bx = Math.cos(a)*d, bz = Math.sin(a)*d;
             const bh = heightAt(bx, bz, mapIdx);
             if (bh < 0.3) continue;
-            const boneMat = new THREE.MeshToonMaterial({color:0xeeddcc, gradientMap:toonGradient});
+            const boneMat = new THREE.MeshStandardMaterial({color:0xeeddcc, roughness:0.7, metalness:0.0});
             // Bone cylinder
             const bone = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.2, 5), boneMat);
             bone.position.set(bx, bh+0.03, bz);
@@ -4561,7 +4562,7 @@ function buildMiniIsland(mapIdx) {
             const rh = heightAt(rx, rz, mapIdx);
             if (rh < 0.3) continue;
             const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.25+Math.random()*0.2, 0),
-                new THREE.MeshToonMaterial({color:0xbb9955, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0xbb9955, roughness:0.85, metalness:0.05}));
             rock.position.set(rx, rh+0.15, rz);
             rock.rotation.set(Math.random(), Math.random(), Math.random());
             g.add(rock);
@@ -4572,11 +4573,11 @@ function buildMiniIsland(mapIdx) {
         if (tentH > 0.3) {
             const tent = new THREE.Group();
             tent.add(new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.9, 8),
-                new THREE.MeshToonMaterial({color:0xcc8844, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xcc8844, roughness:0.7, metalness:0.05})));
             tent.children[0].position.y = 0.45;
             // Tent base cylinder
             tent.add(new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.65, 0.15, 8),
-                new THREE.MeshToonMaterial({color:0xaa6633, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xaa6633, roughness:0.7, metalness:0.05})));
             tent.children[1].position.y = 0.07;
             tent.position.set(tentX, tentH, tentZ);
             g.add(tent);
@@ -4594,17 +4595,17 @@ function buildMiniIsland(mapIdx) {
             const pHeight = 1.4+Math.random()*0.8;
             // Brown trunk
             pg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, pHeight, 6),
-                new THREE.MeshToonMaterial({color:0x7a5a2a, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x7a5a2a, roughness:0.9, metalness:0.0})));
             pg.children[0].position.y = pHeight/2;
             // Green sphere canopy
             pg.add(new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8),
-                new THREE.MeshToonMaterial({color:0x22aa22, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x22aa22, roughness:0.8, metalness:0.0})));
             pg.children[1].position.y = pHeight+0.15;
             // 5 drooping leaf cones
             for (let lf = 0; lf < 5; lf++) {
                 const lfA = (lf/5)*Math.PI*2;
                 const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.7, 4),
-                    new THREE.MeshToonMaterial({color:0x1a9918, gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:0x1a9918, roughness:0.8, metalness:0.0}));
                 leaf.position.set(Math.cos(lfA)*0.45, pHeight-0.15, Math.sin(lfA)*0.45);
                 leaf.rotation.x = Math.cos(lfA)*0.9;
                 leaf.rotation.z = Math.sin(lfA)*0.9;
@@ -4621,7 +4622,7 @@ function buildMiniIsland(mapIdx) {
             if (bh < 0.3) continue;
             const bushCol = [0x1a7a1a, 0x2a8a2a, 0x339933, 0x228822][i%4];
             const bush = new THREE.Mesh(new THREE.SphereGeometry(0.2+Math.random()*0.2, 8, 6),
-                new THREE.MeshToonMaterial({color:bushCol, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:bushCol, roughness:0.8, metalness:0.0}));
             bush.position.set(bx, bh+0.12, bz);
             bush.scale.y = 0.7;
             g.add(bush);
@@ -4631,13 +4632,13 @@ function buildMiniIsland(mapIdx) {
         const wfx = Math.cos(wfA)*wfD, wfz = Math.sin(wfA)*wfD;
         const wfh = heightAt(wfx, wfz, mapIdx);
         const waterfall = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 3.2),
-            new THREE.MeshPhongMaterial({color:0x55aadd, shininess:150, transparent:true, opacity:0.55, side:THREE.DoubleSide}));
+            new THREE.MeshStandardMaterial({color:0x55aadd, roughness:0.1, metalness:0.3, transparent:true, opacity:0.55, side:THREE.DoubleSide}));
         waterfall.position.set(wfx, wfh, wfz);
         waterfall.rotation.y = wfA;
         g.add(waterfall);
         // Splash pool at base
         const pool = new THREE.Mesh(new THREE.CircleGeometry(0.8, 16),
-            new THREE.MeshPhongMaterial({color:0x44aacc, shininess:200, transparent:true, opacity:0.7}));
+            new THREE.MeshStandardMaterial({color:0x44aacc, roughness:0.1, metalness:0.3, transparent:true, opacity:0.7}));
         pool.rotation.x = -Math.PI/2;
         pool.position.set(wfx+Math.cos(wfA)*0.5, wfh-1.3, wfz+Math.sin(wfA)*0.5);
         g.add(pool);
@@ -4649,7 +4650,7 @@ function buildMiniIsland(mapIdx) {
             if (rh < 0.3) continue;
             const pH = 1.0+Math.random()*0.6;
             const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, pH, 8),
-                new THREE.MeshToonMaterial({color:0x888880, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x888880, roughness:0.85, metalness:0.05}));
             pillar.position.set(rx, rh+pH/2, rz);
             if (i === 1) { pillar.rotation.z = 0.3; pillar.rotation.x = 0.15; } // broken leaning
             g.add(pillar);
@@ -4660,7 +4661,7 @@ function buildMiniIsland(mapIdx) {
         const archH = heightAt(archX, archZ, mapIdx);
         if (archH > 0.3) {
             const arch = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.08, 6, 10, Math.PI*0.7),
-                new THREE.MeshToonMaterial({color:0x777770, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x777770, roughness:0.85, metalness:0.05}));
             arch.position.set(archX, archH+1.0, archZ);
             arch.rotation.y = archRa;
             g.add(arch);
@@ -4674,12 +4675,12 @@ function buildMiniIsland(mapIdx) {
             if (fh < 0.3) continue;
             // Thin green stem
             const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.015, 0.25, 4),
-                new THREE.MeshToonMaterial({color:0x33aa33, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x33aa33, roughness:0.8, metalness:0.0}));
             stem.position.set(fx, fh+0.12, fz);
             g.add(stem);
             // Colorful flower head
             const flower = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 6),
-                new THREE.MeshToonMaterial({color:flowerCols[i%8], gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:flowerCols[i%8], roughness:0.7, metalness:0.0}));
             flower.position.set(fx, fh+0.28, fz);
             g.add(flower);
         }
@@ -4691,7 +4692,7 @@ function buildMiniIsland(mapIdx) {
             if (vh2 < 1) continue;
             const vineH = 0.8+Math.random()*0.8;
             const vine = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, vineH, 4),
-                new THREE.MeshToonMaterial({color:0x226622, gradientMap:toonGradient}));
+                new THREE.MeshStandardMaterial({color:0x226622, roughness:0.8, metalness:0.0}));
             vine.position.set(vx, vh2+1.2, vz);
             g.add(vine);
         }
@@ -4702,19 +4703,19 @@ function buildMiniIsland(mapIdx) {
             const bridge = new THREE.Group();
             // Planks
             bridge.add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.35),
-                new THREE.MeshToonMaterial({color:0x7a5530, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x7a5530, roughness:0.9, metalness:0.0})));
             bridge.children[0].position.y = 0.3;
             // Railings
             for (let s = 0; s < 2; s++) {
                 const rail = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.04, 0.03),
-                    new THREE.MeshToonMaterial({color:0x6a4520, gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:0x6a4520, roughness:0.9, metalness:0.0}));
                 rail.position.set(0, 0.45, -0.15+s*0.3);
                 bridge.add(rail);
             }
             // Posts
             for (let s = 0; s < 4; s++) {
                 const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.2, 4),
-                    new THREE.MeshToonMaterial({color:0x6a4520, gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:0x6a4520, roughness:0.9, metalness:0.0}));
                 post.position.set(-0.3+Math.floor(s/2)*0.6, 0.35, -0.15+(s%2)*0.3);
                 bridge.add(post);
             }
@@ -4734,19 +4735,19 @@ function buildMiniIsland(mapIdx) {
             const lg = new THREE.Group();
             // White stick
             lg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.6, 6),
-                new THREE.MeshToonMaterial({color:0xeeeeee, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xeeeeee, roughness:0.4, metalness:0.1})));
             lg.children[0].position.y = 0.8;
             // Flat colored disc top
             lg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.1, 20),
-                new THREE.MeshToonMaterial({color:lolliColors[i%4], gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:lolliColors[i%4], roughness:0.4, metalness:0.1})));
             lg.children[1].position.y = 1.7;
             // Torus swirl pattern
             lg.add(new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.05, 6, 16),
-                new THREE.MeshToonMaterial({color:0xffffff, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4, metalness:0.1})));
             lg.children[2].position.y = 1.7; lg.children[2].rotation.x = Math.PI/2;
             // Inner swirl
             lg.add(new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.04, 6, 12),
-                new THREE.MeshToonMaterial({color:0xffffff, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4, metalness:0.1})));
             lg.children[3].position.y = 1.7; lg.children[3].rotation.x = Math.PI/2;
             lg.position.set(lx, lh, lz);
             g.add(lg);
@@ -4759,17 +4760,17 @@ function buildMiniIsland(mapIdx) {
             if (ch < 0.3) continue;
             const cane = new THREE.Group();
             cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.0, 8),
-                new THREE.MeshToonMaterial({color:0xff2222, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xff2222, roughness:0.4, metalness:0.1})));
             cane.children[0].position.y = 0.5;
             // 3 white stripe rings
             for (let s = 0; s < 3; s++) {
                 cane.add(new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.1, 8),
-                    new THREE.MeshToonMaterial({color:0xffffff, gradientMap:toonGradient})));
+                    new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4, metalness:0.1})));
                 cane.children[s+1].position.y = 0.2+s*0.3;
             }
             // Curved top
             cane.add(new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.06, 8, 10, Math.PI),
-                new THREE.MeshToonMaterial({color:0xff2222, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xff2222, roughness:0.4, metalness:0.1})));
             cane.children[4].position.set(0.15, 1.0, 0);
             cane.children[4].rotation.z = Math.PI/2;
             cane.position.set(cx, ch, cz);
@@ -4785,29 +4786,29 @@ function buildMiniIsland(mapIdx) {
             const tg = new THREE.Group();
             // Thin stick
             tg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, 0.8, 5),
-                new THREE.MeshToonMaterial({color:0xcc88aa, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xcc88aa, roughness:0.4, metalness:0.1})));
             tg.children[0].position.y = 0.4;
             const cottonCol = cottonColors[i%3];
             // Large fluffy sphere
             tg.add(new THREE.Mesh(new THREE.SphereGeometry(0.45, 10, 8),
-                new THREE.MeshToonMaterial({color:cottonCol, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:cottonCol, roughness:0.4, metalness:0.1})));
             tg.children[1].position.y = 1.05;
             // Second volume sphere offset for fluffiness
             tg.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8),
-                new THREE.MeshToonMaterial({color:cottonCol, gradientMap:toonGradient, transparent:true, opacity:0.7})));
+                new THREE.MeshStandardMaterial({color:cottonCol, roughness:0.4, metalness:0.1, transparent:true, opacity:0.7})));
             tg.children[2].position.set(0.12, 1.15, 0.08);
             tg.position.set(tx, th, tz);
             g.add(tg);
         }
         // Chocolate river (winding brown plane)
         const chocoRiver = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 9),
-            new THREE.MeshToonMaterial({color:0x5a3020, gradientMap:toonGradient}));
+            new THREE.MeshStandardMaterial({color:0x5a3020, roughness:0.4, metalness:0.1}));
         chocoRiver.rotation.x = -Math.PI/2; chocoRiver.rotation.z = 0.4;
         chocoRiver.position.set(0, heightAt(0,0,mapIdx)+0.08, 0);
         g.add(chocoRiver);
         // Chocolate river shiny surface
         const chocoShine = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 8.5),
-            new THREE.MeshPhongMaterial({color:0x6a3825, shininess:120, specular:0x886655, transparent:true, opacity:0.5}));
+            new THREE.MeshStandardMaterial({color:0x6a3825, roughness:0.2, metalness:0.15, transparent:true, opacity:0.5}));
         chocoShine.rotation.x = -Math.PI/2; chocoShine.rotation.z = 0.4;
         chocoShine.position.set(0, heightAt(0,0,mapIdx)+0.1, 0);
         g.add(chocoShine);
@@ -4819,23 +4820,23 @@ function buildMiniIsland(mapIdx) {
             const hg = new THREE.Group();
             // Tan gingerbread body
             hg.add(new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.7, 0.85),
-                new THREE.MeshToonMaterial({color:0xddaa66, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xddaa66, roughness:0.7, metalness:0.0})));
             hg.children[0].position.y = 0.35;
             // White frosting roof (slightly bigger cone)
             hg.add(new THREE.Mesh(new THREE.ConeGeometry(0.7, 0.5, 4),
-                new THREE.MeshToonMaterial({color:0xf8f4f0, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0xf8f4f0, roughness:0.3, metalness:0.1})));
             hg.children[1].position.y = 0.9; hg.children[1].rotation.y = Math.PI/4;
             // Candy dot decorations
             const decCol = [0xff4488, 0x44ff88, 0xffff44, 0xff8844];
             for (let j = 0; j < 4; j++) {
                 const dec = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6),
-                    new THREE.MeshToonMaterial({color:decCol[j], gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:decCol[j], roughness:0.4, metalness:0.1}));
                 dec.position.set(-0.25+j*0.17, 0.45, 0.44);
                 hg.add(dec);
             }
             // Door
             hg.add(new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, 0.02),
-                new THREE.MeshToonMaterial({color:0x8a4422, gradientMap:toonGradient})));
+                new THREE.MeshStandardMaterial({color:0x8a4422, roughness:0.9, metalness:0.0})));
             hg.children[hg.children.length-1].position.set(0, 0.15, 0.44);
             hg.position.set(hx, hh, hz);
             g.add(hg);
@@ -4849,7 +4850,7 @@ function buildMiniIsland(mapIdx) {
             if (gh < 0.3) continue;
             const gummy = new THREE.Group();
             const gCol = gummyCols[i%3];
-            const gMat = new THREE.MeshToonMaterial({color:gCol, gradientMap:toonGradient});
+            const gMat = new THREE.MeshStandardMaterial({color:gCol, roughness:0.4, metalness:0.1});
             // Body
             gummy.add(new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 7), gMat));
             gummy.children[0].position.y = 0.22;
@@ -4879,7 +4880,7 @@ function buildMiniIsland(mapIdx) {
             const rainbowCols = [0xff2222, 0xff8822, 0xffff22, 0x22ff22, 0x2222ff, 0x8822ff];
             for (let r = 0; r < 6; r++) {
                 const rbow = new THREE.Mesh(new THREE.TorusGeometry(2.0-r*0.12, 0.06, 6, 20, Math.PI),
-                    new THREE.MeshToonMaterial({color:rainbowCols[r], gradientMap:toonGradient}));
+                    new THREE.MeshStandardMaterial({color:rainbowCols[r], roughness:0.4, metalness:0.1}));
                 rbow.position.set(rainbowX, rainbowH+0.1, rainbowZ);
                 rbow.rotation.y = 0.5;
                 g.add(rbow);
@@ -4902,6 +4903,15 @@ function buildMiniIsland(mapIdx) {
 
     // Slow self-rotation
     g.userData.spin = true;
+
+    // Atmospheric haze
+    const hazeColor = m.theme === 'lave' ? 0x331100 : m.theme === 'meteorite' ? 0x110033 : m.theme === 'jungle' ? 0x003311 : m.theme === 'bonbon' ? 0x330022 : m.theme === 'sable' ? 0x332200 : 0x112233;
+    const haze = new THREE.Mesh(
+        new THREE.SphereGeometry(12, 16, 12),
+        new THREE.MeshBasicMaterial({color: hazeColor, transparent: true, opacity: 0.08, side: THREE.BackSide})
+    );
+    haze.position.y = 2;
+    g.add(haze);
 
     // Scale up mini island for better visibility in roulette
     g.scale.set(1.2, 1.2, 1.2);
@@ -4943,10 +4953,21 @@ function showRoulette(mode) {
     carouselScene.fog = new THREE.FogExp2(0x0a1020, 0.008);
 
     // Lights
-    carouselScene.add(new THREE.AmbientLight(0x6688aa, 0.5));
-    const cDirLight = new THREE.DirectionalLight(0xffeedd, 0.8);
+    carouselScene.add(new THREE.AmbientLight(0x6688aa, 0.7));
+    const cDirLight = new THREE.DirectionalLight(0xffeedd, 1.0);
     cDirLight.position.set(10, 20, 10); carouselScene.add(cDirLight);
     carouselScene.add(new THREE.HemisphereLight(0x6688cc, 0x223344, 0.4));
+    // Warm fill light from below for dramatic effect
+    const rouletteFill = new THREE.PointLight(0xffeedd, 0.5, 100);
+    rouletteFill.position.set(0, -5, 0);
+    carouselScene.add(rouletteFill);
+    // Rim light from behind
+    const rouletteRim = new THREE.DirectionalLight(0x8899cc, 0.4);
+    rouletteRim.position.set(0, 10, -30);
+    carouselScene.add(rouletteRim);
+    // Better ambient for PBR materials
+    const rouletteHemi = new THREE.HemisphereLight(0x88aacc, 0x443322, 0.6);
+    carouselScene.add(rouletteHemi);
 
     // Starfield background
     const starCount = 800;
