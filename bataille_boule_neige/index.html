@@ -2656,51 +2656,173 @@ function getTerrainHeight(x, z) {
     return h + 0.1; // +0.1 for ground mesh position.y offset
 }
 
-// Create a cartoon house
-function createHouse(x, z, color) {
+// Create a cartoon house (theme-aware)
+function createHouse(x, z, color, theme) {
     const g = new THREE.Group();
-    // Base
     const w = 3 + Math.random()*2, h = 3 + Math.random()*1.5, d = 3 + Math.random()*2;
-    const wallMat = new THREE.MeshToonMaterial({color: color, gradientMap: toonGradient});
-    const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
-    base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
-    // Roof
     const roofH = 2 + Math.random();
-    const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(Math.max(w,d)*0.8, roofH, 4),
-        new THREE.MeshToonMaterial({color: 0xcc4444, gradientMap: toonGradient})
-    );
-    roof.position.y = h + roofH/2; roof.rotation.y = Math.PI/4; roof.castShadow = true; g.add(roof);
-    // Snow on roof
-    const roofSnow = new THREE.Mesh(
-        new THREE.ConeGeometry(Math.max(w,d)*0.85, roofH*0.4, 4),
-        new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient})
-    );
-    roofSnow.position.y = h + roofH*0.6; roofSnow.rotation.y = Math.PI/4; g.add(roofSnow);
-    // Door
-    const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.1),
-        new THREE.MeshToonMaterial({color: 0x5c3a1e, gradientMap: toonGradient}));
-    door.position.set(0, 0.8, d/2+0.05); g.add(door);
-    // Windows
-    const winMat = new THREE.MeshPhongMaterial({color: 0xffee88, emissive: 0xffdd44, emissiveIntensity: 0.3, shininess: 100});
-    [-1,1].forEach(s => {
-        const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.1), winMat);
-        win.position.set(s*w*0.3, h*0.6, d/2+0.05); g.add(win);
-    });
-    // Chimney (cylinder for more realism)
-    const chimney = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 2.2, 8),
-        new THREE.MeshToonMaterial({color: 0x884422, gradientMap: toonGradient}));
-    chimney.position.set(w*0.25, h+roofH*0.5, 0); chimney.castShadow = true; g.add(chimney);
-    // Chimney top rim
-    const chimneyRim = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.15, 8),
-        new THREE.MeshToonMaterial({color: 0x663318, gradientMap: toonGradient}));
-    chimneyRim.position.set(w*0.25, h+roofH*0.5+1.1, 0); g.add(chimneyRim);
-    // Smoke from chimney (3-4 grey transparent spheres)
-    for (let si = 0; si < 4; si++) {
-        const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2 + si * 0.15, 6, 6),
-            new THREE.MeshBasicMaterial({color: 0x999999, transparent: true, opacity: 0.25 - si * 0.05, depthWrite: false}));
-        smoke.position.set(w*0.25 + (Math.random()-0.5)*0.3, h+roofH*0.5+1.5+si*0.6, (Math.random()-0.5)*0.3);
-        g.add(smoke);
+
+    if (theme === 'lave') {
+        // Obsidian hut - dark stone, flat roof, orange glowing windows
+        const wallMat = new THREE.MeshToonMaterial({color: 0x2a2a2a, gradientMap: toonGradient});
+        const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+        base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
+        // Flat roof
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(w*1.1, 0.4, d*1.1),
+            new THREE.MeshToonMaterial({color: 0x1a1a1a, gradientMap: toonGradient}));
+        roof.position.y = h + 0.2; roof.castShadow = true; g.add(roof);
+        // Door
+        const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.1),
+            new THREE.MeshToonMaterial({color: 0x3a2a1a, gradientMap: toonGradient}));
+        door.position.set(0, 0.8, d/2+0.05); g.add(door);
+        // Orange glowing windows
+        const winMat = new THREE.MeshPhongMaterial({color: 0xff6600, emissive: 0xff4400, emissiveIntensity: 0.7, shininess: 100});
+        [-1,1].forEach(s => {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.1), winMat);
+            win.position.set(s*w*0.3, h*0.6, d/2+0.05); g.add(win);
+        });
+    } else if (theme === 'meteorite') {
+        // Alien pods - sphere shape, purple/blue, glowing
+        const podMat = new THREE.MeshPhongMaterial({color: 0x5533aa, emissive: 0x3311aa, emissiveIntensity: 0.3, shininess: 80});
+        const pod = new THREE.Mesh(new THREE.SphereGeometry(Math.max(w,d)*0.5, 12, 10), podMat);
+        pod.position.y = Math.max(w,d)*0.5; pod.castShadow = pod.receiveShadow = true; g.add(pod);
+        // Glowing window ring
+        const winRing = new THREE.Mesh(new THREE.TorusGeometry(Math.max(w,d)*0.35, 0.12, 8, 16),
+            new THREE.MeshPhongMaterial({color: 0x88ccff, emissive: 0x4488ff, emissiveIntensity: 0.6}));
+        winRing.position.y = Math.max(w,d)*0.5; winRing.rotation.x = Math.PI/2; g.add(winRing);
+        // Antenna
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2, 6),
+            new THREE.MeshToonMaterial({color: 0x8866cc, gradientMap: toonGradient}));
+        antenna.position.y = Math.max(w,d)*1 + 0.5; g.add(antenna);
+        const antennaTop = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6),
+            new THREE.MeshPhongMaterial({color: 0xaa88ff, emissive: 0x8866ff, emissiveIntensity: 0.8}));
+        antennaTop.position.y = Math.max(w,d)*1 + 1.5; g.add(antennaTop);
+    } else if (theme === 'sable') {
+        // Desert adobe houses - sandy, flat roof, small windows
+        const wallMat = new THREE.MeshToonMaterial({color: 0xccaa66, gradientMap: toonGradient});
+        const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+        base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
+        // Flat roof
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(w*1.05, 0.3, d*1.05),
+            new THREE.MeshToonMaterial({color: 0xbb9955, gradientMap: toonGradient}));
+        roof.position.y = h + 0.15; roof.castShadow = true; g.add(roof);
+        // Door
+        const door = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.4, 0.1),
+            new THREE.MeshToonMaterial({color: 0x6a4a2a, gradientMap: toonGradient}));
+        door.position.set(0, 0.7, d/2+0.05); g.add(door);
+        // Small windows
+        const winMat = new THREE.MeshToonMaterial({color: 0x1a1a2a, gradientMap: toonGradient});
+        [-1,1].forEach(s => {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.1), winMat);
+            win.position.set(s*w*0.3, h*0.65, d/2+0.05); g.add(win);
+        });
+    } else if (theme === 'jungle') {
+        // Wooden huts - brown wood, thatched roof
+        const wallMat = new THREE.MeshToonMaterial({color: 0x6a4a2a, gradientMap: toonGradient});
+        const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+        base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
+        // Thatched roof (yellowish cone)
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*0.85, roofH, 4),
+            new THREE.MeshToonMaterial({color: 0xaa8844, gradientMap: toonGradient}));
+        roof.position.y = h + roofH/2; roof.rotation.y = Math.PI/4; roof.castShadow = true; g.add(roof);
+        // Door
+        const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.1),
+            new THREE.MeshToonMaterial({color: 0x4a3018, gradientMap: toonGradient}));
+        door.position.set(0, 0.8, d/2+0.05); g.add(door);
+        // Windows
+        const winMat = new THREE.MeshPhongMaterial({color: 0xffee88, emissive: 0xffdd44, emissiveIntensity: 0.2, shininess: 60});
+        [-1,1].forEach(s => {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.1), winMat);
+            win.position.set(s*w*0.3, h*0.6, d/2+0.05); g.add(win);
+        });
+        // Stilts
+        [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(p => {
+            const stilt = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,1.5,6), new THREE.MeshToonMaterial({color:0x5a3a1a, gradientMap: toonGradient}));
+            stilt.position.set(p[0]*w*0.4,-0.75,p[1]*d*0.4); g.add(stilt);
+        });
+    } else if (theme === 'bonbon') {
+        // Gingerbread houses
+        const wallMat = new THREE.MeshToonMaterial({color: 0xcc9966, gradientMap: toonGradient});
+        const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+        base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
+        // White frosting roof
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*0.8, roofH, 4),
+            new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient}));
+        roof.position.y = h + roofH/2; roof.rotation.y = Math.PI/4; roof.castShadow = true; g.add(roof);
+        // Frosting drip edge
+        const drip = new THREE.Mesh(new THREE.TorusGeometry(Math.max(w,d)*0.65, 0.15, 6, 4),
+            new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient}));
+        drip.position.y = h + 0.1; drip.rotation.x = Math.PI/2; drip.rotation.z = Math.PI/4; g.add(drip);
+        // Door (chocolate)
+        const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.1),
+            new THREE.MeshToonMaterial({color: 0x6a3a1a, gradientMap: toonGradient}));
+        door.position.set(0, 0.8, d/2+0.05); g.add(door);
+        // Candy decorations
+        const candyCols = [0xff4466, 0x44aaff, 0x44ff88, 0xffcc22];
+        for (let ci = 0; ci < 6; ci++) {
+            const candy = new THREE.Mesh(new THREE.SphereGeometry(0.15+Math.random()*0.1, 6, 6),
+                new THREE.MeshToonMaterial({color: candyCols[ci%4], gradientMap: toonGradient}));
+            candy.position.set((Math.random()-0.5)*w*0.8, Math.random()*h, d/2+0.1); g.add(candy);
+        }
+        // Candy windows
+        const winMat = new THREE.MeshPhongMaterial({color: 0xff88cc, emissive: 0xff44aa, emissiveIntensity: 0.3, shininess: 80});
+        [-1,1].forEach(s => {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.1), winMat);
+            win.position.set(s*w*0.3, h*0.6, d/2+0.05); g.add(win);
+        });
+    } else {
+        // Snow themes (neige, noel, glace) - original houses
+        const wallMat = new THREE.MeshToonMaterial({color: color, gradientMap: toonGradient});
+        const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+        base.position.y = h/2; base.castShadow = base.receiveShadow = true; g.add(base);
+        // Roof
+        const roof = new THREE.Mesh(
+            new THREE.ConeGeometry(Math.max(w,d)*0.8, roofH, 4),
+            new THREE.MeshToonMaterial({color: 0xcc4444, gradientMap: toonGradient})
+        );
+        roof.position.y = h + roofH/2; roof.rotation.y = Math.PI/4; roof.castShadow = true; g.add(roof);
+        // Snow on roof
+        const roofSnow = new THREE.Mesh(
+            new THREE.ConeGeometry(Math.max(w,d)*0.85, roofH*0.4, 4),
+            new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient})
+        );
+        roofSnow.position.y = h + roofH*0.6; roofSnow.rotation.y = Math.PI/4; g.add(roofSnow);
+        // Door
+        const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.1),
+            new THREE.MeshToonMaterial({color: 0x5c3a1e, gradientMap: toonGradient}));
+        door.position.set(0, 0.8, d/2+0.05); g.add(door);
+        // Windows
+        const winMat = new THREE.MeshPhongMaterial({color: 0xffee88, emissive: 0xffdd44, emissiveIntensity: 0.3, shininess: 100});
+        [-1,1].forEach(s => {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.1), winMat);
+            win.position.set(s*w*0.3, h*0.6, d/2+0.05); g.add(win);
+        });
+        // Chimney
+        const chimney = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 2.2, 8),
+            new THREE.MeshToonMaterial({color: 0x884422, gradientMap: toonGradient}));
+        chimney.position.set(w*0.25, h+roofH*0.5, 0); chimney.castShadow = true; g.add(chimney);
+        const chimneyRim = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.15, 8),
+            new THREE.MeshToonMaterial({color: 0x663318, gradientMap: toonGradient}));
+        chimneyRim.position.set(w*0.25, h+roofH*0.5+1.1, 0); g.add(chimneyRim);
+        // Smoke
+        for (let si = 0; si < 4; si++) {
+            const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2 + si * 0.15, 6, 6),
+                new THREE.MeshBasicMaterial({color: 0x999999, transparent: true, opacity: 0.25 - si * 0.05, depthWrite: false}));
+            smoke.position.set(w*0.25 + (Math.random()-0.5)*0.3, h+roofH*0.5+1.5+si*0.6, (Math.random()-0.5)*0.3);
+            g.add(smoke);
+        }
+        // Christmas lights for noel theme
+        if (theme === 'noel') {
+            const lightCols = [0xff2222, 0x22ff22, 0x2222ff, 0xffff22, 0xff22ff];
+            const roofR = Math.max(w,d)*0.8;
+            for (let li = 0; li < 12; li++) {
+                const la = (li/12)*Math.PI*2;
+                const light = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6),
+                    new THREE.MeshPhongMaterial({color: lightCols[li%5], emissive: lightCols[li%5], emissiveIntensity: 0.8}));
+                light.position.set(Math.cos(la+Math.PI/4)*roofR*0.85, h+0.1, Math.sin(la+Math.PI/4)*roofR*0.85);
+                g.add(light);
+            }
+        }
     }
 
     g.position.set(x, 0, z);
@@ -2708,10 +2830,17 @@ function createHouse(x, z, color) {
     return g;
 }
 
-// Create a wooden bridge
-function createBridge(x, z, rot) {
+// Create a wooden bridge (theme-aware)
+function createBridge(x, z, rot, theme) {
     const g = new THREE.Group();
-    const bridgeMat = new THREE.MeshToonMaterial({color: 0x7a5a3a, gradientMap: toonGradient});
+    let bridgeColor = 0x7a5a3a;
+    if (theme === 'lave') bridgeColor = 0x3a2a1a;
+    else if (theme === 'sable') bridgeColor = 0xbbaa77;
+    else if (theme === 'jungle') bridgeColor = 0x6a4a2a;
+    else if (theme === 'bonbon') bridgeColor = 0xff88cc;
+    else if (theme === 'meteorite') bridgeColor = 0x5533aa;
+    else if (['neige','noel','glace'].includes(theme)) bridgeColor = 0x8a7a6a;
+    const bridgeMat = new THREE.MeshToonMaterial({color: bridgeColor, gradientMap: toonGradient});
     // Planks
     const bLen = 8, bW = 3;
     const base = new THREE.Mesh(new THREE.BoxGeometry(bW, 0.3, bLen), bridgeMat);
@@ -2908,12 +3037,24 @@ function buildMap(mapIdx) {
                 const b = 0.88 + Math.random()*0.12;
                 gColors.push(pathCol.r*b, pathCol.g*b, pathCol.b*b);
             } else if (h > 4) {
-                // Snow caps on hills
-                gColors.push(0.97+Math.random()*0.03, 0.98+Math.random()*0.02, 1.0);
+                // High terrain - snow caps for snow themes, themed color for others
+                if (['neige','noel','glace'].includes(m.theme)) {
+                    gColors.push(0.97+Math.random()*0.03, 0.98+Math.random()*0.02, 1.0);
+                } else {
+                    const gc = gCols[Math.floor(Math.random()*gCols.length)];
+                    const b = 0.8 + Math.random()*0.2;
+                    gColors.push(gc.r*b, gc.g*b, gc.b*b);
+                }
             } else if (h > 2.8) {
-                // Rocky zones
-                const rb = 0.42+Math.random()*0.1;
-                gColors.push(rb, rb+0.03, rb+0.13);
+                // Rocky zones - grey for snow themes, themed for others
+                if (['neige','noel','glace'].includes(m.theme)) {
+                    const rb = 0.42+Math.random()*0.1;
+                    gColors.push(rb, rb+0.03, rb+0.13);
+                } else {
+                    const gc = gCols[Math.floor(Math.random()*gCols.length)];
+                    const b = 0.85 + Math.random()*0.15;
+                    gColors.push(gc.r*b, gc.g*b, gc.b*b);
+                }
             } else {
                 const gc = gCols[Math.floor(Math.random()*gCols.length)];
                 const b = 0.935 + Math.random()*0.165;
@@ -2930,13 +3071,18 @@ function buildMap(mapIdx) {
     ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; ground.position.y = 0.1;
     addObj(ground);
 
-    // ---- Beach edge (sand ring around island) ----
+    // ---- Beach edge (sand ring around island, themed) ----
+    let beachColor = 0xddc8a0;
+    if (m.theme === 'lave') beachColor = 0x3a2a1a;
+    else if (m.theme === 'meteorite') beachColor = 0x2a1a3a;
+    else if (m.theme === 'jungle') beachColor = 0x8a7a4a;
+    else if (m.theme === 'bonbon') beachColor = 0xffccdd;
     for (let i = 0; i < 60; i++) {
         const angle = (i/60)*Math.PI*2;
         const dist = MAP_SIZE*0.8 + Math.sin(angle*3)*8 + Math.random()*5;
         const sandPile = new THREE.Mesh(
             new THREE.SphereGeometry(3+Math.random()*3, 8, 4, 0, Math.PI*2, 0, Math.PI/2),
-            new THREE.MeshToonMaterial({color: 0xddc8a0, gradientMap: toonGradient})
+            new THREE.MeshToonMaterial({color: beachColor, gradientMap: toonGradient})
         );
         sandPile.position.set(Math.cos(angle)*dist, -0.3, Math.sin(angle)*dist);
         sandPile.scale.set(1+Math.random()*0.5, 0.3, 1+Math.random()*0.5);
@@ -2972,7 +3118,7 @@ function buildMap(mapIdx) {
     ring.position.y = 0.5;
     addObj(ring);
 
-    // ---- Trees (varied types) ----
+    // ---- Trees (varied types, themed) ----
     for (let i = 0; i < m.trees; i++) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.4, z = (Math.random()-0.5)*MAP_SIZE*1.4;
         if (!islandMask(x, z, MAP_SIZE) || (Math.abs(x)<5 && Math.abs(z)<5)) continue;
@@ -2980,53 +3126,138 @@ function buildMap(mapIdx) {
         const g = new THREE.Group();
         const hv = 0.7 + Math.random()*0.6;
         const treeType = Math.random();
+        const isSnowTree = ['neige','noel','glace'].includes(m.theme);
 
-        if (treeType < 0.6) {
-            // Pine tree (classic)
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.5,3*hv,8), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
-            trunk.position.y = 1.5*hv; trunk.castShadow = true; g.add(trunk);
+        if (m.theme === 'lave') {
+            // Dead burnt trees - dark trunks, no foliage
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.45,4*hv,6), new THREE.MeshToonMaterial({color:0x2a1a0a, gradientMap: toonGradient}));
+            trunk.position.y = 2*hv; trunk.castShadow = true; g.add(trunk);
+            for (let b = 0; b < 3; b++) {
+                const ba = (b/3)*Math.PI*2+Math.random()*0.8;
+                const bl = 0.8+Math.random()*1.2;
+                const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.1,bl*hv,5), new THREE.MeshToonMaterial({color:0x1a0a00, gradientMap: toonGradient}));
+                branch.position.set(Math.cos(ba)*0.3,(2+b*0.6)*hv,Math.sin(ba)*0.3);
+                branch.rotation.z = Math.cos(ba)*0.8; branch.rotation.x = Math.sin(ba)*0.8; g.add(branch);
+            }
+        } else if (m.theme === 'meteorite') {
+            // Alien crystal trees
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.4,3.5*hv,6), new THREE.MeshToonMaterial({color:0x4422aa, gradientMap: toonGradient}));
+            trunk.position.y = 1.75*hv; trunk.castShadow = true; g.add(trunk);
+            const crystalTop = new THREE.Mesh(new THREE.SphereGeometry(1.5*hv, 8, 8),
+                new THREE.MeshPhongMaterial({color:0x8844cc, emissive:0x6622aa, emissiveIntensity:0.5, shininess:100}));
+            crystalTop.position.y = 4.5*hv; crystalTop.castShadow = true; g.add(crystalTop);
+            // Small crystal shards
+            for (let c = 0; c < 3; c++) {
+                const ca = (c/3)*Math.PI*2+Math.random()*0.5;
+                const shard = new THREE.Mesh(new THREE.OctahedronGeometry(0.4*hv,0),
+                    new THREE.MeshPhongMaterial({color:0xaa66ee, emissive:0x6622aa, emissiveIntensity:0.3}));
+                shard.position.set(Math.cos(ca)*1.2,3.5*hv,Math.sin(ca)*1.2); g.add(shard);
+            }
+        } else if (m.theme === 'sable') {
+            if (treeType < 0.5) {
+                // Palm tree
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.35,4*hv,8), new THREE.MeshToonMaterial({color:0x2a5a1a, gradientMap: toonGradient}));
+                trunk.position.y = 2*hv; trunk.castShadow = true; trunk.rotation.z = Math.random()*0.2-0.1; g.add(trunk);
+                const canopy = new THREE.Mesh(new THREE.SphereGeometry(2*hv, 8, 6), new THREE.MeshToonMaterial({color:0x3a8a2a, gradientMap: toonGradient}));
+                canopy.position.y = 4.5*hv; canopy.scale.set(1.2,0.6,1.2); canopy.castShadow = true; g.add(canopy);
+            } else {
+                // Cactus
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4*hv,0.45*hv,3*hv,8), new THREE.MeshToonMaterial({color:0x3a8a2a, gradientMap: toonGradient}));
+                body.position.y = 1.5*hv; body.castShadow = true; g.add(body);
+                // Arms
+                [-1,1].forEach(s => {
+                    if (Math.random() > 0.3) {
+                        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.2*hv,0.25*hv,1.2*hv,6), new THREE.MeshToonMaterial({color:0x3a8a2a, gradientMap: toonGradient}));
+                        arm.position.set(s*0.6*hv, 1.8*hv, 0); arm.rotation.z = s*-0.8; g.add(arm);
+                        const armTop = new THREE.Mesh(new THREE.CylinderGeometry(0.18*hv,0.2*hv,0.8*hv,6), new THREE.MeshToonMaterial({color:0x3a8a2a, gradientMap: toonGradient}));
+                        armTop.position.set(s*1.1*hv, 2.4*hv, 0); g.add(armTop);
+                    }
+                });
+            }
+        } else if (m.theme === 'jungle') {
+            // Tall tropical trees
+            const trunkH = 5*hv;
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.5,trunkH,8), new THREE.MeshToonMaterial({color:0x5a3a1a, gradientMap: toonGradient}));
+            trunk.position.y = trunkH/2; trunk.castShadow = true; g.add(trunk);
             // Roots
             for (let r = 0; r < 3; r++) {
                 const ra = (r/3)*Math.PI*2+Math.random()*0.5;
-                const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,1.2,5), new THREE.MeshToonMaterial({color:0x4a2a10, gradientMap: toonGradient}));
-                root.position.set(Math.cos(ra)*0.4,0.3,Math.sin(ra)*0.4); root.rotation.z = Math.cos(ra)*0.6; root.rotation.x = Math.sin(ra)*0.6; g.add(root);
+                const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.18,1.5,5), new THREE.MeshToonMaterial({color:0x4a2a10, gradientMap: toonGradient}));
+                root.position.set(Math.cos(ra)*0.5,0.4,Math.sin(ra)*0.5); root.rotation.z = Math.cos(ra)*0.6; root.rotation.x = Math.sin(ra)*0.6; g.add(root);
             }
-            const cols = [0x2d8a35,0x35a040,0x45aa50];
-            for (let j = 0; j < 3; j++) {
-                const cR = (3-j*0.8)*hv, cH = (3.8-j*0.5)*hv;
-                const f = new THREE.Mesh(new THREE.SphereGeometry(cR*0.7, 8, 6), new THREE.MeshToonMaterial({color:cols[j], gradientMap: toonGradient}));
-                f.position.y = (3.5+j*2.2)*hv; f.castShadow = true; g.add(f);
-                const sn = new THREE.Mesh(new THREE.SphereGeometry(cR*0.5, 8, 6), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
-                sn.position.y = (4.8+j*2.2)*hv; g.add(sn);
+            // Large round canopy
+            const canopy = new THREE.Mesh(new THREE.SphereGeometry(3.5*hv, 10, 8), new THREE.MeshToonMaterial({color:0x2a7a20, gradientMap: toonGradient}));
+            canopy.position.y = trunkH + 1.5*hv; canopy.castShadow = true; g.add(canopy);
+            // Extra foliage layers
+            const canopy2 = new THREE.Mesh(new THREE.SphereGeometry(2.5*hv, 8, 6), new THREE.MeshToonMaterial({color:0x3a8a30, gradientMap: toonGradient}));
+            canopy2.position.set(1.5*hv, trunkH + 0.5*hv, 0); canopy2.castShadow = true; g.add(canopy2);
+        } else if (m.theme === 'bonbon') {
+            // Candy trees - pink/white striped trunk, colorful sphere foliage
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.4,3*hv,8), new THREE.MeshToonMaterial({color:0xff88aa, gradientMap: toonGradient}));
+            trunk.position.y = 1.5*hv; trunk.castShadow = true; g.add(trunk);
+            // White stripes on trunk
+            for (let s = 0; s < 4; s++) {
+                const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.43,0.3,8), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient}));
+                stripe.position.y = (0.5+s*0.7)*hv; g.add(stripe);
             }
-        } else if (treeType < 0.85) {
-            // Round bush/small tree
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.3,1.5*hv,6), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
-            trunk.position.y = 0.75*hv; trunk.castShadow = true; g.add(trunk);
-            const bushMat = new THREE.MeshToonMaterial({color:0x3a9a40, gradientMap: toonGradient});
-            const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(2*hv,1), bushMat);
-            bush.position.y = 2.5*hv; bush.castShadow = true; g.add(bush);
-            const sn = new THREE.Mesh(new THREE.SphereGeometry(1.8*hv,8,6,0,Math.PI*2,0,Math.PI/2.5), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
-            sn.position.y = 3*hv; g.add(sn);
+            const candyCols = [0xff88cc, 0x88ccff, 0x88ff88];
+            const foliageCol = candyCols[Math.floor(Math.random()*3)];
+            const foliage = new THREE.Mesh(new THREE.SphereGeometry(2.2*hv, 10, 8), new THREE.MeshToonMaterial({color:foliageCol, gradientMap: toonGradient}));
+            foliage.position.y = 4*hv; foliage.castShadow = true; g.add(foliage);
+            // Small candy decorations on foliage
+            for (let d = 0; d < 5; d++) {
+                const da = Math.random()*Math.PI*2, dp = Math.random()*Math.PI;
+                const dr = 2.2*hv;
+                const candy = new THREE.Mesh(new THREE.SphereGeometry(0.2,6,6),
+                    new THREE.MeshToonMaterial({color:candyCols[Math.floor(Math.random()*3)], gradientMap: toonGradient}));
+                candy.position.set(Math.sin(dp)*Math.cos(da)*dr, 4*hv+Math.cos(dp)*dr, Math.sin(dp)*Math.sin(da)*dr); g.add(candy);
+            }
         } else {
-            // Dead/bare tree
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.45,4*hv,6), new THREE.MeshToonMaterial({color:0x4a3020, gradientMap: toonGradient}));
-            trunk.position.y = 2*hv; trunk.castShadow = true; g.add(trunk);
-            // Branches
-            for (let b = 0; b < 4; b++) {
-                const ba = (b/4)*Math.PI*2+Math.random()*0.8;
-                const bl = 1+Math.random()*1.5;
-                const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.1,bl*hv,5), new THREE.MeshToonMaterial({color:0x3a2515, gradientMap: toonGradient}));
-                branch.position.set(Math.cos(ba)*0.3,(2.5+b*0.5)*hv,Math.sin(ba)*0.3);
-                branch.rotation.z = Math.cos(ba)*0.8; branch.rotation.x = Math.sin(ba)*0.8; g.add(branch);
+            // Snow themes (neige, noel, glace) - original trees
+            if (treeType < 0.6) {
+                // Pine tree (classic)
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.5,3*hv,8), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
+                trunk.position.y = 1.5*hv; trunk.castShadow = true; g.add(trunk);
+                for (let r = 0; r < 3; r++) {
+                    const ra = (r/3)*Math.PI*2+Math.random()*0.5;
+                    const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,1.2,5), new THREE.MeshToonMaterial({color:0x4a2a10, gradientMap: toonGradient}));
+                    root.position.set(Math.cos(ra)*0.4,0.3,Math.sin(ra)*0.4); root.rotation.z = Math.cos(ra)*0.6; root.rotation.x = Math.sin(ra)*0.6; g.add(root);
+                }
+                const cols = [0x2d8a35,0x35a040,0x45aa50];
+                for (let j = 0; j < 3; j++) {
+                    const cR = (3-j*0.8)*hv, cH = (3.8-j*0.5)*hv;
+                    const f = new THREE.Mesh(new THREE.SphereGeometry(cR*0.7, 8, 6), new THREE.MeshToonMaterial({color:cols[j], gradientMap: toonGradient}));
+                    f.position.y = (3.5+j*2.2)*hv; f.castShadow = true; g.add(f);
+                    const sn = new THREE.Mesh(new THREE.SphereGeometry(cR*0.5, 8, 6), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
+                    sn.position.y = (4.8+j*2.2)*hv; g.add(sn);
+                }
+            } else if (treeType < 0.85) {
+                // Round bush/small tree
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.3,1.5*hv,6), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
+                trunk.position.y = 0.75*hv; trunk.castShadow = true; g.add(trunk);
+                const bushMat = new THREE.MeshToonMaterial({color:0x3a9a40, gradientMap: toonGradient});
+                const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(2*hv,1), bushMat);
+                bush.position.y = 2.5*hv; bush.castShadow = true; g.add(bush);
+                const sn = new THREE.Mesh(new THREE.SphereGeometry(1.8*hv,8,6,0,Math.PI*2,0,Math.PI/2.5), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
+                sn.position.y = 3*hv; g.add(sn);
+            } else {
+                // Dead/bare tree
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.45,4*hv,6), new THREE.MeshToonMaterial({color:0x4a3020, gradientMap: toonGradient}));
+                trunk.position.y = 2*hv; trunk.castShadow = true; g.add(trunk);
+                for (let b = 0; b < 4; b++) {
+                    const ba = (b/4)*Math.PI*2+Math.random()*0.8;
+                    const bl = 1+Math.random()*1.5;
+                    const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.1,bl*hv,5), new THREE.MeshToonMaterial({color:0x3a2515, gradientMap: toonGradient}));
+                    branch.position.set(Math.cos(ba)*0.3,(2.5+b*0.5)*hv,Math.sin(ba)*0.3);
+                    branch.rotation.z = Math.cos(ba)*0.8; branch.rotation.x = Math.sin(ba)*0.8; g.add(branch);
+                }
+                const sn = new THREE.Mesh(new THREE.SphereGeometry(0.8*hv,6,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
+                sn.position.y = 3.8*hv; g.add(sn);
             }
-            // Snow on branches
-            const sn = new THREE.Mesh(new THREE.SphereGeometry(0.8*hv,6,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
-            sn.position.y = 3.8*hv; g.add(sn);
+            // Snow pile at base (snow themes only)
+            const snowBase = new THREE.Mesh(new THREE.SphereGeometry(1.2*hv,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
+            snowBase.scale.y = 0.25; g.add(snowBase);
         }
-        // Snow pile at base
-        const snowBase = new THREE.Mesh(new THREE.SphereGeometry(1.2*hv,8,4,0,Math.PI*2,0,Math.PI/2), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
-        snowBase.scale.y = 0.25; g.add(snowBase);
         // Tree shadow on ground
         const treeShadow = new THREE.Mesh(new THREE.CircleGeometry(2.5*hv, 12),
             new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.15, depthWrite:false}));
@@ -3042,43 +3273,143 @@ function buildMap(mapIdx) {
         const dist = 15 + Math.random()*50;
         const x = Math.cos(angle)*dist, z = Math.sin(angle)*dist;
         if (!islandMask(x, z, MAP_SIZE)) continue;
-        const house = createHouse(x, z, houseColors[i % houseColors.length]);
+        const house = createHouse(x, z, houseColors[i % houseColors.length], m.theme);
         addObj(house);
         shelters.push({x, z, r: 4});
     }
 
-    // ---- Forts ----
+    // ---- Forts (themed) ----
     for (let i = 0; i < m.forts; i++) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.1, z = (Math.random()-0.5)*MAP_SIZE*1.1;
         if (!islandMask(x, z, MAP_SIZE) || (Math.abs(x)<8 && Math.abs(z)<8)) continue;
         const fg = new THREE.Group();
-        const mat = new THREE.MeshToonMaterial({color:0xd8e8f4, gradientMap: toonGradient});
-        const mn = new THREE.Mesh(new THREE.SphereGeometry(2.5,12,8,0,Math.PI*2,0,Math.PI/2), mat);
-        mn.scale.set(1.6,0.9,1.1); mn.castShadow = mn.receiveShadow = true; fg.add(mn);
-        [-1,1].forEach(s => {
-            const l = new THREE.Mesh(new THREE.SphereGeometry(1.2,8,6,0,Math.PI*2,0,Math.PI/2), mat);
-            l.position.set(s*2.2,0,0); l.scale.set(1.2,0.7,0.9); l.castShadow = true; fg.add(l);
-        });
+
+        if (m.theme === 'lave') {
+            // Lava rock walls (dark with orange cracks)
+            const mat = new THREE.MeshToonMaterial({color:0x2a1a1a, gradientMap: toonGradient});
+            const mn = new THREE.Mesh(new THREE.BoxGeometry(5,2.5,1.5), mat);
+            mn.position.y = 1.25; mn.castShadow = mn.receiveShadow = true; fg.add(mn);
+            [-1,1].forEach(s => {
+                const l = new THREE.Mesh(new THREE.BoxGeometry(2,2,1.5), mat);
+                l.position.set(s*3,1,0); l.castShadow = true; fg.add(l);
+            });
+            // Orange crack lines (emissive strips)
+            for (let ci = 0; ci < 3; ci++) {
+                const crack = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.5, 1.6),
+                    new THREE.MeshPhongMaterial({color:0xff4400, emissive:0xff2200, emissiveIntensity:0.6}));
+                crack.position.set((ci-1)*1.5, 1.2, 0); fg.add(crack);
+            }
+        } else if (m.theme === 'meteorite') {
+            // Force field barriers (transparent purple)
+            const mat = new THREE.MeshPhongMaterial({color:0x6633aa, emissive:0x4422aa, emissiveIntensity:0.3, transparent:true, opacity:0.5, shininess:100});
+            const mn = new THREE.Mesh(new THREE.SphereGeometry(2.5,12,8), mat);
+            mn.position.y = 2; mn.scale.set(1.6,0.9,1.1); mn.castShadow = true; fg.add(mn);
+        } else if (m.theme === 'sable') {
+            // Sand walls (sand-colored half-cylinders)
+            const mat = new THREE.MeshToonMaterial({color:0xddcc88, gradientMap: toonGradient});
+            const mn = new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,2,12,1,false,0,Math.PI), mat);
+            mn.position.y = 1; mn.castShadow = mn.receiveShadow = true; fg.add(mn);
+            [-1,1].forEach(s => {
+                const l = new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,1.5,8,1,false,0,Math.PI), mat);
+                l.position.set(s*2.5,0.75,0); l.castShadow = true; fg.add(l);
+            });
+        } else if (m.theme === 'jungle') {
+            // Wooden barricades
+            const mat = new THREE.MeshToonMaterial({color:0x6a4a2a, gradientMap: toonGradient});
+            const mn = new THREE.Mesh(new THREE.BoxGeometry(5,2,0.6), mat);
+            mn.position.y = 1; mn.castShadow = mn.receiveShadow = true; fg.add(mn);
+            // Vertical log posts
+            for (let p = -2; p <= 2; p++) {
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,2.5,6), mat);
+                post.position.set(p*1.2, 1.25, 0); post.castShadow = true; fg.add(post);
+            }
+            // Cross beams
+            const beam = new THREE.Mesh(new THREE.BoxGeometry(5.5,0.2,0.3), mat);
+            beam.position.y = 2; fg.add(beam);
+        } else if (m.theme === 'bonbon') {
+            // Candy walls (pink/white)
+            const mat = new THREE.MeshToonMaterial({color:0xff88cc, gradientMap: toonGradient});
+            const mn = new THREE.Mesh(new THREE.SphereGeometry(2.5,12,8,0,Math.PI*2,0,Math.PI/2), mat);
+            mn.scale.set(1.6,0.9,1.1); mn.castShadow = mn.receiveShadow = true; fg.add(mn);
+            // White frosting top
+            const frost = new THREE.Mesh(new THREE.SphereGeometry(2.5,12,8,0,Math.PI*2,0,Math.PI/4),
+                new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient}));
+            frost.scale.set(1.65,0.5,1.15); frost.position.y = 1.5; fg.add(frost);
+            [-1,1].forEach(s => {
+                const l = new THREE.Mesh(new THREE.SphereGeometry(1.2,8,6,0,Math.PI*2,0,Math.PI/2), mat);
+                l.position.set(s*2.2,0,0); l.scale.set(1.2,0.7,0.9); l.castShadow = true; fg.add(l);
+            });
+        } else {
+            // Snow forts (neige, noel, glace) - original
+            const mat = new THREE.MeshToonMaterial({color:0xd8e8f4, gradientMap: toonGradient});
+            const mn = new THREE.Mesh(new THREE.SphereGeometry(2.5,12,8,0,Math.PI*2,0,Math.PI/2), mat);
+            mn.scale.set(1.6,0.9,1.1); mn.castShadow = mn.receiveShadow = true; fg.add(mn);
+            [-1,1].forEach(s => {
+                const l = new THREE.Mesh(new THREE.SphereGeometry(1.2,8,6,0,Math.PI*2,0,Math.PI/2), mat);
+                l.position.set(s*2.2,0,0); l.scale.set(1.2,0.7,0.9); l.castShadow = true; fg.add(l);
+            });
+        }
         fg.position.set(x,0,z); fg.rotation.y = Math.random()*Math.PI*2;
         addObj(fg); shelters.push({x,z,r:3});
     }
 
-    // ---- Rocks (varied geometry) ----
+    // ---- Rocks (varied geometry, themed) ----
     for (let i = 0; i < m.rocks; i++) {
         const x = (Math.random()-0.5)*MAP_SIZE*1.3, z = (Math.random()-0.5)*MAP_SIZE*1.3;
         const rg = new THREE.Group();
         const sz = 0.8+Math.random()*2;
-        // Alternate between DodecahedronGeometry and IcosahedronGeometry
-        const rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
-        const rockColors = [0x5a6a7a, 0x6a7a8a, 0x4a5a6a, 0x7a7a6a];
-        const rk = new THREE.Mesh(rockGeo, new THREE.MeshToonMaterial({color:rockColors[i%4], gradientMap: toonGradient}));
+        let rockGeo, rockMat, patchColor, showPatch = true;
+
+        if (m.theme === 'lave') {
+            // Dark volcanic rocks with occasional orange glow
+            rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
+            const hasGlow = Math.random() > 0.6;
+            rockMat = hasGlow
+                ? new THREE.MeshPhongMaterial({color:0x2a1a1a, emissive:0xff4400, emissiveIntensity:0.2, shininess:30})
+                : new THREE.MeshToonMaterial({color:0x2a1a1a, gradientMap: toonGradient});
+            showPatch = false;
+        } else if (m.theme === 'meteorite') {
+            // Purple crystals using OctahedronGeometry
+            rockGeo = new THREE.OctahedronGeometry(sz, 0);
+            rockMat = new THREE.MeshPhongMaterial({color:0x6633aa, emissive:0x4422aa, emissiveIntensity:0.2, shininess:80});
+            showPatch = false;
+        } else if (m.theme === 'sable') {
+            // Sandstone
+            rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
+            rockMat = new THREE.MeshToonMaterial({color:0xccaa77, gradientMap: toonGradient});
+            showPatch = false;
+        } else if (m.theme === 'jungle') {
+            // Mossy rocks
+            rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
+            rockMat = new THREE.MeshToonMaterial({color:0x4a6a3a, gradientMap: toonGradient});
+            patchColor = 0x44aa44; // Moss patch
+        } else if (m.theme === 'bonbon') {
+            // Colorful candy rocks
+            const candyRockCols = [0xff6688, 0x66aaff, 0xffcc44];
+            rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
+            rockMat = new THREE.MeshToonMaterial({color:candyRockCols[i%3], gradientMap: toonGradient});
+            showPatch = false;
+        } else if (m.theme === 'glace') {
+            // Ice blue shiny rocks
+            rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
+            rockMat = new THREE.MeshPhongMaterial({color:0x88bbdd, shininess:120, specular:0xaaddff});
+            patchColor = 0xf0f4f8;
+        } else {
+            // neige/noel - grey rocks with snow
+            const rockColors = [0x667788, 0x6a7a8a, 0x5a6a7a, 0x7a7a6a];
+            rockGeo = (i % 2 === 0) ? new THREE.DodecahedronGeometry(sz,1) : new THREE.IcosahedronGeometry(sz,1);
+            rockMat = new THREE.MeshToonMaterial({color:rockColors[i%4], gradientMap: toonGradient});
+            patchColor = 0xf0f4f8;
+        }
+
+        const rk = new THREE.Mesh(rockGeo, rockMat);
         rk.position.y = sz*0.4; rk.rotation.set(Math.random(),Math.random(),Math.random()); rk.castShadow = true; rk.receiveShadow = true; rg.add(rk);
-        // Snow/moss patch on top (depends on theme)
-        const isSnowTheme = ['neige','noel','glace'].includes(m.theme);
-        const patchColor = isSnowTheme ? 0xf0f4f8 : (m.theme === 'jungle' ? 0x44aa44 : 0xf0f4f8);
-        const patch = new THREE.Mesh(new THREE.SphereGeometry(sz*0.6,8,4,0,Math.PI*2,0,Math.PI/2.5),
-            new THREE.MeshToonMaterial({color: patchColor, gradientMap: toonGradient}));
-        patch.position.y = sz*0.8; rg.add(patch);
+        // Patch on top (snow/moss, theme-dependent)
+        if (showPatch && patchColor) {
+            const patch = new THREE.Mesh(new THREE.SphereGeometry(sz*0.6,8,4,0,Math.PI*2,0,Math.PI/2.5),
+                new THREE.MeshToonMaterial({color: patchColor, gradientMap: toonGradient}));
+            patch.position.y = sz*0.8; rg.add(patch);
+        }
         // Small rock shadow on ground
         const rockShd = new THREE.Mesh(new THREE.CircleGeometry(sz*0.8, 8),
             new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.12, depthWrite:false}));
@@ -3086,20 +3417,105 @@ function buildMap(mapIdx) {
         rg.position.set(x,0,z); addObj(rg);
     }
 
-    // ---- Snowmen ----
-    const dMat = new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient});
+    // ---- Snowmen / Theme-specific decorations ----
     for (let i = 0; i < m.snowmen; i++) {
         const g = new THREE.Group();
         const sc = 0.7+Math.random()*0.4;
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(1.2*sc,12,12), dMat)); g.children[0].position.y = 1.2*sc;
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(0.9*sc,12,12), dMat)); g.children[1].position.y = 2.6*sc;
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(0.6*sc,12,12), dMat)); g.children[2].position.y = 3.7*sc;
-        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1*sc,0.5*sc,8), new THREE.MeshToonMaterial({color:0xff6600, gradientMap: toonGradient}));
-        nose.position.set(0,3.7*sc,0.6*sc); nose.rotation.x = Math.PI/2; g.add(nose);
-        const hC = [0xcc2244,0x2244cc,0x22aa44,0xcc8800][i%4];
-        g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.6*sc,0.6*sc,0.06,12), new THREE.MeshToonMaterial({color:hC, gradientMap: toonGradient})));
-        g.children[4].position.y = 4.15*sc;
         const x = (Math.random()-0.5)*MAP_SIZE*0.8, z = (Math.random()-0.5)*MAP_SIZE*0.8;
+
+        if (['neige','noel','glace'].includes(m.theme)) {
+            // Original snowmen
+            const dMat = new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient});
+            g.add(new THREE.Mesh(new THREE.SphereGeometry(1.2*sc,12,12), dMat)); g.children[0].position.y = 1.2*sc;
+            g.add(new THREE.Mesh(new THREE.SphereGeometry(0.9*sc,12,12), dMat)); g.children[1].position.y = 2.6*sc;
+            g.add(new THREE.Mesh(new THREE.SphereGeometry(0.6*sc,12,12), dMat)); g.children[2].position.y = 3.7*sc;
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1*sc,0.5*sc,8), new THREE.MeshToonMaterial({color:0xff6600, gradientMap: toonGradient}));
+            nose.position.set(0,3.7*sc,0.6*sc); nose.rotation.x = Math.PI/2; g.add(nose);
+            const hC = [0xcc2244,0x2244cc,0x22aa44,0xcc8800][i%4];
+            g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.6*sc,0.6*sc,0.06,12), new THREE.MeshToonMaterial({color:hC, gradientMap: toonGradient})));
+            g.children[4].position.y = 4.15*sc;
+        } else if (m.theme === 'lave') {
+            // Fire elementals - orange emissive spheres stacked
+            const fireMat = new THREE.MeshPhongMaterial({color:0xff4400, emissive:0xff2200, emissiveIntensity:0.6});
+            g.add(new THREE.Mesh(new THREE.SphereGeometry(1.2*sc,10,10), fireMat)); g.children[0].position.y = 1.2*sc;
+            g.add(new THREE.Mesh(new THREE.SphereGeometry(0.9*sc,10,10), fireMat)); g.children[1].position.y = 2.6*sc;
+            g.add(new THREE.Mesh(new THREE.SphereGeometry(0.6*sc,10,10), fireMat)); g.children[2].position.y = 3.7*sc;
+            // Flame tip
+            const flame = new THREE.Mesh(new THREE.ConeGeometry(0.4*sc, 1*sc, 8),
+                new THREE.MeshPhongMaterial({color:0xffaa00, emissive:0xff6600, emissiveIntensity:0.8}));
+            flame.position.y = 4.5*sc; g.add(flame);
+        } else if (m.theme === 'meteorite') {
+            // Alien statues - purple geometric shapes
+            const alienMat = new THREE.MeshPhongMaterial({color:0x6633aa, emissive:0x4422aa, emissiveIntensity:0.3, shininess:80});
+            const base = new THREE.Mesh(new THREE.OctahedronGeometry(1*sc, 0), alienMat);
+            base.position.y = 1*sc; g.add(base);
+            const mid = new THREE.Mesh(new THREE.TetrahedronGeometry(0.8*sc, 0), alienMat);
+            mid.position.y = 2.5*sc; mid.rotation.y = Math.PI/4; g.add(mid);
+            const top = new THREE.Mesh(new THREE.SphereGeometry(0.4*sc, 8, 8),
+                new THREE.MeshPhongMaterial({color:0xaa88ff, emissive:0x8866ff, emissiveIntensity:0.6}));
+            top.position.y = 3.5*sc; g.add(top);
+        } else if (m.theme === 'sable') {
+            // Scarecrows - cross of brown cylinders with hat
+            const woodMat = new THREE.MeshToonMaterial({color:0x7a5a2a, gradientMap: toonGradient});
+            // Vertical pole
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1*sc, 0.12*sc, 4*sc, 6), woodMat);
+            pole.position.y = 2*sc; g.add(pole);
+            // Horizontal arms
+            const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08*sc, 0.08*sc, 3*sc, 6), woodMat);
+            arm.position.y = 3.2*sc; arm.rotation.z = Math.PI/2; g.add(arm);
+            // Head (sack)
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.5*sc, 8, 8),
+                new THREE.MeshToonMaterial({color:0xccaa66, gradientMap: toonGradient}));
+            head.position.y = 4.2*sc; g.add(head);
+            // Hat
+            const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.3*sc, 0.6*sc, 0.6*sc, 8),
+                new THREE.MeshToonMaterial({color:0x4a3a1a, gradientMap: toonGradient}));
+            hat.position.y = 4.8*sc; g.add(hat);
+            const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.8*sc, 0.8*sc, 0.05, 12),
+                new THREE.MeshToonMaterial({color:0x4a3a1a, gradientMap: toonGradient}));
+            brim.position.y = 4.5*sc; g.add(brim);
+        } else if (m.theme === 'jungle') {
+            // Totem poles - stacked colored cylinders with faces
+            const totemCols = [0xcc4422, 0x44aa44, 0x2244cc, 0xccaa22];
+            for (let t = 0; t < 4; t++) {
+                const section = new THREE.Mesh(new THREE.CylinderGeometry(0.6*sc, 0.65*sc, 1*sc, 8),
+                    new THREE.MeshToonMaterial({color:totemCols[t], gradientMap: toonGradient}));
+                section.position.y = (0.5 + t)*sc; section.castShadow = true; g.add(section);
+                // Face features (eyes)
+                [-1,1].forEach(s => {
+                    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1*sc, 6, 6),
+                        new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient}));
+                    eye.position.set(s*0.25*sc, (0.6+t)*sc, 0.55*sc); g.add(eye);
+                });
+            }
+            // Top piece (wings)
+            const wing = new THREE.Mesh(new THREE.BoxGeometry(2.5*sc, 0.3*sc, 0.3*sc),
+                new THREE.MeshToonMaterial({color:0xcc4422, gradientMap: toonGradient}));
+            wing.position.y = 4.5*sc; g.add(wing);
+        } else if (m.theme === 'bonbon') {
+            // Gummy bears - colored rounded shapes
+            const gummyCols = [0xff4466, 0x44cc44, 0xffaa22, 0xff66aa, 0x4488ff];
+            const gummyCol = gummyCols[i % 5];
+            const gummyMat = new THREE.MeshToonMaterial({color:gummyCol, gradientMap: toonGradient});
+            // Body
+            const body = new THREE.Mesh(new THREE.SphereGeometry(1*sc, 10, 8), gummyMat);
+            body.position.y = 1.2*sc; body.scale.set(0.8,1,0.7); g.add(body);
+            // Head
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.6*sc, 8, 8), gummyMat);
+            head.position.y = 2.5*sc; g.add(head);
+            // Ears
+            [-1,1].forEach(s => {
+                const ear = new THREE.Mesh(new THREE.SphereGeometry(0.2*sc, 6, 6), gummyMat);
+                ear.position.set(s*0.45*sc, 3.1*sc, 0); g.add(ear);
+            });
+            // Eyes
+            [-1,1].forEach(s => {
+                const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08*sc, 6, 6),
+                    new THREE.MeshToonMaterial({color:0x111111, gradientMap: toonGradient}));
+                eye.position.set(s*0.2*sc, 2.6*sc, 0.5*sc); g.add(eye);
+            });
+        }
+
         g.position.set(x,0,z); g.rotation.y = Math.random()*Math.PI*2;
         addObj(g);
     }
@@ -3108,7 +3524,7 @@ function buildMap(mapIdx) {
     for (let i = 0; i < m.bridges; i++) {
         const angle = Math.random()*Math.PI*2;
         const dist = MAP_SIZE*0.75 + Math.random()*10;
-        const bridge = createBridge(Math.cos(angle)*dist, Math.sin(angle)*dist, angle + Math.PI/2);
+        const bridge = createBridge(Math.cos(angle)*dist, Math.sin(angle)*dist, angle + Math.PI/2, m.theme);
         addObj(bridge);
     }
 
@@ -3149,10 +3565,10 @@ function buildMap(mapIdx) {
         const volcano = new THREE.Mesh(new THREE.ConeGeometry(18, 25, 12),
             new THREE.MeshToonMaterial({color: 0x554433, gradientMap: toonGradient}));
         volcano.position.y = 12.5; vg.add(volcano);
-        // Snow cap
-        const vSnow = new THREE.Mesh(new THREE.ConeGeometry(8, 8, 12),
-            new THREE.MeshToonMaterial({color: 0xffffff, gradientMap: toonGradient}));
-        vSnow.position.y = 22; vg.add(vSnow);
+        // Dark volcanic rock cap (no snow on lava volcano)
+        const vCap = new THREE.Mesh(new THREE.ConeGeometry(8, 8, 12),
+            new THREE.MeshToonMaterial({color: 0x3a2a1a, gradientMap: toonGradient}));
+        vCap.position.y = 22; vg.add(vCap);
         // Lava crater
         const crater = new THREE.Mesh(new THREE.CylinderGeometry(5, 3, 3, 12),
             new THREE.MeshPhongMaterial({color: 0xff4400, emissive: 0xff2200, emissiveIntensity: 0.6}));
@@ -3197,12 +3613,20 @@ function buildMap(mapIdx) {
         lanternPositions.push({x:lx, z:lz});
     }
 
-    // ---- Mountains (background - layered for depth) ----
+    // ---- Mountains (background - layered for depth, themed) ----
+    const mtSnowTheme = ['neige','noel','glace'].includes(m.theme);
+    let mtPeakColor, mtCapColor;
+    if (m.theme === 'lave') { mtPeakColor = [0x4a2a1a, 0x3a2010]; mtCapColor = 0x2a1a0a; }
+    else if (m.theme === 'meteorite') { mtPeakColor = [0x2a1a4a, 0x1a1030]; mtCapColor = 0x4422aa; }
+    else if (m.theme === 'sable') { mtPeakColor = [0x9a8855, 0x887744]; mtCapColor = 0xccbb88; }
+    else if (m.theme === 'jungle') { mtPeakColor = [0x3a5a2a, 0x2a4a1a]; mtCapColor = 0x4a8a30; }
+    else if (m.theme === 'bonbon') { mtPeakColor = [0x9a5a8a, 0x8a4a7a]; mtCapColor = 0xffaacc; }
+    else { mtPeakColor = [0x6878a0, 0x556888]; mtCapColor = 0xeef2f8; }
     for (let layer = 0; layer < 2; layer++) {
         const count = layer === 0 ? 12 : 8;
         const baseDist = layer === 0 ? MAP_SIZE*1.5 : MAP_SIZE*2.2;
         const baseH = layer === 0 ? 30 : 50;
-        const colorDark = layer === 0 ? 0x6878a0 : 0x556888;
+        const colorDark = mtPeakColor[layer];
         for (let i = 0; i < count; i++) {
             const angle = (i/count)*Math.PI*2 + layer*0.3;
             const dist = baseDist+Math.random()*30;
@@ -3212,15 +3636,15 @@ function buildMap(mapIdx) {
             // Main peak
             const mt = new THREE.Mesh(new THREE.ConeGeometry(mW,mH,7), new THREE.MeshToonMaterial({color:colorDark, gradientMap: toonGradient}));
             mt.position.y = mH/2-5; mg.add(mt);
-            // Snow cap
-            const pk = new THREE.Mesh(new THREE.ConeGeometry(mW*0.4,mH*0.35,7), new THREE.MeshToonMaterial({color:0xeef2f8, gradientMap: toonGradient}));
+            // Peak cap (snow for snow themes, themed color for others)
+            const pk = new THREE.Mesh(new THREE.ConeGeometry(mW*0.4,mH*0.35,7), new THREE.MeshToonMaterial({color:mtCapColor, gradientMap: toonGradient}));
             pk.position.y = mH*0.65; mg.add(pk);
             // Sub-peak
             if (Math.random() > 0.4) {
                 const sH = mH*0.6, sW = mW*0.5;
                 const sub = new THREE.Mesh(new THREE.ConeGeometry(sW,sH,6), new THREE.MeshToonMaterial({color:colorDark, gradientMap: toonGradient}));
                 sub.position.set(mW*0.5,sH/2-5,mW*0.3); mg.add(sub);
-                const sp = new THREE.Mesh(new THREE.ConeGeometry(sW*0.35,sH*0.3,6), new THREE.MeshToonMaterial({color:0xeef2f8, gradientMap: toonGradient}));
+                const sp = new THREE.Mesh(new THREE.ConeGeometry(sW*0.35,sH*0.3,6), new THREE.MeshToonMaterial({color:mtCapColor, gradientMap: toonGradient}));
                 sp.position.set(mW*0.5,sH*0.6,mW*0.3); mg.add(sp);
             }
             mg.position.set(Math.cos(angle)*dist,0,Math.sin(angle)*dist);
