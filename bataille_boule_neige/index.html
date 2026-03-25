@@ -4108,10 +4108,7 @@ function buildMiniIsland(mapIdx) {
             smoke.position.set(1+(Math.random()-0.5)*1.2, vBase+7.5+Math.random()*4, -1+(Math.random()-0.5)*1.2);
             g.add(smoke);
         }
-        // Orange/red PointLight for glow
-        const lp = new THREE.PointLight(0xff4400, 1.5, 12);
-        lp.position.set(1, vh+6, -1);
-        g.add(lp);
+        // Orange/red PointLight for glow (removed duplicate - lavaLight already added above)
 
     } else if (mapIdx === 4) {
         // ---- METEORITE (Cosmic) ----
