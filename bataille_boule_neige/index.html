@@ -3844,7 +3844,7 @@ const enemySnowMat = new THREE.MeshPhongMaterial({color:0xffcccc, emissive:0x882
 
 function shootSnowball(origin, direction, isEnemy, shooterIdx) {
     const group = new THREE.Group();
-    const cm = MAPS[selectedMapIdx || 0];
+    const cm = MAPS[currentMapIdx || 0];
     const projColor = isEnemy ? 0xff4444 : (cm.projectileColor || 0xf0f4f8);
     const projEmissive = isEnemy ? 0xff2222 : (cm.projectileEmissive || 0x4488cc);
     const projSize = cm.projectileSize || 0.3;
