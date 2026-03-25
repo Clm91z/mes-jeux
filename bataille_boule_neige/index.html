@@ -3090,6 +3090,7 @@ function buildMap(mapIdx) {
     }
 
     // ---- Map boundary markers ----
+    const boundaryColor = m.theme === 'lave' ? 0xff4400 : m.theme === 'meteorite' ? 0x8844cc : m.theme === 'sable' ? 0xddaa44 : m.theme === 'jungle' ? 0x44aa33 : m.theme === 'bonbon' ? 0xff66aa : m.theme === 'noel' ? 0xff2244 : m.theme === 'glace' ? 0x44ddff : 0x4a9eff;
     for (let i = 0; i < 40; i++) {
         const angle = (i / 40) * Math.PI * 2;
         const dist = MAP_SIZE * 0.85;
@@ -3098,21 +3099,21 @@ function buildMap(mapIdx) {
         // Glowing post
         const post = new THREE.Mesh(
             new THREE.CylinderGeometry(0.3, 0.3, 4, 8),
-            new THREE.MeshToonMaterial({color: 0x4a9eff, gradientMap: toonGradient})
+            new THREE.MeshToonMaterial({color: boundaryColor, gradientMap: toonGradient})
         );
         post.position.set(bx, getTerrainHeight(bx, bz) + 2, bz);
         addObj(post);
         // Glowing top
         const top = new THREE.Mesh(
             new THREE.SphereGeometry(0.5, 8, 8),
-            new THREE.MeshBasicMaterial({color: 0x4a9eff, transparent: true, opacity: 0.6})
+            new THREE.MeshBasicMaterial({color: boundaryColor, transparent: true, opacity: 0.6})
         );
         top.position.set(bx, getTerrainHeight(bx, bz) + 4.5, bz);
         addObj(top);
     }
     // Boundary line on ground (ring)
     const ringGeo = new THREE.TorusGeometry(MAP_SIZE * 0.85, 0.5, 8, 64);
-    const ringMat = new THREE.MeshBasicMaterial({color: 0x4a9eff, transparent: true, opacity: 0.3});
+    const ringMat = new THREE.MeshBasicMaterial({color: boundaryColor, transparent: true, opacity: 0.3});
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.rotation.x = Math.PI / 2;
     ring.position.y = 0.5;
@@ -6117,15 +6118,17 @@ function animate() {
     }
     if (moveDir.length() > 0) { moveDir.normalize().multiplyScalar(moveSpeed*dt); camera.position.add(moveDir); }
 
+    // Clamp player to map boundary (match boundary markers at 0.85)
+    const boundaryLimit = MAP_SIZE * 0.83;
+    camera.position.x = Math.max(-boundaryLimit, Math.min(boundaryLimit, camera.position.x));
+    camera.position.z = Math.max(-boundaryLimit, Math.min(boundaryLimit, camera.position.z));
+
     // Jump & terrain collision
     if (keys['Space'] && player.onGround) { player.yVelocity = 8; player.onGround = false; }
     player.yVelocity -= 20*dt;
     camera.position.y += player.yVelocity*dt;
     const groundH = getTerrainHeight(camera.position.x, camera.position.z) + player.height;
     if (camera.position.y <= groundH) { camera.position.y = groundH; player.yVelocity = 0; player.onGround = true; }
-
-    camera.position.x = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, camera.position.x));
-    camera.position.z = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, camera.position.z));
 
     // Arm bob
     const bobSp = moveDir.length() > 0 ? 8 : 2;
