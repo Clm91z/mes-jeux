@@ -44,6 +44,7 @@
             font-family: 'Lilita One', 'Nunito', sans-serif;
             font-size: 1.6rem; color: #fff;
             text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 20px rgba(74,158,255,0.3);
+            letter-spacing: 2px;
         }
         .lobby-back-btn {
             background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
@@ -153,7 +154,7 @@
         .modal-overlay .sub { color: #8ab; font-size: 1rem; margin-bottom: 20px; }
 
         .btn {
-            padding: 14px 40px; border: none; border-radius: 14px;
+            padding: 14px 40px; border: none; border-radius: 20px;
             font-size: 1.05rem; font-weight: 900; cursor: pointer;
             color: #fff; transition: all 0.2s; margin: 6px;
             font-family: 'Nunito', sans-serif;
@@ -206,7 +207,7 @@
             height: 100%; width: 100%; border-radius: 9px;
             background: linear-gradient(180deg, #6ef5c4, #4ecca3);
             transition: width 0.3s;
-            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3);
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3), 0 0 10px rgba(78, 204, 163, 0.5);
         }
         #health-fill.low { background: linear-gradient(180deg, #ff6b9d, #e94560); }
         #health-text {
@@ -244,7 +245,7 @@
             transition: opacity 0.2s, transform 0.2s;
         }
         .ammo-ball.empty { opacity: 0.2; transform: scale(0.7); }
-        .ammo-label { font-size: 0.6rem; color: #8ab; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .ammo-label { font-size: 0.6rem; color: #8ab; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; text-shadow: 0 0 8px rgba(74, 158, 255, 0.5); }
 
         /* Kill feed */
         #killfeed { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
@@ -1531,8 +1532,8 @@ function createCharacterModel(colorIdx, detailed) {
     // ===== BODY (Brawl Stars: round & chunky) =====
     const bodyMat = new THREE.MeshToonMaterial({color: col, gradientMap: toonGradient});
     // Main torso - round sphere shape
-    const torso = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 12), bodyMat);
-    torso.position.y = 0.95; torso.scale.set(1, 1.1, 0.85); torso.castShadow = true;
+    const torso = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 12), bodyMat);
+    torso.position.y = 0.95; torso.scale.set(1.05, 1.1, 0.9); torso.castShadow = true;
     g.add(torso);
     // Belly highlight (front)
     const belly = new THREE.Mesh(
@@ -1559,15 +1560,15 @@ function createCharacterModel(colorIdx, detailed) {
 
     // ===== HEAD (Brawl Stars: HUGE round head, ~50% of total height) =====
     const headMat = new THREE.MeshToonMaterial({color: skinCol, gradientMap: toonGradient});
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 14), headMat);
-    head.position.y = 2.05; head.castShadow = true;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 14), headMat);
+    head.position.y = 2.2; head.castShadow = true;
     head.scale.set(1, 1.0, 0.9);
     g.add(head);
     // Cheeks (rosy)
     [-1, 1].forEach(side => {
         const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8),
             new THREE.MeshToonMaterial({color: 0xffaa88, gradientMap: toonGradient}));
-        cheek.position.set(side * 0.4, 1.85, 0.35);
+        cheek.position.set(side * 0.4, 2.0, 0.35);
         cheek.scale.set(1, 0.7, 0.5);
         g.add(cheek);
     });
@@ -1580,21 +1581,21 @@ function createCharacterModel(colorIdx, detailed) {
     [-1, 1].forEach(side => {
         // Eye outline (black border)
         const outline = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10), eyeOutlineMat);
-        outline.position.set(side * 0.2, 2.1, 0.45);
+        outline.position.set(side * 0.2, 2.25, 0.45);
         outline.scale.set(0.9, 1.15, 0.5);
         g.add(outline);
         // Eye white
         const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), eyeWhiteMat);
-        eyeWhite.position.set(side * 0.2, 2.1, 0.47);
+        eyeWhite.position.set(side * 0.2, 2.25, 0.47);
         eyeWhite.scale.set(0.85, 1.1, 0.5);
         g.add(eyeWhite);
         // Pupil (big, looking forward)
         const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyePupilMat);
-        pupil.position.set(side * 0.18, 2.08, 0.54);
+        pupil.position.set(side * 0.18, 2.23, 0.54);
         g.add(pupil);
         // Glint
         const glint = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), eyeGlintMat);
-        glint.position.set(side * 0.14, 2.14, 0.55);
+        glint.position.set(side * 0.14, 2.29, 0.55);
         g.add(glint);
     });
 
@@ -1604,7 +1605,7 @@ function createCharacterModel(colorIdx, detailed) {
             new THREE.BoxGeometry(0.22, 0.06, 0.06),
             new THREE.MeshBasicMaterial({color: 0x3a2211})
         );
-        brow.position.set(side * 0.2, 2.3, 0.44);
+        brow.position.set(side * 0.2, 2.45, 0.44);
         brow.rotation.z = side * -0.2;
         g.add(brow);
     });
@@ -1614,16 +1615,16 @@ function createCharacterModel(colorIdx, detailed) {
     const mouthPts = mouthCurve.getPoints(16);
     const mouthGeo = new THREE.BufferGeometry().setFromPoints(mouthPts);
     const mouth = new THREE.Line(mouthGeo, new THREE.LineBasicMaterial({color: 0x553322, linewidth: 2}));
-    mouth.position.set(0, 1.82, 0.52);
+    mouth.position.set(0, 1.97, 0.52);
     g.add(mouth);
     // Nose (small bump)
     const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6),
         new THREE.MeshToonMaterial({color: 0xf0b888, gradientMap: toonGradient}));
-    nose.position.set(0, 1.95, 0.56);
+    nose.position.set(0, 2.1, 0.56);
     g.add(nose);
 
     // ===== HAT/ACCESSORY =====
-    const hatGroup = createHatMesh(saveData.selectedHat || 0, 2.2, col, colDark);
+    const hatGroup = createHatMesh(saveData.selectedHat || 0, 2.35, col, colDark);
     g.add(hatGroup);
     g.userData.hat = hatGroup;
 
@@ -1699,6 +1700,17 @@ function createCharacterModel(colorIdx, detailed) {
     );
     shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
     g.add(shadow);
+
+    // Fortnite-style rim glow: subtle emissive on toon materials
+    g.traverse(child => {
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material && child.material.type === 'MeshToonMaterial') {
+                child.material.emissive = new THREE.Color(child.material.color).multiplyScalar(0.05);
+            }
+        }
+    });
 
     return g;
 }
@@ -2452,7 +2464,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.3;
+renderer.toneMappingExposure = 1.1;
 renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 renderer.domElement.id = 'game';
@@ -2465,19 +2477,20 @@ addEventListener('resize', () => {
 });
 
 // ---- Lighting (warm cartoon style) ----
-scene.add(new THREE.AmbientLight(0xaaccee, 0.7));
-const dirLight = new THREE.DirectionalLight(0xfff0cc, 1.4);
+scene.add(new THREE.AmbientLight(0x6688cc, 0.6));
+const dirLight = new THREE.DirectionalLight(0xfff4e0, 1.2);
 dirLight.position.set(60, 100, 40); dirLight.castShadow = true;
 dirLight.shadow.mapSize.set(2048, 2048);
 dirLight.shadow.camera.near = 0.5; dirLight.shadow.camera.far = 300;
-dirLight.shadow.camera.left = dirLight.shadow.camera.bottom = -100;
-dirLight.shadow.camera.right = dirLight.shadow.camera.top = 100;
+dirLight.shadow.camera.left = dirLight.shadow.camera.bottom = -120;
+dirLight.shadow.camera.right = dirLight.shadow.camera.top = 120;
 dirLight.shadow.bias = -0.001;
+dirLight.shadow.normalBias = 0.02;
 scene.add(dirLight);
 const fillLight = new THREE.DirectionalLight(0x8899cc, 0.6);
 fillLight.position.set(-40, 30, -50);
 scene.add(fillLight);
-const hemiLight = new THREE.HemisphereLight(0xccddff, 0x88aa66, 0.5);
+const hemiLight = new THREE.HemisphereLight(0x88bbff, 0x445533, 0.5);
 scene.add(hemiLight);
 const rimLight = new THREE.DirectionalLight(0xffddaa, 0.3);
 rimLight.position.set(-30, 60, -80);
@@ -2488,70 +2501,78 @@ scene.add(rimLight);
 // ================================================================
 const MAPS = [
     {
-        id: 'ile_hivernale', name: 'Île Hivernale', icon: '🌲',
+        id: 'ile_hivernale', name: 'Île Hivernale', icon: '❄️',
+        theme: 'neige', projectileName: 'Boule de neige', projectileColor: 0xf0f4f8, projectileEmissive: 0x4488cc, projectileSize: 0.3,
         bg: 'linear-gradient(135deg, #1a3050, #0a1628)',
         sky: [['#0a1628',0],['#1a3050',0.2],['#4a7aaa',0.45],['#8ab4d8',0.65],['#c8ddf0',0.85],['#e8f0f8',1]],
         fogColor: 0x9ab8d8, fogDensity: 0.005,
-        waterColor: 0x2277aa, groundColors: [0xd8e8f4, 0xc0d8e8, 0xe0eef6],
+        waterColor: 0x2277aa, groundColors: [0x88ddaa, 0x77cc99, 0x99eebb],
         pathColor: 0xbbaa88, trees: 50, rocks: 15, forts: 12, houses: 6, snowmen: 8, bridges: 2, snowDensity: 5000
     },
     {
-        id: 'village_festif', name: 'Village Festif', icon: '🏘️',
+        id: 'village_festif', name: 'Village Festif', icon: '🎄',
+        theme: 'noel', projectileName: 'Cadeau explosif', projectileColor: 0xcc2244, projectileEmissive: 0xcc2244, projectileSize: 0.35,
         bg: 'linear-gradient(135deg, #2a3a5a, #1a2040)',
         sky: [['#0d1a30',0],['#1a2a50',0.2],['#3a6090',0.4],['#6a9ac8',0.6],['#a0c8e8',0.8],['#d0e4f4',1]],
         fogColor: 0x7aa8d0, fogDensity: 0.004,
-        waterColor: 0x1a6090, groundColors: [0xd0e0f0, 0xc8d8e8, 0xe0eef8],
+        waterColor: 0x1a6090, groundColors: [0x99eebb, 0x88ddaa, 0xaaffcc],
         pathColor: 0x998866, trees: 15, rocks: 8, forts: 8, houses: 18, snowmen: 15, bridges: 4, snowDensity: 3000
     },
     {
         id: 'archipel_glace', name: 'Archipel Glacé', icon: '🧊',
+        theme: 'glace', projectileName: 'Éclat de glace', projectileColor: 0x66ddff, projectileEmissive: 0x2299cc, projectileSize: 0.25,
         bg: 'linear-gradient(135deg, #0a2040, #051530)',
         sky: [['#051020',0],['#0a2040',0.2],['#2050a0',0.4],['#4080c8',0.6],['#80b0e0',0.8],['#b0d0f0',1]],
         fogColor: 0x5080b0, fogDensity: 0.004,
-        waterColor: 0x104080, groundColors: [0xb0d0e8, 0xa0c0d8, 0xc8e0f0],
+        waterColor: 0x104080, groundColors: [0x77ccdd, 0x66bbcc, 0x88ddee],
         pathColor: 0x8899aa, trees: 12, rocks: 25, forts: 6, houses: 4, snowmen: 3, bridges: 6, snowDensity: 4000
     },
     {
-        id: 'volcan_neige', name: 'Volcan des Neiges', icon: '🌋',
+        id: 'volcan_infernal', name: 'Volcan Infernal', icon: '🌋',
+        theme: 'lave', projectileName: 'Roche de lave', projectileColor: 0xff4400, projectileEmissive: 0xff2200, projectileSize: 0.35,
         bg: 'linear-gradient(135deg, #2a1a1a, #15102a)',
         sky: [['#15102a',0],['#2a1a2a',0.15],['#5a3a4a',0.35],['#8a6a7a',0.55],['#a08a98',0.75],['#c8b8c0',1]],
         fogColor: 0x806070, fogDensity: 0.006,
-        waterColor: 0x553040, groundColors: [0xc0b0b8, 0xa89898, 0xd8c8c8],
+        waterColor: 0xff3300, groundColors: [0x4a3030, 0x5a3a2a, 0x3a2a20],
         pathColor: 0x665544, trees: 8, rocks: 30, forts: 10, houses: 3, snowmen: 2, bridges: 1, snowDensity: 6000,
         hasVolcano: true
     },
     {
-        id: 'nuit_boreale', name: 'Nuit Boréale', icon: '🌙',
+        id: 'meteorite_cosmique', name: 'Météorite Cosmique', icon: '☄️',
+        theme: 'meteorite', projectileName: 'Roche cosmique', projectileColor: 0x8844cc, projectileEmissive: 0x6622aa, projectileSize: 0.35,
         bg: 'linear-gradient(135deg, #0a0a20, #050515)',
         sky: [['#020208',0],['#0a0a20',0.2],['#151540',0.4],['#1a2050',0.7],['#203060',0.9],['#2a3a70',1]],
         fogColor: 0x1a2040, fogDensity: 0.005,
-        waterColor: 0x0a1530, groundColors: [0x8090a8, 0x7080a0, 0x9aa8b8],
+        waterColor: 0x1a0a2a, groundColors: [0x2a1a3a, 0x3a2a4a, 0x1a1a2a],
         pathColor: 0x556678, trees: 30, rocks: 15, forts: 12, houses: 8, snowmen: 5, bridges: 3, snowDensity: 4000,
         isNight: true
     },
     {
-        id: 'ville_enneigee', name: 'Ville Enneigée', icon: '🏙️',
-        bg: 'linear-gradient(135deg, #2a3a5a, #1a2040)',
-        sky: [['#1a2040',0],['#2a3a5a',0.3],['#4a6a9a',0.5],['#7a9abb',0.7],['#aabbcc',1]],
-        fogColor: 0x8899aa, fogDensity: 0.006,
-        waterColor: 0x1a5588, groundColors: [0xaabbcc, 0x99aabb, 0xbbccdd],
-        pathColor: 0x888888, trees: 20, rocks: 20, forts: 8, houses: 15, snowmen: 5, bridges: 3, snowDensity: 4000
+        id: 'desert_brulant', name: 'Désert Brûlant', icon: '🏜️',
+        theme: 'sable', projectileName: 'Boule de sable', projectileColor: 0xddbb66, projectileEmissive: 0xaa8833, projectileSize: 0.3,
+        bg: 'linear-gradient(135deg, #5a4a2a, #3a2a1a)',
+        sky: [['#3a2a1a',0],['#6a5a3a',0.2],['#aa8855',0.4],['#ddbb77',0.6],['#eedd99',0.8],['#fff8e0',1]],
+        fogColor: 0xddcc99, fogDensity: 0.006,
+        waterColor: 0x2299aa, groundColors: [0xddcc88, 0xccbb77, 0xeedd99],
+        pathColor: 0xaa9966, trees: 20, rocks: 20, forts: 8, houses: 15, snowmen: 5, bridges: 3, snowDensity: 2000
     },
     {
-        id: 'grotte_glace', name: 'Grotte de Glace', icon: '🧊',
-        bg: 'linear-gradient(135deg, #0a2040, #051530)',
-        sky: [['#051530',0],['#0a2040',0.3],['#1a3060',0.5],['#2a4070',0.7],['#3a5080',1]],
-        fogColor: 0x2a4060, fogDensity: 0.008,
-        waterColor: 0x0a3355, groundColors: [0x88bbdd, 0x77aacc, 0x99ccee],
-        pathColor: 0x6699bb, trees: 10, rocks: 30, forts: 5, houses: 3, snowmen: 10, bridges: 1, snowDensity: 3000
+        id: 'jungle_tropicale', name: 'Jungle Tropicale', icon: '🌴',
+        theme: 'jungle', projectileName: 'Noix de coco', projectileColor: 0x885533, projectileEmissive: 0x442211, projectileSize: 0.3,
+        bg: 'linear-gradient(135deg, #0a2010, #051510)',
+        sky: [['#051510',0],['#0a2a10',0.2],['#1a4a20',0.4],['#3a7a40',0.6],['#5aaa60',0.8],['#88cc88',1]],
+        fogColor: 0x3a5a3a, fogDensity: 0.008,
+        waterColor: 0x1a5533, groundColors: [0x2a6a20, 0x3a7a30, 0x1a5a10],
+        pathColor: 0x6a5a3a, trees: 10, rocks: 30, forts: 5, houses: 3, snowmen: 10, bridges: 1, snowDensity: 3000
     },
     {
-        id: 'sommet_montagne', name: 'Sommet de Montagne', icon: '⛰️',
-        bg: 'linear-gradient(135deg, #3a4a6a, #2a3a5a)',
-        sky: [['#1a2a4a',0],['#3a5a8a',0.2],['#6a8abb',0.4],['#aaccee',0.6],['#ddeeff',0.8],['#eef4ff',1]],
-        fogColor: 0xbbccdd, fogDensity: 0.004,
-        waterColor: 0x3388bb, groundColors: [0xddddee, 0xccccdd, 0xeeeeff],
-        pathColor: 0x998877, trees: 15, rocks: 25, forts: 6, houses: 4, snowmen: 12, bridges: 2, snowDensity: 6000
+        id: 'monde_bonbon', name: 'Monde Bonbon', icon: '🍬',
+        theme: 'bonbon', projectileName: 'Bonbon géant', projectileColor: 0xff66aa, projectileEmissive: 0xff3388, projectileSize: 0.3,
+        bg: 'linear-gradient(135deg, #4a2050, #2a1030)',
+        sky: [['#2a1030',0],['#5a3060',0.2],['#aa5588',0.4],['#dd88aa',0.6],['#ffaacc',0.8],['#ffddee',1]],
+        fogColor: 0xffccee, fogDensity: 0.004,
+        waterColor: 0xff88cc, groundColors: [0xffaacc, 0xaaddff, 0xaaffaa],
+        pathColor: 0xffdd88, trees: 15, rocks: 25, forts: 6, houses: 4, snowmen: 12, bridges: 2, snowDensity: 6000
     }
 ];
 let currentMapIdx = 0;
@@ -2682,37 +2703,129 @@ function buildMap(mapIdx) {
     const m = MAPS[mapIdx];
     currentMapIdx = mapIdx;
 
-    // Sky
-    const skyGeo = new THREE.SphereGeometry(400, 32, 16);
+    // Sky - HD canvas with clouds, sun/moon
+    const skyGeo = new THREE.SphereGeometry(400, 48, 24);
     const skyC = document.createElement('canvas');
-    skyC.width = 512; skyC.height = 512;
+    skyC.width = 1024; skyC.height = 1024;
     const sCtx = skyC.getContext('2d');
-    const sGrad = sCtx.createLinearGradient(0, 0, 0, 512);
+    // Base gradient
+    const sGrad = sCtx.createLinearGradient(0, 0, 0, 1024);
     m.sky.forEach(s => sGrad.addColorStop(s[1], s[0]));
-    sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 512, 512);
-    const starCount = m.isNight ? 200 : 60;
+    sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 1024, 1024);
+    // Stars
+    const starCount = m.isNight ? 350 : 80;
     for (let i = 0; i < starCount; i++) {
-        sCtx.fillStyle = `rgba(255,255,255,${0.3+Math.random()*0.7})`;
-        sCtx.beginPath(); sCtx.arc(Math.random()*512, Math.random()*250, 0.5+Math.random()*1.5, 0, Math.PI*2); sCtx.fill();
+        const sx = Math.random()*1024, sy = Math.random()*500;
+        const sr = 0.5+Math.random()*(m.isNight?2.5:1.2);
+        const sa = 0.2+Math.random()*0.8;
+        sCtx.save();
+        sCtx.fillStyle = `rgba(255,255,${220+Math.floor(Math.random()*35)},${sa})`;
+        sCtx.beginPath(); sCtx.arc(sx, sy, sr, 0, Math.PI*2); sCtx.fill();
+        // Star glow
+        if (sr > 1.5) {
+            const sg = sCtx.createRadialGradient(sx,sy,0,sx,sy,sr*4);
+            sg.addColorStop(0, `rgba(255,255,255,${sa*0.3})`);
+            sg.addColorStop(1, 'rgba(255,255,255,0)');
+            sCtx.fillStyle = sg; sCtx.beginPath(); sCtx.arc(sx,sy,sr*4,0,Math.PI*2); sCtx.fill();
+        }
+        sCtx.restore();
     }
+    // Sun or Moon
     if (m.isNight) {
-        for (let i = 0; i < 6; i++) {
-            sCtx.strokeStyle = `rgba(80,255,150,${0.04+Math.random()*0.08})`;
-            sCtx.lineWidth = 12+Math.random()*25;
-            sCtx.beginPath(); sCtx.moveTo(0, 140+Math.random()*80);
-            sCtx.bezierCurveTo(128, 110+Math.random()*80, 384, 150+Math.random()*80, 512, 120+Math.random()*80);
+        // Moon with craters
+        const mx = 780, my = 120, mr = 45;
+        const moonG = sCtx.createRadialGradient(mx-10,my-10,0,mx,my,mr);
+        moonG.addColorStop(0, '#f8f4e8'); moonG.addColorStop(0.7, '#e8e0c8'); moonG.addColorStop(1, '#c0b898');
+        sCtx.fillStyle = moonG; sCtx.beginPath(); sCtx.arc(mx,my,mr,0,Math.PI*2); sCtx.fill();
+        // Moon glow
+        const moonGlow = sCtx.createRadialGradient(mx,my,mr,mx,my,mr*3);
+        moonGlow.addColorStop(0, 'rgba(200,210,230,0.15)'); moonGlow.addColorStop(1, 'rgba(200,210,230,0)');
+        sCtx.fillStyle = moonGlow; sCtx.beginPath(); sCtx.arc(mx,my,mr*3,0,Math.PI*2); sCtx.fill();
+        // Craters
+        sCtx.fillStyle = 'rgba(180,170,140,0.3)';
+        [[mx-12,my-8,8],[mx+15,my+10,6],[mx-5,my+18,5],[mx+8,my-15,4]].forEach(c => {
+            sCtx.beginPath(); sCtx.arc(c[0],c[1],c[2],0,Math.PI*2); sCtx.fill();
+        });
+        // Aurora borealis (enhanced)
+        for (let i = 0; i < 10; i++) {
+            const colors = ['80,255,150','100,200,255','150,100,255','80,255,200'];
+            sCtx.strokeStyle = `rgba(${colors[i%4]},${0.03+Math.random()*0.07})`;
+            sCtx.lineWidth = 15+Math.random()*35;
+            sCtx.beginPath();
+            const baseY = 200+Math.random()*120;
+            sCtx.moveTo(0, baseY);
+            for (let x = 0; x <= 1024; x += 64) {
+                sCtx.lineTo(x, baseY + Math.sin(x*0.008+i)*40 + Math.cos(x*0.012+i*2)*25);
+            }
             sCtx.stroke();
         }
+    } else {
+        // Sun with rays
+        const sunX = 200, sunY = 100, sunR = 40;
+        // Sun glow (outer)
+        const sunGlow2 = sCtx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*6);
+        sunGlow2.addColorStop(0, 'rgba(255,240,200,0.2)'); sunGlow2.addColorStop(0.5, 'rgba(255,200,100,0.05)'); sunGlow2.addColorStop(1, 'rgba(255,200,100,0)');
+        sCtx.fillStyle = sunGlow2; sCtx.beginPath(); sCtx.arc(sunX,sunY,sunR*6,0,Math.PI*2); sCtx.fill();
+        // Sun glow (inner)
+        const sunGlow = sCtx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*2.5);
+        sunGlow.addColorStop(0, 'rgba(255,250,230,0.6)'); sunGlow.addColorStop(0.5, 'rgba(255,220,150,0.2)'); sunGlow.addColorStop(1, 'rgba(255,200,100,0)');
+        sCtx.fillStyle = sunGlow; sCtx.beginPath(); sCtx.arc(sunX,sunY,sunR*2.5,0,Math.PI*2); sCtx.fill();
+        // Sun disc
+        const sunDisc = sCtx.createRadialGradient(sunX-5,sunY-5,0,sunX,sunY,sunR);
+        sunDisc.addColorStop(0, '#fffef0'); sunDisc.addColorStop(0.6, '#fff4d0'); sunDisc.addColorStop(1, '#ffe090');
+        sCtx.fillStyle = sunDisc; sCtx.beginPath(); sCtx.arc(sunX,sunY,sunR,0,Math.PI*2); sCtx.fill();
     }
-    skyDome = new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(skyC), side: THREE.BackSide }));
+    // Clouds (soft procedural)
+    for (let i = 0; i < (m.isNight ? 5 : 12); i++) {
+        const cx = Math.random()*1024, cy = 300+Math.random()*250;
+        const cw = 80+Math.random()*150, ch = 20+Math.random()*30;
+        const ca = m.isNight ? 0.04+Math.random()*0.06 : 0.15+Math.random()*0.2;
+        // Cloud shape (multiple overlapping ellipses)
+        for (let j = 0; j < 5; j++) {
+            const ox = (j-2)*cw*0.3, oy = (Math.random()-0.5)*ch*0.5;
+            const rw = cw*0.35+Math.random()*cw*0.2, rh = ch*0.6+Math.random()*ch*0.4;
+            const cg = sCtx.createRadialGradient(cx+ox, cy+oy, 0, cx+ox, cy+oy, rw);
+            cg.addColorStop(0, `rgba(255,255,255,${ca})`);
+            cg.addColorStop(0.6, `rgba(240,245,255,${ca*0.5})`);
+            cg.addColorStop(1, 'rgba(255,255,255,0)');
+            sCtx.fillStyle = cg;
+            sCtx.beginPath(); sCtx.ellipse(cx+ox, cy+oy, rw, rh, 0, 0, Math.PI*2); sCtx.fill();
+        }
+    }
+    const skyTex = new THREE.CanvasTexture(skyC);
+    skyDome = new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide }));
     scene.add(skyDome);
+    // 3D Clouds (floating cloud meshes)
+    for (let i = 0; i < (m.isNight ? 4 : 10); i++) {
+        const cloudG = new THREE.Group();
+        const puffs = 3 + Math.floor(Math.random()*4);
+        const cloudMat = new THREE.MeshBasicMaterial({
+            color: m.isNight ? 0x334466 : 0xffffff,
+            transparent: true, opacity: m.isNight ? 0.15 : 0.6
+        });
+        for (let j = 0; j < puffs; j++) {
+            const pw = 8+Math.random()*12, ph = 3+Math.random()*4, pd = 6+Math.random()*8;
+            const puff = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), cloudMat);
+            puff.scale.set(pw, ph, pd);
+            puff.position.set((j-puffs/2)*pw*0.5, Math.random()*2, (Math.random()-0.5)*5);
+            cloudG.add(puff);
+        }
+        const angle = Math.random()*Math.PI*2;
+        const dist = 100+Math.random()*200;
+        cloudG.position.set(Math.cos(angle)*dist, 80+Math.random()*80, Math.sin(angle)*dist);
+        cloudG.userData.cloudSpeed = 0.5+Math.random()*1.5;
+        cloudG.userData.cloudAngle = angle;
+        cloudG.userData.cloudDist = dist;
+        scene.add(cloudG);
+        mapObjects.push(cloudG);
+    }
     scene.fog = new THREE.FogExp2(m.fogColor, m.fogDensity);
 
     // ---- OCEAN (animated waves) ----
     const oceanGeo = new THREE.PlaneGeometry(500, 500, 64, 64);
     const oceanMat = new THREE.MeshPhongMaterial({
-        color: m.waterColor, shininess: 140, specular: 0x88aacc,
-        transparent: true, opacity: 0.82, depthWrite: false
+        color: m.waterColor, shininess: 200, specular: 0x88aacc,
+        transparent: true, opacity: 0.85, depthWrite: false, reflectivity: 0.8
     });
     const ocean = new THREE.Mesh(oceanGeo, oceanMat);
     ocean.rotation.x = -Math.PI/2; ocean.position.y = -0.8;
@@ -2768,7 +2881,7 @@ function buildMap(mapIdx) {
     }
     groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(gColors, 3));
     groundGeo.computeVertexNormals();
-    const ground = new THREE.Mesh(groundGeo, new THREE.MeshPhongMaterial({ vertexColors:true, shininess:35, specular:0x445566, flatShading:true }));
+    const ground = new THREE.Mesh(groundGeo, new THREE.MeshToonMaterial({ vertexColors:true, gradientMap: toonGradient, emissive: new THREE.Color(m.groundColors[0]).multiplyScalar(0.02) }));
     ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; ground.position.y = 0.1;
     addObj(ground);
 
@@ -2833,19 +2946,19 @@ function buildMap(mapIdx) {
                 const root = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,1.2,5), new THREE.MeshToonMaterial({color:0x4a2a10, gradientMap: toonGradient}));
                 root.position.set(Math.cos(ra)*0.4,0.3,Math.sin(ra)*0.4); root.rotation.z = Math.cos(ra)*0.6; root.rotation.x = Math.sin(ra)*0.6; g.add(root);
             }
-            const cols = [0x1a5a1e,0x247028,0x2e8a32];
+            const cols = [0x2d8a35,0x35a040,0x45aa50];
             for (let j = 0; j < 3; j++) {
                 const cR = (3-j*0.8)*hv, cH = (3.8-j*0.5)*hv;
-                const f = new THREE.Mesh(new THREE.ConeGeometry(cR,cH,7), new THREE.MeshToonMaterial({color:cols[j], gradientMap: toonGradient}));
+                const f = new THREE.Mesh(new THREE.SphereGeometry(cR*0.7, 8, 6), new THREE.MeshToonMaterial({color:cols[j], gradientMap: toonGradient}));
                 f.position.y = (3.5+j*2.2)*hv; f.castShadow = true; g.add(f);
-                const sn = new THREE.Mesh(new THREE.ConeGeometry(cR*0.85,0.7,7), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
+                const sn = new THREE.Mesh(new THREE.SphereGeometry(cR*0.5, 8, 6), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
                 sn.position.y = (4.8+j*2.2)*hv; g.add(sn);
             }
         } else if (treeType < 0.85) {
             // Round bush/small tree
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.3,1.5*hv,6), new THREE.MeshToonMaterial({color:0x5a3618, gradientMap: toonGradient}));
             trunk.position.y = 0.75*hv; trunk.castShadow = true; g.add(trunk);
-            const bushMat = new THREE.MeshToonMaterial({color:0x2a6a28, gradientMap: toonGradient});
+            const bushMat = new THREE.MeshToonMaterial({color:0x3a9a40, gradientMap: toonGradient});
             const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(2*hv,1), bushMat);
             bush.position.y = 2.5*hv; bush.castShadow = true; g.add(bush);
             const sn = new THREE.Mesh(new THREE.SphereGeometry(1.8*hv,8,6,0,Math.PI*2,0,Math.PI/2.5), new THREE.MeshToonMaterial({color:0xf0f4f8, gradientMap: toonGradient}));
@@ -3035,8 +3148,9 @@ function buildMap(mapIdx) {
     }
     const sGeo = new THREE.BufferGeometry();
     sGeo.setAttribute('position', new THREE.BufferAttribute(sPosArr, 3));
+    const snowColor = m.theme === 'lave' ? 0xff6633 : m.theme === 'meteorite' ? 0x8844cc : m.theme === 'sable' ? 0xddbb66 : m.theme === 'jungle' ? 0x44aa33 : m.theme === 'bonbon' ? 0xff88cc : 0xffffff;
     snowParticles = new THREE.Points(sGeo, new THREE.PointsMaterial({
-        color:0xffffff, size:0.4, transparent:true, opacity:0.8,
+        color: snowColor, size:0.4, transparent:true, opacity:0.8,
         depthWrite:false, blending:THREE.AdditiveBlending, sizeAttenuation:true
     }));
     scene.add(snowParticles);
@@ -3045,7 +3159,7 @@ function buildMap(mapIdx) {
     if (m.isNight) {
         dirLight.intensity = 0.3; fillLight.intensity = 0.15; hemiLight.intensity = 0.2;
     } else {
-        dirLight.intensity = 1.4; fillLight.intensity = 0.6; hemiLight.intensity = 0.5;
+        dirLight.intensity = 1.2; fillLight.intensity = 0.6; hemiLight.intensity = 0.5;
     }
 }
 
@@ -3137,7 +3251,7 @@ function buildMiniIsland(mapIdx) {
     terrGeo.setAttribute('color', new THREE.Float32BufferAttribute(tColors, 3));
     terrGeo.computeVertexNormals();
     const terrain = new THREE.Mesh(terrGeo, new THREE.MeshPhongMaterial({
-        vertexColors:true, shininess:30, flatShading:true
+        vertexColors:true, shininess:30, flatShading:false
     }));
     terrain.rotation.x = -Math.PI/2;
     g.add(terrain);
@@ -3190,7 +3304,7 @@ function buildMiniIsland(mapIdx) {
     // ---- Water disc ----
     const waterDisc = new THREE.Mesh(
         new THREE.CircleGeometry(10, 32),
-        new THREE.MeshPhongMaterial({color:m.waterColor, shininess:120, specular:0x88aacc, transparent:true, opacity:0.75})
+        new THREE.MeshPhongMaterial({color:m.waterColor, shininess:200, specular:0x88aacc, transparent:true, opacity:0.85, reflectivity:0.8})
     );
     waterDisc.rotation.x = -Math.PI/2;
     waterDisc.position.y = -0.5;
@@ -3207,9 +3321,9 @@ function buildMiniIsland(mapIdx) {
         tg.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.14,0.8*hv,5), new THREE.MeshToonMaterial({color:0x6b4226, gradientMap: toonGradient})));
         tg.children[0].position.y = 0.4*hv;
         for (let j = 0; j < 2; j++) {
-            tg.add(new THREE.Mesh(new THREE.ConeGeometry((0.8-j*0.2)*hv,(1.1-j*0.2)*hv,6), new THREE.MeshToonMaterial({color:[0x1e6020,0x358a35][j], gradientMap: toonGradient})));
+            tg.add(new THREE.Mesh(new THREE.SphereGeometry((0.8-j*0.2)*hv, 8, 6), new THREE.MeshToonMaterial({color:[0x2d8a35,0x45aa50][j], gradientMap: toonGradient})));
             tg.children[j+1].position.y = (0.9+j*0.7)*hv;
-            tg.add(new THREE.Mesh(new THREE.ConeGeometry((0.6-j*0.2)*hv,0.2,6), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient})));
+            tg.add(new THREE.Mesh(new THREE.SphereGeometry((0.6-j*0.2)*hv, 8, 6), new THREE.MeshToonMaterial({color:0xffffff, gradientMap: toonGradient})));
             tg.children[j*2+2].position.y = (1.3+j*0.7)*hv;
         }
         tg.position.set(tx, th, tz);
@@ -3300,7 +3414,8 @@ function buildMiniIsland(mapIdx) {
     }
     const spGeo = new THREE.BufferGeometry();
     spGeo.setAttribute('position', new THREE.BufferAttribute(spArr, 3));
-    g.add(new THREE.Points(spGeo, new THREE.PointsMaterial({color:0xffffff, size:0.12, transparent:true, opacity:0.7})));
+    const miniSnowColor = m.theme === 'lave' ? 0xff6633 : m.theme === 'meteorite' ? 0x8844cc : m.theme === 'sable' ? 0xddbb66 : m.theme === 'jungle' ? 0x44aa33 : m.theme === 'bonbon' ? 0xff88cc : 0xffffff;
+    g.add(new THREE.Points(spGeo, new THREE.PointsMaterial({color:miniSnowColor, size:0.12, transparent:true, opacity:0.7})));
 
     // Scale up mini island for better visibility in roulette
     g.scale.set(1.2, 1.2, 1.2);
@@ -3538,10 +3653,10 @@ const armGroup = new THREE.Group();
 function buildFPArm(colorIdx) {
     while(armGroup.children.length) armGroup.remove(armGroup.children[0]);
     const jacketColor = PLAYER_COLOR_HEX[colorIdx] || 0x4a9eff;
-    const jacketMat = new THREE.MeshToonMaterial({color: jacketColor, gradientMap: toonGradient});
-    const jacketDark = new THREE.MeshToonMaterial({color: new THREE.Color(jacketColor).multiplyScalar(0.7).getHex(), gradientMap: toonGradient});
-    const gloveMat = new THREE.MeshToonMaterial({color: 0xe8e0d0, gradientMap: toonGradient});
-    const skinMat = new THREE.MeshToonMaterial({color: 0xffcba4, gradientMap: toonGradient});
+    const jacketMat = new THREE.MeshToonMaterial({color: jacketColor, gradientMap: toonGradient, emissive: new THREE.Color(jacketColor).multiplyScalar(0.08)});
+    const jacketDark = new THREE.MeshToonMaterial({color: new THREE.Color(jacketColor).multiplyScalar(0.7).getHex(), gradientMap: toonGradient, emissive: new THREE.Color(jacketColor).multiplyScalar(0.05)});
+    const gloveMat = new THREE.MeshToonMaterial({color: 0xe8e0d0, gradientMap: toonGradient, emissive: new THREE.Color(0xe8e0d0).multiplyScalar(0.06)});
+    const skinMat = new THREE.MeshToonMaterial({color: 0xffcba4, gradientMap: toonGradient, emissive: new THREE.Color(0xffcba4).multiplyScalar(0.05)});
 
     // ===== RIGHT ARM (Brawl Stars: thick, chunky, cartoon) =====
     // Shoulder (round)
@@ -3724,20 +3839,43 @@ function updateEnemyHpBar(e) {
 let projectiles = [];
 let impacts = [];
 const snowballGeo = new THREE.SphereGeometry(0.2, 12, 12);
-const playerSnowMat = new THREE.MeshPhongMaterial({color:0xeef4ff, emissive:0x4488bb, emissiveIntensity:0.3, shininess:80, specular:0x88aacc});
+const playerSnowMat = new THREE.MeshPhongMaterial({color:0xeef4ff, emissive:0x4488cc, emissiveIntensity:0.35, shininess:100, specular:0xaaccff});
 const enemySnowMat = new THREE.MeshPhongMaterial({color:0xffcccc, emissive:0x882222, emissiveIntensity:0.4, shininess:60});
 
 function shootSnowball(origin, direction, isEnemy, shooterIdx) {
     const group = new THREE.Group();
-    const ball = new THREE.Mesh(snowballGeo, isEnemy ? enemySnowMat : playerSnowMat);
+    const cm = MAPS[selectedMapIdx || 0];
+    const projColor = isEnemy ? 0xff4444 : (cm.projectileColor || 0xf0f4f8);
+    const projEmissive = isEnemy ? 0xff2222 : (cm.projectileEmissive || 0x4488cc);
+    const projSize = cm.projectileSize || 0.3;
+    // Theme-specific geometry
+    let ballGeo;
+    if (!isEnemy && cm.theme === 'meteorite') ballGeo = new THREE.DodecahedronGeometry(projSize, 0);
+    else if (!isEnemy && cm.theme === 'glace') ballGeo = new THREE.OctahedronGeometry(projSize, 0);
+    else ballGeo = new THREE.SphereGeometry(projSize, 10, 10);
+    const ballMat = new THREE.MeshPhongMaterial({color: projColor, emissive: new THREE.Color(projEmissive), emissiveIntensity: isEnemy ? 0.3 : 0.5, shininess: 100, specular: 0xaaccff});
+    const ball = new THREE.Mesh(ballGeo, ballMat);
     ball.castShadow = true; group.add(ball);
-    const glowColor = isEnemy ? 0xff6666 : 0x88ccff;
+    // Theme-specific decorations (player only)
+    if (!isEnemy) {
+        if (cm.theme === 'noel') {
+            const ribMat = new THREE.MeshToonMaterial({color:0xffdd00, gradientMap:toonGradient});
+            const r1 = new THREE.Mesh(new THREE.BoxGeometry(projSize*2.2,0.04,0.04), ribMat); ball.add(r1);
+            const r2 = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.04,projSize*2.2), ribMat); ball.add(r2);
+        } else if (cm.theme === 'lave') {
+            ballMat.emissiveIntensity = 0.8;
+        } else if (cm.theme === 'bonbon') {
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(projSize*0.8,0.04,8,12), new THREE.MeshToonMaterial({color:0xffffff, gradientMap:toonGradient}));
+            ball.add(ring);
+        }
+    }
+    const glowColor = isEnemy ? 0xff6666 : projColor;
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({color: glowColor, transparent:true, opacity:0.3, blending: THREE.AdditiveBlending}));
     glow.scale.set(0.8, 0.8, 0.8); group.add(glow);
     group.position.copy(origin);
     scene.add(group);
     const speed = isEnemy ? 25 : 42;
-    const trailColor = isEnemy ? 0xff4444 : (PLAYER_COLOR_HEX[player.colorIdx] || 0xddeeff);
+    const trailColor = isEnemy ? 0xff4444 : (projColor || 0xddeeff);
     projectiles.push({ mesh: group, velocity: direction.clone().normalize().multiplyScalar(speed), isEnemy, life: 3, shooterIdx: shooterIdx || 0, trailTimer: 0, trailColor: trailColor });
 }
 
@@ -4652,7 +4790,15 @@ function actuallyLaunchGame(mode) {
 
         prompt.onclick = () => {
             prompt.remove();
-            renderer.domElement.requestPointerLock();
+            if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    renderer.domElement.requestPointerLock();
+                }).catch(() => {
+                    renderer.domElement.requestPointerLock();
+                });
+            } else {
+                renderer.domElement.requestPointerLock();
+            }
             gameRunning = true;
         };
     }
@@ -4810,6 +4956,9 @@ document.getElementById('btn-lobby-back').onclick = () => {
 document.getElementById('btn-resume').onclick = () => {
     showGameOverlay(null);
     document.getElementById('hud').classList.remove('hidden');
+    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(()=>{});
+    }
     if (!isMobile) renderer.domElement.requestPointerLock();
     gameRunning = true;
 };
@@ -4843,6 +4992,16 @@ function animate() {
             }
             oPos.needsUpdate = true;
             obj.geometry.computeVertexNormals();
+        }
+    });
+
+    // Animate 3D clouds
+    mapObjects.forEach(obj => {
+        if (obj.userData && obj.userData.cloudSpeed) {
+            obj.userData.cloudAngle += dt * obj.userData.cloudSpeed * 0.003;
+            obj.position.x = Math.cos(obj.userData.cloudAngle) * obj.userData.cloudDist;
+            obj.position.z = Math.sin(obj.userData.cloudAngle) * obj.userData.cloudDist;
+            obj.position.y += Math.sin(t * 0.5 + obj.userData.cloudAngle * 3) * 0.01;
         }
     });
 
