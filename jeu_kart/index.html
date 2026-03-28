@@ -712,11 +712,10 @@ function resolveKartCollision(kart, r) {
       if(overlapX > 0 && overlapZ > 0) {
         if(overlapX < overlapZ) {
           kart.x += (kart.x > ob.x ? 1 : -1) * overlapX;
-          kart.speed *= -0.3; // bounce
         } else {
           kart.z += (kart.z > ob.z ? 1 : -1) * overlapZ;
-          kart.speed *= -0.3; // bounce
         }
+        kart.speed *= 0.1; // slow down on wall hit
       }
     }
   }
@@ -1125,10 +1124,27 @@ function update(dt) {
     const maxSpd = k.turboTimer > 0 ? 35 : 22;
     k.speed = Math.max(-10, Math.min(maxSpd, k.speed));
 
-    k.x += Math.sin(k.angle) * k.speed * dt;
-    k.z += Math.cos(k.angle) * k.speed * dt;
+    // Save position before move
+    const prevX = k.x, prevZ = k.z;
 
-    resolveKartCollision(k, kartRadius);
+    // Move in small steps to prevent tunneling through walls
+    const steps = Math.max(1, Math.ceil(Math.abs(k.speed) * dt / 1.0));
+    const stepDt = dt / steps;
+    for(let s = 0; s < steps; s++) {
+      k.x += Math.sin(k.angle) * k.speed * stepDt;
+      k.z += Math.cos(k.angle) * k.speed * stepDt;
+      resolveKartCollision(k, kartRadius);
+    }
+
+    // Safety: if somehow still inside an obstacle, revert
+    for(const ob of obstacles) {
+      if(!ob.mesh.visible || ob.isRamp) continue;
+      if(ob.circular) {
+        if(Math.hypot(k.x-ob.x, k.z-ob.z) < ob.hw * 0.5) { k.x = prevX; k.z = prevZ; k.speed = 0; break; }
+      } else {
+        if(Math.abs(k.x-ob.x) < ob.hw*0.5 && Math.abs(k.z-ob.z) < ob.hd*0.5) { k.x = prevX; k.z = prevZ; k.speed = 0; break; }
+      }
+    }
 
     // Ramp height
     k.y = 0;
