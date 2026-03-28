@@ -824,7 +824,7 @@ function updatePlayerHUD() {
 function useWeapon(kart) {
   if(!kart.weapon || kart.weaponCooldown > 0 || !kart.alive) return;
   const w = kart.weapon;
-  const a = kart.turretAngle;
+  const a = kart.angle; // tir toujours droit devant
   const fx = kart.x + Math.sin(a)*2.5;
   const fz = kart.z + Math.cos(a)*2.5;
 
@@ -1149,7 +1149,7 @@ function update(dt) {
     // Update mesh
     k.mesh.position.set(k.x, k.y, k.z);
     k.mesh.rotation.y = k.angle;
-    k.turretBase.rotation.y = k.turretAngle - k.angle;
+    k.turretBase.rotation.y = 0; // canon toujours droit devant
 
     // Spin wheels
     for(const w of k.wheels) {
