@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>KART FURY</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#111; font-family:'Segoe UI',Arial,sans-serif; user-select:none; -webkit-user-select:none; }
+canvas { display:block; }
+#hud { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+#hud * { pointer-events:none; }
+#crosshair { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:30px; height:30px; }
+#crosshair::before, #crosshair::after { content:''; position:absolute; background:rgba(255,255,255,0.8); }
+#crosshair::before { width:2px; height:100%; left:50%; transform:translateX(-50%); }
+#crosshair::after { width:100%; height:2px; top:50%; transform:translateY(-50%); }
+#crosshair-dot { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:4px; height:4px; border-radius:50%; background:rgba(255,80,80,0.9); }
+
+/* HP Bar */
+#hp-bar-container { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); width:250px; height:22px; background:rgba(0,0,0,0.6); border-radius:11px; border:2px solid rgba(255,255,255,0.3); }
+#hp-bar { width:100%; height:100%; background:linear-gradient(90deg,#2ecc71,#27ae60); border-radius:9px; transition:width 0.2s; }
+#hp-text { position:absolute; width:100%; text-align:center; color:#fff; font-size:12px; font-weight:bold; line-height:18px; text-shadow:1px 1px 2px #000; }
+
+/* Score */
+#score-display { position:absolute; top:12px; left:12px; color:#fff; font-size:18px; font-weight:bold; text-shadow:2px 2px 4px #000; }
+#timer-display { position:absolute; top:12px; left:50%; transform:translateX(-50%); color:#fff; font-size:22px; font-weight:bold; text-shadow:2px 2px 4px #000; }
+
+/* Weapon */
+#weapon-display { position:absolute; top:12px; right:12px; color:#fff; font-size:16px; font-weight:bold; text-shadow:2px 2px 4px #000; background:rgba(0,0,0,0.5); padding:8px 14px; border-radius:8px; border:2px solid rgba(255,255,255,0.2); }
+#weapon-icon { font-size:24px; margin-right:6px; vertical-align:middle; }
+
+/* Kill Feed */
+#kill-feed { position:absolute; top:50px; right:12px; color:#fff; font-size:13px; text-shadow:1px 1px 3px #000; }
+.kill-entry { background:rgba(0,0,0,0.5); padding:4px 10px; border-radius:4px; margin-bottom:3px; opacity:1; transition:opacity 0.5s; white-space:nowrap; }
+
+/* Minimap */
+#minimap { position:absolute; bottom:12px; left:12px; width:140px; height:140px; background:rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.3); border-radius:8px; }
+#minimap-canvas { width:100%; height:100%; border-radius:6px; }
+
+/* Menus */
+.menu-overlay { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); z-index:100; pointer-events:auto !important; }
+.menu-overlay * { pointer-events:auto !important; }
+#title-screen h1 { font-size:72px; color:#ff4444; text-shadow:4px 4px 0 #cc0000, 8px 8px 0 rgba(0,0,0,0.3); letter-spacing:6px; margin-bottom:10px; }
+#title-screen h2 { font-size:20px; color:#ffcc00; margin-bottom:40px; text-shadow:2px 2px 4px #000; }
+.menu-btn { padding:16px 50px; font-size:22px; font-weight:bold; border:none; border-radius:12px; cursor:pointer; margin:8px; text-decoration:none; display:inline-block; text-align:center; transition:transform 0.1s, box-shadow 0.1s; }
+.menu-btn:hover { transform:scale(1.05); }
+.menu-btn:active { transform:scale(0.97); }
+.btn-play { background:linear-gradient(180deg,#4CAF50,#388E3C); color:#fff; box-shadow:0 4px 0 #2E7D32, 0 6px 12px rgba(0,0,0,0.4); }
+.btn-back { background:linear-gradient(180deg,#777,#555); color:#fff; box-shadow:0 4px 0 #444, 0 6px 12px rgba(0,0,0,0.4); font-size:16px; padding:10px 30px; }
+.btn-replay { background:linear-gradient(180deg,#FF9800,#F57C00); color:#fff; box-shadow:0 4px 0 #E65100, 0 6px 12px rgba(0,0,0,0.4); }
+
+#end-screen h1 { font-size:48px; color:#ffcc00; text-shadow:3px 3px 0 #996600; margin-bottom:20px; }
+#scoreboard { background:rgba(0,0,0,0.6); border-radius:12px; padding:16px 30px; margin-bottom:24px; min-width:300px; }
+#scoreboard table { width:100%; color:#fff; font-size:16px; border-collapse:collapse; }
+#scoreboard th { color:#ffcc00; padding:6px 12px; border-bottom:1px solid rgba(255,255,255,0.2); text-align:left; }
+#scoreboard td { padding:5px 12px; }
+.player-row { background:rgba(70,130,255,0.3); }
+
+/* Touch Controls */
+#touch-controls { display:none; position:absolute; bottom:0; left:0; width:100%; height:100%; }
+#joystick-zone { position:absolute; bottom:20px; left:20px; width:140px; height:140px; }
+#joystick-base { width:140px; height:140px; border-radius:50%; background:rgba(255,255,255,0.15); border:3px solid rgba(255,255,255,0.3); position:relative; }
+#joystick-stick { width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.5); position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+#fire-btn { position:absolute; bottom:40px; right:40px; width:80px; height:80px; border-radius:50%; background:rgba(255,50,50,0.6); border:3px solid rgba(255,100,100,0.7); display:flex; align-items:center; justify-content:center; font-size:28px; color:#fff; pointer-events:auto !important; }
+#aim-zone { position:absolute; bottom:40px; right:140px; width:60px; height:60px; border-radius:50%; background:rgba(255,165,0,0.4); border:2px solid rgba(255,165,0,0.6); }
+
+/* Respawn */
+#respawn-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:36px; font-weight:bold; text-shadow:3px 3px 6px #000; display:none; }
+
+@media (max-width:768px) {
+  #touch-controls { display:block; }
+  #crosshair { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Title Screen -->
+<div id="title-screen" class="menu-overlay">
+  <h1>KART FURY</h1>
+  <h2>Combat de Karts en Arene</h2>
+  <button class="menu-btn btn-play" onclick="startGame()">JOUER</button>
+  <a href="../index.html" class="menu-btn btn-back">Retour</a>
+</div>
+
+<!-- End Screen -->
+<div id="end-screen" class="menu-overlay" style="display:none;">
+  <h1>PARTIE TERMINEE !</h1>
+  <div id="scoreboard"></div>
+  <button class="menu-btn btn-replay" onclick="restartGame()">REJOUER</button>
+  <a href="../index.html" class="menu-btn btn-back" style="margin-top:8px;">Retour</a>
+</div>
+
+<!-- HUD -->
+<div id="hud" style="display:none;">
+  <div id="crosshair"><div id="crosshair-dot"></div></div>
+  <div id="score-display">Kills: 0</div>
+  <div id="timer-display">2:00</div>
+  <div id="weapon-display"><span id="weapon-icon">-</span> <span id="weapon-name">Aucune arme</span></div>
+  <div id="kill-feed"></div>
+  <div id="hp-bar-container"><div id="hp-text">100/100</div><div id="hp-bar"></div></div>
+  <div id="minimap"><canvas id="minimap-canvas" width="140" height="140"></canvas></div>
+  <div id="respawn-overlay">RESPAWN dans <span id="respawn-timer">3</span>s</div>
+</div>
+
+<!-- Touch -->
+<div id="touch-controls">
+  <div id="joystick-zone">
+    <div id="joystick-base"><div id="joystick-stick"></div></div>
+  </div>
+  <div id="fire-btn">🔥</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── GLOBALS ───
+const ARENA_W = 150, ARENA_H = 150, HALF_W = ARENA_W/2, HALF_H = ARENA_H/2;
+const GAME_DURATION = 120, WIN_KILLS = 10;
+const ITEM_COUNT = 18, BOT_COUNT = 5;
+const WEAPONS = ['missile','grenade','gatling','shield','mine','turbo'];
+const WEAPON_NAMES = {missile:'Missile',grenade:'Grenade',gatling:'Gatling',shield:'Bouclier',mine:'Mine',turbo:'Turbo'};
+const WEAPON_ICONS = {missile:'🚀',grenade:'💣',gatling:'🔫',shield:'🛡️',mine:'💥',turbo:'⚡'};
+const KART_COLORS = [0x3388ff, 0xff3333, 0x33cc33, 0xffcc00, 0xff8800, 0xaa33ff];
+const KART_NAMES = ['Joueur','Bot1','Bot2','Bot3','Bot4','Bot5'];
+
+let scene, camera, renderer, clock;
+let karts = [], projectiles = [], particles = [], itemBoxes = [], mines = [], obstacles = [];
+let player, gameState = 'menu', gameTimer = GAME_DURATION;
+let keys = {}, mouseX = 0, mouseY = 0, mouseWorldX = 0, mouseWorldZ = 0;
+let killFeedEntries = [], pointerLocked = false;
+let screenShake = 0, screenShakeDecay = 0.9;
+let isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
+let joystickInput = {x:0, y:0}, touchFiring = false;
+
+// ─── THREE.JS SETUP ───
+function initThree() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87CEEB);
+  scene.fog = new THREE.Fog(0x87CEEB, 80, 200);
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 500);
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.prepend(renderer.domElement);
+
+  // Lights
+  const amb = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(amb);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+  dir.position.set(40, 60, 30);
+  dir.castShadow = true;
+  dir.shadow.mapSize.set(2048, 2048);
+  dir.shadow.camera.left = -80; dir.shadow.camera.right = 80;
+  dir.shadow.camera.top = 80; dir.shadow.camera.bottom = -80;
+  dir.shadow.camera.near = 1; dir.shadow.camera.far = 200;
+  scene.add(dir);
+
+  const hemi = new THREE.HemisphereLight(0x88aaff, 0x446633, 0.3);
+  scene.add(hemi);
+
+  clock = new THREE.Clock();
+}
+
+// ─── TOON MATERIAL ───
+function toonMat(color) {
+  return new THREE.MeshLambertMaterial({color});
+}
+
+// ─── BUILD ARENA ───
+function buildArena() {
+  // Ground
+  const groundGeo = new THREE.PlaneGeometry(ARENA_W, ARENA_H);
+  const groundCanvas = document.createElement('canvas');
+  groundCanvas.width = 512; groundCanvas.height = 512;
+  const gctx = groundCanvas.getContext('2d');
+  gctx.fillStyle = '#6B8E23';
+  gctx.fillRect(0,0,512,512);
+  gctx.strokeStyle = '#5A7D1A';
+  gctx.lineWidth = 2;
+  for(let i=0;i<=512;i+=32){ gctx.beginPath();gctx.moveTo(i,0);gctx.lineTo(i,512);gctx.stroke(); gctx.beginPath();gctx.moveTo(0,i);gctx.lineTo(512,i);gctx.stroke(); }
+  const groundTex = new THREE.CanvasTexture(groundCanvas);
+  groundTex.wrapS = groundTex.wrapT = THREE.RepeatWrapping;
+  groundTex.repeat.set(8,8);
+  const groundMat = new THREE.MeshLambertMaterial({map:groundTex});
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI/2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Walls
+  const wallMat = toonMat(0x888888);
+  const wallH = 5, wallT = 2;
+  const wallData = [
+    {w:ARENA_W+wallT*2, d:wallT, x:0, z:-HALF_H-wallT/2},
+    {w:ARENA_W+wallT*2, d:wallT, x:0, z:HALF_H+wallT/2},
+    {w:wallT, d:ARENA_H, x:-HALF_W-wallT/2, z:0},
+    {w:wallT, d:ARENA_H, x:HALF_W+wallT/2, z:0},
+  ];
+  wallData.forEach(w => {
+    const geo = new THREE.BoxGeometry(w.w, wallH, w.d);
+    const mesh = new THREE.Mesh(geo, wallMat);
+    mesh.position.set(w.x, wallH/2, w.z);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    scene.add(mesh);
+    obstacles.push({x:w.x, z:w.z, hw:w.w/2, hd:w.d/2, h:wallH, mesh, destructible:false});
+  });
+
+  // Interior obstacles
+  const obsMat = toonMat(0x996644);
+  const pillarMat = toonMat(0xaaaaaa);
+  const crateMat = toonMat(0xCC8844);
+
+  // Layout: walls, pillars, crates, ramps
+  const layout = [
+    // Central cross walls
+    {t:'wall', x:0, z:-20, w:20, d:2, h:4},
+    {t:'wall', x:0, z:20, w:20, d:2, h:4},
+    {t:'wall', x:-20, z:0, w:2, d:20, h:4},
+    {t:'wall', x:20, z:0, w:2, d:20, h:4},
+    // Corner rooms
+    {t:'wall', x:-40, z:-40, w:16, d:2, h:4},
+    {t:'wall', x:-40, z:-32, w:2, d:16, h:4},
+    {t:'wall', x:40, z:-40, w:16, d:2, h:4},
+    {t:'wall', x:40, z:-32, w:2, d:16, h:4},
+    {t:'wall', x:-40, z:40, w:16, d:2, h:4},
+    {t:'wall', x:-40, z:32, w:2, d:16, h:4},
+    {t:'wall', x:40, z:40, w:16, d:2, h:4},
+    {t:'wall', x:40, z:32, w:2, d:16, h:4},
+    // Pillars
+    {t:'pillar', x:-25, z:-25, r:1.5, h:6},
+    {t:'pillar', x:25, z:-25, r:1.5, h:6},
+    {t:'pillar', x:-25, z:25, r:1.5, h:6},
+    {t:'pillar', x:25, z:25, r:1.5, h:6},
+    {t:'pillar', x:0, z:0, r:2, h:7},
+    {t:'pillar', x:-50, z:0, r:1.5, h:5},
+    {t:'pillar', x:50, z:0, r:1.5, h:5},
+    {t:'pillar', x:0, z:-50, r:1.5, h:5},
+    {t:'pillar', x:0, z:50, r:1.5, h:5},
+    // Crates (destructible)
+    {t:'crate', x:-10, z:-10, s:3},
+    {t:'crate', x:10, z:10, s:3},
+    {t:'crate', x:-10, z:10, s:3},
+    {t:'crate', x:10, z:-10, s:3},
+    {t:'crate', x:-35, z:-15, s:2.5},
+    {t:'crate', x:35, z:15, s:2.5},
+    {t:'crate', x:15, z:-35, s:2.5},
+    {t:'crate', x:-15, z:35, s:2.5},
+    {t:'crate', x:-55, z:-55, s:3},
+    {t:'crate', x:55, z:55, s:3},
+    {t:'crate', x:55, z:-55, s:3},
+    {t:'crate', x:-55, z:55, s:3},
+    {t:'crate', x:-60, z:20, s:2.5},
+    {t:'crate', x:60, z:-20, s:2.5},
+    // Ramps
+    {t:'ramp', x:-30, z:0, w:8, d:12, h:3.5, rot:0},
+    {t:'ramp', x:30, z:0, w:8, d:12, h:3.5, rot:Math.PI},
+    {t:'ramp', x:0, z:-35, w:8, d:12, h:3.5, rot:Math.PI/2},
+    {t:'ramp', x:0, z:35, w:8, d:12, h:3.5, rot:-Math.PI/2},
+    // Extra corridor walls
+    {t:'wall', x:-55, z:-20, w:12, d:2, h:4},
+    {t:'wall', x:55, z:20, w:12, d:2, h:4},
+    {t:'wall', x:-20, z:-55, w:2, d:12, h:4},
+    {t:'wall', x:20, z:55, w:2, d:12, h:4},
+  ];
+
+  layout.forEach(o => {
+    if(o.t === 'wall') {
+      const geo = new THREE.BoxGeometry(o.w, o.h, o.d);
+      const mesh = new THREE.Mesh(geo, obsMat);
+      mesh.position.set(o.x, o.h/2, o.z);
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      scene.add(mesh);
+      obstacles.push({x:o.x, z:o.z, hw:o.w/2, hd:o.d/2, h:o.h, mesh, destructible:false});
+    } else if(o.t === 'pillar') {
+      const geo = new THREE.CylinderGeometry(o.r, o.r, o.h, 8);
+      const mesh = new THREE.Mesh(geo, pillarMat);
+      mesh.position.set(o.x, o.h/2, o.z);
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      scene.add(mesh);
+      obstacles.push({x:o.x, z:o.z, hw:o.r, hd:o.r, h:o.h, mesh, destructible:false, circular:true});
+    } else if(o.t === 'crate') {
+      const geo = new THREE.BoxGeometry(o.s, o.s, o.s);
+      const mesh = new THREE.Mesh(geo, crateMat);
+      mesh.position.set(o.x, o.s/2, o.z);
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      scene.add(mesh);
+      obstacles.push({x:o.x, z:o.z, hw:o.s/2, hd:o.s/2, h:o.s, mesh, destructible:true, hp:30, baseX:o.x, baseZ:o.z, size:o.s, respawnTimer:0});
+    } else if(o.t === 'ramp') {
+      const shape = new THREE.Shape();
+      shape.moveTo(-o.d/2, 0);
+      shape.lineTo(o.d/2, 0);
+      shape.lineTo(o.d/2, o.h);
+      shape.lineTo(-o.d/2, 0);
+      const extrudeSettings = {depth:o.w, bevelEnabled:false};
+      const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+      geo.rotateY(Math.PI/2);
+      geo.translate(0, 0, 0);
+      const rampMat = toonMat(0xCC9955);
+      const mesh = new THREE.Mesh(geo, rampMat);
+      mesh.position.set(o.x, 0, o.z);
+      mesh.rotation.y = o.rot;
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      scene.add(mesh);
+      obstacles.push({x:o.x, z:o.z, hw:Math.max(o.w,o.d)/2, hd:Math.max(o.w,o.d)/2, h:o.h, mesh, destructible:false, isRamp:true, rampH:o.h, rampD:o.d, rampRot:o.rot});
+    }
+  });
+}
+
+// ─── KART CREATION ───
+function createKart(index) {
+  const group = new THREE.Group();
+  const color = KART_COLORS[index];
+  const bodyMat = toonMat(color);
+
+  // Body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1, 3.2), bodyMat);
+  body.position.y = 0.8;
+  body.castShadow = true;
+  group.add(body);
+
+  // Cockpit
+  const cockpit = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.6, 1.4), toonMat(0x222222));
+  cockpit.position.set(0, 1.5, -0.2);
+  group.add(cockpit);
+
+  // Driver head
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), toonMat(0xFFCC99));
+  head.position.set(0, 2.1, -0.2);
+  group.add(head);
+
+  // Helmet
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.44, 8, 8, 0, Math.PI*2, 0, Math.PI/2), toonMat(color));
+  helmet.position.set(0, 2.2, -0.2);
+  group.add(helmet);
+
+  // Turret base
+  const turretBase = new THREE.Group();
+  turretBase.position.set(0, 1.6, 0.8);
+  const turretBody = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.4, 8), toonMat(0x444444));
+  turretBase.add(turretBody);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.2, 6), toonMat(0x333333));
+  barrel.rotation.x = Math.PI/2;
+  barrel.position.set(0, 0.1, 0.7);
+  turretBase.add(barrel);
+  group.add(turretBase);
+
+  // Wheels
+  const wheelMat = toonMat(0x222222);
+  const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 8);
+  const wheelPositions = [[-1.1, 0.35, 1],[ 1.1, 0.35, 1],[-1.1, 0.35,-1.1],[1.1, 0.35,-1.1]];
+  const wheels = [];
+  wheelPositions.forEach(p => {
+    const w = new THREE.Mesh(wheelGeo, wheelMat);
+    w.position.set(p[0], p[1], p[2]);
+    w.rotation.z = Math.PI/2;
+    group.add(w);
+    wheels.push(w);
+  });
+
+  // HP bar sprite
+  const hpCanvas = document.createElement('canvas');
+  hpCanvas.width = 128; hpCanvas.height = 16;
+  const hpTex = new THREE.CanvasTexture(hpCanvas);
+  const hpSprite = new THREE.Sprite(new THREE.SpriteMaterial({map:hpTex, transparent:true}));
+  hpSprite.scale.set(3, 0.4, 1);
+  hpSprite.position.y = 3.2;
+  group.add(hpSprite);
+
+  // Name sprite
+  const nameCanvas = document.createElement('canvas');
+  nameCanvas.width = 128; nameCanvas.height = 32;
+  const nctx = nameCanvas.getContext('2d');
+  nctx.font = 'bold 20px Arial';
+  nctx.fillStyle = '#fff';
+  nctx.textAlign = 'center';
+  nctx.fillText(KART_NAMES[index], 64, 22);
+  const nameTex = new THREE.CanvasTexture(nameCanvas);
+  const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({map:nameTex, transparent:true}));
+  nameSprite.scale.set(3, 0.7, 1);
+  nameSprite.position.y = 3.8;
+  group.add(nameSprite);
+
+  // Shield mesh (hidden by default)
+  const shieldMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(2.5, 16, 16),
+    new THREE.MeshLambertMaterial({color:0x3399ff, transparent:true, opacity:0.25})
+  );
+  shieldMesh.position.y = 1;
+  shieldMesh.visible = false;
+  group.add(shieldMesh);
+
+  scene.add(group);
+
+  return {
+    mesh: group, body, wheels, turretBase, hpSprite, hpCanvas, hpTex, shieldMesh,
+    index, name: KART_NAMES[index], color,
+    x: 0, z: 0, y: 0, angle: 0, turretAngle: 0,
+    vx: 0, vz: 0, speed: 0,
+    hp: 100, maxHp: 100, alive: true, respawnTimer: 0,
+    weapon: null, weaponAmmo: 0, weaponCooldown: 0, gatlingTimer: 0,
+    shieldTimer: 0, turboTimer: 0, invincible: false,
+    kills: 0, deaths: 0,
+    // AI
+    isBot: index > 0,
+    aiTarget: null, aiWanderAngle: Math.random()*Math.PI*2, aiWanderTimer: 0,
+    aiAggression: 0.3 + Math.random()*0.7,
+    aiFireTimer: 0, aiStuckTimer: 0, aiLastX: 0, aiLastZ: 0,
+  };
+}
+
+function updateHPBar(kart) {
+  const ctx = kart.hpCanvas.getContext('2d');
+  ctx.clearRect(0, 0, 128, 16);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(4, 2, 120, 12);
+  const pct = Math.max(0, kart.hp / kart.maxHp);
+  const r = pct < 0.5 ? 255 : Math.floor(255 * (1 - pct) * 2);
+  const g = pct > 0.5 ? 255 : Math.floor(255 * pct * 2);
+  ctx.fillStyle = `rgb(${r},${g},50)`;
+  ctx.fillRect(5, 3, 118 * pct, 10);
+  kart.hpTex.needsUpdate = true;
+}
+
+// ─── ITEM BOXES ───
+function createItemBox(x, z) {
+  const group = new THREE.Group();
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), toonMat(0xFFCC00));
+  box.castShadow = true;
+  group.add(box);
+  // ? mark
+  const qCanvas = document.createElement('canvas');
+  qCanvas.width = 64; qCanvas.height = 64;
+  const qctx = qCanvas.getContext('2d');
+  qctx.font = 'bold 50px Arial';
+  qctx.fillStyle = '#fff';
+  qctx.textAlign = 'center';
+  qctx.fillText('?', 32, 48);
+  const qTex = new THREE.CanvasTexture(qCanvas);
+  const qSprite = new THREE.Sprite(new THREE.SpriteMaterial({map:qTex, transparent:true}));
+  qSprite.scale.set(1.4, 1.4, 1);
+  qSprite.position.y = 0;
+  group.add(qSprite);
+
+  group.position.set(x, 2.2, z);
+  scene.add(group);
+  return {mesh:group, x, z, active:true, respawnTimer:0};
+}
+
+function spawnItemBoxes() {
+  const positions = [];
+  for(let i=0; i<ITEM_COUNT; i++) {
+    let x, z, valid;
+    for(let tries=0; tries<50; tries++) {
+      x = (Math.random()-0.5) * (ARENA_W-10);
+      z = (Math.random()-0.5) * (ARENA_H-10);
+      valid = true;
+      for(const ob of obstacles) {
+        if(Math.abs(x-ob.x)<ob.hw+2 && Math.abs(z-ob.z)<ob.hd+2) { valid=false; break; }
+      }
+      for(const p of positions) {
+        if(Math.abs(x-p[0])<5 && Math.abs(z-p[1])<5) { valid=false; break; }
+      }
+      if(valid) break;
+    }
+    positions.push([x,z]);
+    itemBoxes.push(createItemBox(x, z));
+  }
+}
+
+// ─── PROJECTILES ───
+function fireProjectile(owner, type, x, z, angle, y) {
+  y = y || 1.5;
+  const proj = {owner, type, x, z, y, angle, life: 0, maxLife: 4, speed: 0, damage: 0, radius: 0, mesh: null, trail:[]};
+
+  if(type === 'missile') {
+    proj.speed = 60; proj.damage = 30; proj.maxLife = 3; proj.radius = 3;
+    const geo = new THREE.CylinderGeometry(0.15, 0.15, 1, 6);
+    geo.rotateX(Math.PI/2);
+    proj.mesh = new THREE.Mesh(geo, toonMat(0xff4400));
+    // Nose cone
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.3, 6), toonMat(0xff0000));
+    nose.rotation.x = -Math.PI/2;
+    nose.position.z = 0.6;
+    proj.mesh.add(nose);
+  } else if(type === 'grenade') {
+    proj.speed = 25; proj.damage = 40; proj.maxLife = 2; proj.radius = 5;
+    proj.vy = 12; proj.gravity = -25;
+    proj.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), toonMat(0x336633));
+  } else if(type === 'bullet') {
+    proj.speed = 80; proj.damage = 8; proj.maxLife = 1.5; proj.radius = 0;
+    proj.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.12, 4, 4), toonMat(0xffff00));
+  }
+
+  proj.mesh.position.set(x, y, z);
+  scene.add(proj.mesh);
+  projectiles.push(proj);
+}
+
+// ─── PARTICLES ───
+function spawnExplosion(x, y, z, count, color1, color2, size, speed) {
+  for(let i=0; i<count; i++) {
+    const c = Math.random() > 0.5 ? color1 : color2;
+    const s = size * (0.5 + Math.random()*0.5);
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(s, 4, 4), toonMat(c));
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+    const a = Math.random()*Math.PI*2;
+    const elev = Math.random()*Math.PI - Math.PI/4;
+    const sp = speed * (0.5 + Math.random());
+    particles.push({
+      mesh, life: 0.6 + Math.random()*0.5,
+      vx: Math.cos(a)*Math.cos(elev)*sp,
+      vy: Math.sin(elev)*sp + speed*0.5,
+      vz: Math.sin(a)*Math.cos(elev)*sp,
+      shrink: true
+    });
+  }
+}
+
+function spawnSparks(x, y, z) {
+  spawnExplosion(x, y, z, 6, 0xffff00, 0xff8800, 0.1, 8);
+}
+
+// ─── MINES ───
+function spawnMine(owner, x, z) {
+  const mesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.6, 0.7, 0.3, 8),
+    toonMat(0x333333)
+  );
+  const spike = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.3, 4), toonMat(0xff0000));
+  spike.position.y = 0.25;
+  mesh.add(spike);
+  mesh.position.set(x, 0.15, z);
+  scene.add(mesh);
+  mines.push({mesh, owner, x, z, armed: false, armTimer: 0.5, life: 30});
+}
+
+// ─── SPAWN POSITION ───
+function getSpawnPos() {
+  for(let t=0;t<50;t++) {
+    const x = (Math.random()-0.5)*(ARENA_W-20);
+    const z = (Math.random()-0.5)*(ARENA_H-20);
+    let ok = true;
+    for(const ob of obstacles) {
+      if(Math.abs(x-ob.x)<ob.hw+3 && Math.abs(z-ob.z)<ob.hd+3) {ok=false; break;}
+    }
+    for(const k of karts) {
+      if(k.alive && Math.hypot(x-k.x, z-k.z)<8) {ok=false; break;}
+    }
+    if(ok) return {x, z};
+  }
+  return {x:(Math.random()-0.5)*40, z:(Math.random()-0.5)*40};
+}
+
+// ─── COLLISION ───
+function checkObstacleCollision(x, z, r) {
+  for(const ob of obstacles) {
+    if(!ob.mesh.visible) continue;
+    if(ob.circular) {
+      const dist = Math.hypot(x-ob.x, z-ob.z);
+      if(dist < ob.hw + r) return ob;
+    } else if(!ob.isRamp) {
+      if(Math.abs(x-ob.x)<ob.hw+r && Math.abs(z-ob.z)<ob.hd+r) return ob;
+    }
+  }
+  // Arena bounds
+  if(x < -HALF_W+r || x > HALF_W-r || z < -HALF_H+r || z > HALF_H-r) return {boundary:true, x:0, z:0, hw:0, hd:0};
+  return null;
+}
+
+function resolveKartCollision(kart, r) {
+  // Obstacles
+  for(const ob of obstacles) {
+    if(!ob.mesh.visible) continue;
+    if(ob.isRamp) continue;
+    if(ob.circular) {
+      const dx = kart.x - ob.x, dz = kart.z - ob.z;
+      const dist = Math.hypot(dx, dz);
+      const minDist = ob.hw + r;
+      if(dist < minDist && dist > 0) {
+        kart.x = ob.x + dx/dist * minDist;
+        kart.z = ob.z + dz/dist * minDist;
+      }
+    } else {
+      const overlapX = ob.hw + r - Math.abs(kart.x - ob.x);
+      const overlapZ = ob.hd + r - Math.abs(kart.z - ob.z);
+      if(overlapX > 0 && overlapZ > 0) {
+        if(overlapX < overlapZ) {
+          kart.x += (kart.x > ob.x ? 1 : -1) * overlapX;
+        } else {
+          kart.z += (kart.z > ob.z ? 1 : -1) * overlapZ;
+        }
+      }
+    }
+  }
+  // Bounds
+  kart.x = Math.max(-HALF_W+r, Math.min(HALF_W-r, kart.x));
+  kart.z = Math.max(-HALF_H+r, Math.min(HALF_H-r, kart.z));
+  // Other karts
+  for(const other of karts) {
+    if(other === kart || !other.alive) continue;
+    const dx = kart.x - other.x, dz = kart.z - other.z;
+    const dist = Math.hypot(dx, dz);
+    const minDist = r * 2;
+    if(dist < minDist && dist > 0.01) {
+      const push = (minDist - dist) / 2;
+      kart.x += dx/dist * push;
+      kart.z += dz/dist * push;
+      other.x -= dx/dist * push;
+      other.z -= dz/dist * push;
+    }
+  }
+}
+
+// ─── DAMAGE ───
+function damageKart(kart, amount, attacker) {
+  if(!kart.alive || kart.invincible || kart.shieldTimer > 0) return;
+  kart.hp -= amount;
+  updateHPBar(kart);
+  if(kart === player) {
+    screenShake = 0.4;
+    updatePlayerHUD();
+  }
+  if(kart.hp <= 0) {
+    killKart(kart, attacker);
+  }
+}
+
+function killKart(kart, killer) {
+  kart.alive = false;
+  kart.respawnTimer = 3;
+  kart.mesh.visible = false;
+  kart.weapon = null;
+  kart.deaths++;
+  spawnExplosion(kart.x, 1.5, kart.z, 30, 0xff4400, 0xffcc00, 0.4, 15);
+  spawnExplosion(kart.x, 1.5, kart.z, 15, 0x333333, 0x666666, 0.3, 8);
+
+  if(killer && killer !== kart) {
+    killer.kills++;
+    addKillFeed(killer.name, kart.name);
+  }
+  if(kart === player) {
+    document.getElementById('respawn-overlay').style.display = 'block';
+  }
+}
+
+function respawnKart(kart) {
+  const pos = getSpawnPos();
+  kart.x = pos.x; kart.z = pos.z; kart.y = 0;
+  kart.angle = Math.random() * Math.PI * 2;
+  kart.hp = 100; kart.speed = 0; kart.vx = 0; kart.vz = 0;
+  kart.alive = true;
+  kart.weapon = null; kart.shieldTimer = 0; kart.turboTimer = 0;
+  kart.invincible = true;
+  kart.mesh.visible = true;
+  kart.shieldMesh.visible = true;
+  updateHPBar(kart);
+  setTimeout(() => {
+    if(kart) { kart.invincible = false; kart.shieldMesh.visible = kart.shieldTimer > 0; }
+  }, 2000);
+  if(kart === player) {
+    document.getElementById('respawn-overlay').style.display = 'none';
+    updatePlayerHUD();
+  }
+}
+
+// ─── KILL FEED ───
+function addKillFeed(killerName, victimName) {
+  const el = document.createElement('div');
+  el.className = 'kill-entry';
+  el.innerHTML = `<span style="color:#ff8">${killerName}</span> a eliminé <span style="color:#f88">${victimName}</span>`;
+  document.getElementById('kill-feed').prepend(el);
+  killFeedEntries.push({el, timer:4});
+}
+
+// ─── HUD UPDATE ───
+function updatePlayerHUD() {
+  if(!player) return;
+  const pct = Math.max(0, player.hp / player.maxHp);
+  document.getElementById('hp-bar').style.width = (pct*100)+'%';
+  const r = pct<0.5?255:Math.floor(255*(1-pct)*2);
+  const g = pct>0.5?255:Math.floor(255*pct*2);
+  document.getElementById('hp-bar').style.background = `linear-gradient(90deg, rgb(${r},${g},50), rgb(${Math.max(0,r-30)},${Math.max(0,g-30)},30))`;
+  document.getElementById('hp-text').textContent = `${Math.max(0,Math.ceil(player.hp))} / ${player.maxHp}`;
+  document.getElementById('score-display').textContent = `Kills: ${player.kills}`;
+
+  if(player.weapon) {
+    document.getElementById('weapon-icon').textContent = WEAPON_ICONS[player.weapon];
+    document.getElementById('weapon-name').textContent = WEAPON_NAMES[player.weapon];
+  } else {
+    document.getElementById('weapon-icon').textContent = '-';
+    document.getElementById('weapon-name').textContent = 'Aucune arme';
+  }
+}
+
+// ─── USE WEAPON ───
+function useWeapon(kart) {
+  if(!kart.weapon || kart.weaponCooldown > 0 || !kart.alive) return;
+  const w = kart.weapon;
+  const a = kart.turretAngle;
+  const fx = kart.x + Math.sin(a)*2.5;
+  const fz = kart.z + Math.cos(a)*2.5;
+
+  if(w === 'missile') {
+    fireProjectile(kart, 'missile', fx, fz, a);
+    kart.weapon = null;
+  } else if(w === 'grenade') {
+    fireProjectile(kart, 'grenade', fx, fz, a, 2.5);
+    kart.weapon = null;
+  } else if(w === 'gatling') {
+    kart.gatlingTimer = 3;
+    kart.weaponCooldown = 0.12;
+    fireProjectile(kart, 'bullet', fx, fz, a + (Math.random()-0.5)*0.1);
+    kart.weaponAmmo--;
+    if(kart.weaponAmmo <= 0) kart.weapon = null;
+  } else if(w === 'shield') {
+    kart.shieldTimer = 8;
+    kart.shieldMesh.visible = true;
+    kart.weapon = null;
+  } else if(w === 'mine') {
+    spawnMine(kart, kart.x - Math.sin(kart.angle)*3, kart.z - Math.cos(kart.angle)*3);
+    kart.weapon = null;
+  } else if(w === 'turbo') {
+    kart.turboTimer = 3;
+    kart.invincible = true;
+    kart.weapon = null;
+    setTimeout(() => { if(kart) kart.invincible = false; }, 3000);
+  }
+  if(kart === player) updatePlayerHUD();
+}
+
+function giveWeapon(kart) {
+  const w = WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
+  kart.weapon = w;
+  kart.weaponCooldown = 0;
+  if(w === 'gatling') kart.weaponAmmo = 25;
+  if(kart === player) updatePlayerHUD();
+}
+
+// ─── AI ───
+function updateBot(bot, dt) {
+  if(!bot.alive) return;
+
+  // Find target
+  let nearest = null, nearDist = Infinity;
+  for(const k of karts) {
+    if(k === bot || !k.alive) continue;
+    const d = Math.hypot(k.x-bot.x, k.z-bot.z);
+    if(d < nearDist) { nearDist = d; nearest = k; }
+  }
+  bot.aiTarget = nearest;
+
+  // Stuck detection
+  bot.aiStuckTimer += dt;
+  if(bot.aiStuckTimer > 1) {
+    if(Math.hypot(bot.x-bot.aiLastX, bot.z-bot.aiLastZ) < 0.5) {
+      bot.aiWanderAngle += Math.PI * 0.7;
+    }
+    bot.aiLastX = bot.x; bot.aiLastZ = bot.z;
+    bot.aiStuckTimer = 0;
+  }
+
+  // Driving
+  let targetAngle = bot.aiWanderAngle;
+  let throttle = 0.6;
+
+  // Wander
+  bot.aiWanderTimer -= dt;
+  if(bot.aiWanderTimer <= 0) {
+    bot.aiWanderAngle += (Math.random()-0.5) * 1.5;
+    bot.aiWanderTimer = 1 + Math.random() * 2;
+  }
+
+  // Go to nearest item if no weapon
+  if(!bot.weapon) {
+    let bestBox = null, bestDist = Infinity;
+    for(const ib of itemBoxes) {
+      if(!ib.active) continue;
+      const d = Math.hypot(ib.x-bot.x, ib.z-bot.z);
+      if(d < bestDist) { bestDist = d; bestBox = ib; }
+    }
+    if(bestBox && bestDist < 50) {
+      targetAngle = Math.atan2(bestBox.x-bot.x, bestBox.z-bot.z);
+      throttle = 0.8;
+    }
+  }
+
+  // Chase target if aggressive and has weapon
+  if(nearest && bot.weapon && nearDist < 40 * bot.aiAggression) {
+    targetAngle = Math.atan2(nearest.x-bot.x, nearest.z-bot.z);
+    throttle = 0.9;
+  } else if(nearest && nearDist < 20) {
+    targetAngle = Math.atan2(nearest.x-bot.x, nearest.z-bot.z);
+  }
+
+  // Avoid walls
+  const wallAvoid = 8;
+  if(bot.x < -HALF_W+wallAvoid) targetAngle = Math.atan2(1, 0);
+  if(bot.x > HALF_W-wallAvoid) targetAngle = Math.atan2(-1, 0);
+  if(bot.z < -HALF_H+wallAvoid) targetAngle = Math.atan2(0, 1);
+  if(bot.z > HALF_H-wallAvoid) targetAngle = Math.atan2(0, -1);
+
+  // Avoid nearby obstacles
+  for(const ob of obstacles) {
+    if(!ob.mesh.visible || ob.isRamp) continue;
+    const dx = bot.x - ob.x, dz = bot.z - ob.z;
+    const dist = Math.hypot(dx, dz);
+    const minD = Math.max(ob.hw, ob.hd) + 4;
+    if(dist < minD && dist > 0) {
+      targetAngle = Math.atan2(dx, dz);
+      throttle = 0.5;
+    }
+  }
+
+  // Steer toward target angle
+  let angleDiff = targetAngle - bot.angle;
+  while(angleDiff > Math.PI) angleDiff -= Math.PI*2;
+  while(angleDiff < -Math.PI) angleDiff += Math.PI*2;
+  const turnSpeed = 3 * dt;
+  if(angleDiff > turnSpeed) bot.angle += turnSpeed;
+  else if(angleDiff < -turnSpeed) bot.angle -= turnSpeed;
+  else bot.angle = targetAngle;
+
+  // Apply throttle
+  const maxSpeed = 18;
+  bot.speed += throttle * 30 * dt;
+  bot.speed = Math.min(bot.speed, maxSpeed);
+  bot.speed *= (1 - 2 * dt); // friction
+
+  // Turret aim at target
+  if(nearest) {
+    bot.turretAngle = Math.atan2(nearest.x-bot.x, nearest.z-bot.z);
+  } else {
+    bot.turretAngle = bot.angle;
+  }
+
+  // Fire
+  if(bot.weapon && nearest && nearDist < 35) {
+    bot.aiFireTimer -= dt;
+    if(bot.aiFireTimer <= 0) {
+      if(bot.weapon === 'gatling') {
+        useWeapon(bot);
+        bot.aiFireTimer = 0.15;
+      } else if(bot.weapon === 'shield' && nearDist < 15) {
+        useWeapon(bot);
+        bot.aiFireTimer = 1;
+      } else if(bot.weapon === 'turbo' && nearDist < 10) {
+        useWeapon(bot);
+        bot.aiFireTimer = 1;
+      } else if(bot.weapon === 'mine' && nearDist < 20) {
+        useWeapon(bot);
+        bot.aiFireTimer = 1;
+      } else {
+        useWeapon(bot);
+        bot.aiFireTimer = 0.5 + Math.random() * (1 - bot.aiAggression);
+      }
+    }
+  }
+}
+
+// ─── GAME LOOP ───
+function update(dt) {
+  if(gameState !== 'playing') return;
+
+  dt = Math.min(dt, 0.05); // cap
+
+  // Timer
+  gameTimer -= dt;
+  if(gameTimer <= 0) { endGame(); return; }
+  const mins = Math.floor(gameTimer/60);
+  const secs = Math.floor(gameTimer%60);
+  document.getElementById('timer-display').textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+
+  // Check win
+  for(const k of karts) {
+    if(k.kills >= WIN_KILLS) { endGame(); return; }
+  }
+
+  // Kill feed cleanup
+  killFeedEntries = killFeedEntries.filter(e => {
+    e.timer -= dt;
+    if(e.timer < 1) e.el.style.opacity = e.timer;
+    if(e.timer <= 0) { e.el.remove(); return false; }
+    return true;
+  });
+
+  // Update player
+  if(player.alive) {
+    // Controls
+    let accel = 0, turn = 0;
+    if(keys['w']||keys['arrowup']) accel = 1;
+    if(keys['s']||keys['arrowdown']) accel = -0.6;
+    if(keys['a']||keys['arrowleft']) turn = 1;
+    if(keys['d']||keys['arrowright']) turn = -1;
+
+    // Mobile joystick
+    if(isMobile) {
+      accel = -joystickInput.y;
+      turn = -joystickInput.x;
+    }
+
+    const maxSpeed = player.turboTimer > 0 ? 35 : 22;
+    const accelRate = player.turboTimer > 0 ? 50 : 30;
+
+    player.speed += accel * accelRate * dt;
+    player.speed = Math.max(-10, Math.min(maxSpeed, player.speed));
+    player.speed *= (1 - 3 * dt); // friction
+
+    if(Math.abs(player.speed) > 1) {
+      player.angle += turn * 3.5 * dt * (player.speed > 0 ? 1 : -1);
+    }
+
+    // Turret aim with mouse
+    if(pointerLocked || !isMobile) {
+      player.turretAngle = Math.atan2(mouseWorldX - player.x, mouseWorldZ - player.z);
+    }
+
+    // Fire
+    if((keys[' '] || touchFiring) && player.weapon) {
+      useWeapon(player);
+    }
+
+    // Gatling auto-fire
+    if(player.weapon === 'gatling' && player.gatlingTimer > 0) {
+      player.gatlingTimer -= dt;
+      player.weaponCooldown -= dt;
+      if(player.weaponCooldown <= 0 && player.weaponAmmo > 0) {
+        const a = player.turretAngle;
+        const fx = player.x + Math.sin(a)*2.5;
+        const fz = player.z + Math.cos(a)*2.5;
+        fireProjectile(player, 'bullet', fx, fz, a + (Math.random()-0.5)*0.1);
+        player.weaponAmmo--;
+        player.weaponCooldown = 0.12;
+        if(player.weaponAmmo <= 0) { player.weapon = null; updatePlayerHUD(); }
+      }
+      if(player.gatlingTimer <= 0) { player.weapon = null; updatePlayerHUD(); }
+    }
+
+    // Turbo trail
+    if(player.turboTimer > 0) {
+      player.turboTimer -= dt;
+      if(Math.random() < 0.5) {
+        spawnExplosion(player.x - Math.sin(player.angle)*2, 0.5, player.z - Math.cos(player.angle)*2, 2, 0xff8800, 0xffcc00, 0.2, 3);
+      }
+    }
+  } else {
+    player.respawnTimer -= dt;
+    document.getElementById('respawn-timer').textContent = Math.ceil(player.respawnTimer);
+    if(player.respawnTimer <= 0) respawnKart(player);
+  }
+
+  // Shield timer
+  for(const k of karts) {
+    if(k.shieldTimer > 0) {
+      k.shieldTimer -= dt;
+      if(k.shieldTimer <= 0) k.shieldMesh.visible = false;
+    }
+    // Weapon cooldown
+    if(k.weaponCooldown > 0) k.weaponCooldown -= dt;
+  }
+
+  // Update bots
+  for(const k of karts) {
+    if(k.isBot) updateBot(k, dt);
+    // Bot gatling
+    if(k.isBot && k.weapon === 'gatling' && k.gatlingTimer > 0) {
+      k.gatlingTimer -= dt;
+      k.weaponCooldown -= dt;
+      if(k.weaponCooldown <= 0 && k.weaponAmmo > 0) {
+        const a = k.turretAngle;
+        const fx = k.x + Math.sin(a)*2.5;
+        const fz = k.z + Math.cos(a)*2.5;
+        fireProjectile(k, 'bullet', fx, fz, a + (Math.random()-0.5)*0.15);
+        k.weaponAmmo--;
+        k.weaponCooldown = 0.12;
+        if(k.weaponAmmo <= 0) k.weapon = null;
+      }
+      if(k.gatlingTimer <= 0) k.weapon = null;
+    }
+    // Bot turbo
+    if(k.isBot && k.turboTimer > 0) {
+      k.turboTimer -= dt;
+      if(Math.random()<0.3) spawnExplosion(k.x-Math.sin(k.angle)*2, 0.5, k.z-Math.cos(k.angle)*2, 1, 0xff8800, 0xffcc00, 0.15, 2);
+    }
+  }
+
+  // Move karts
+  const kartRadius = 1.5;
+  for(const k of karts) {
+    if(!k.alive) {
+      if(k !== player) {
+        k.respawnTimer -= dt;
+        if(k.respawnTimer <= 0) respawnKart(k);
+      }
+      continue;
+    }
+
+    const maxSpd = k.turboTimer > 0 ? 35 : 22;
+    k.speed = Math.max(-10, Math.min(maxSpd, k.speed));
+
+    k.x += Math.sin(k.angle) * k.speed * dt;
+    k.z += Math.cos(k.angle) * k.speed * dt;
+
+    resolveKartCollision(k, kartRadius);
+
+    // Ramp height
+    k.y = 0;
+    for(const ob of obstacles) {
+      if(!ob.isRamp) continue;
+      const dx = k.x - ob.x, dz = k.z - ob.z;
+      const cr = Math.cos(-ob.rampRot), sr = Math.sin(-ob.rampRot);
+      const lx = dx*cr - dz*sr;
+      const lz = dx*sr + dz*cr;
+      const hw = Math.max(4, ob.rampD/2);
+      const hd = Math.max(4, ob.rampD/2);
+      if(Math.abs(lx) < hw && Math.abs(lz) < hd) {
+        const t = (lz + hd) / (hd*2);
+        k.y = Math.max(k.y, t * ob.rampH);
+      }
+    }
+
+    // Update mesh
+    k.mesh.position.set(k.x, k.y, k.z);
+    k.mesh.rotation.y = k.angle;
+    k.turretBase.rotation.y = k.turretAngle - k.angle;
+
+    // Spin wheels
+    for(const w of k.wheels) {
+      w.rotation.x += k.speed * dt * 2;
+    }
+
+    // Item pickup
+    for(const ib of itemBoxes) {
+      if(!ib.active) continue;
+      if(Math.hypot(k.x - ib.x, k.z - ib.z) < 2.5) {
+        if(!k.weapon) {
+          giveWeapon(k);
+          ib.active = false;
+          ib.mesh.visible = false;
+          ib.respawnTimer = 8;
+        }
+      }
+    }
+  }
+
+  // Update projectiles
+  for(let i = projectiles.length-1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.life += dt;
+    if(p.life > p.maxLife) { scene.remove(p.mesh); projectiles.splice(i,1); continue; }
+
+    const dx = Math.sin(p.angle) * p.speed * dt;
+    const dz = Math.cos(p.angle) * p.speed * dt;
+    p.x += dx; p.z += dz;
+
+    if(p.type === 'grenade') {
+      p.vy += p.gravity * dt;
+      p.y += p.vy * dt;
+      if(p.y < 0.3) { p.y = 0.3; p.vy = -p.vy * 0.4; }
+      if(p.life >= p.maxLife - 0.01) {
+        // Explode
+        spawnExplosion(p.x, p.y, p.z, 20, 0xff4400, 0xffcc00, 0.35, 12);
+        for(const k of karts) {
+          if(!k.alive) continue;
+          const dist = Math.hypot(k.x-p.x, k.z-p.z);
+          if(dist < p.radius) {
+            damageKart(k, p.damage * (1 - dist/p.radius), p.owner);
+          }
+        }
+        // Destroy crates
+        for(const ob of obstacles) {
+          if(ob.destructible && ob.mesh.visible) {
+            if(Math.hypot(ob.x-p.x, ob.z-p.z) < p.radius) {
+              ob.hp -= p.damage;
+              if(ob.hp <= 0) { ob.mesh.visible = false; ob.respawnTimer = 15; }
+            }
+          }
+        }
+        scene.remove(p.mesh); projectiles.splice(i,1); continue;
+      }
+    }
+
+    if(p.type === 'missile') {
+      // Smoke trail
+      if(Math.random() < 0.4) {
+        spawnExplosion(p.x, p.y, p.z, 1, 0x888888, 0x666666, 0.15, 1);
+      }
+    }
+
+    p.mesh.position.set(p.x, p.y, p.z);
+    p.mesh.rotation.y = p.angle;
+
+    // Hit karts
+    let hit = false;
+    for(const k of karts) {
+      if(!k.alive || k === p.owner) continue;
+      if(Math.hypot(k.x-p.x, k.z-p.z) < 2) {
+        if(p.type === 'missile') {
+          spawnExplosion(p.x, p.y, p.z, 15, 0xff4400, 0xffcc00, 0.3, 10);
+          for(const k2 of karts) {
+            if(!k2.alive) continue;
+            const d2 = Math.hypot(k2.x-p.x, k2.z-p.z);
+            if(d2 < p.radius) damageKart(k2, p.damage * (1 - d2/p.radius*0.5), p.owner);
+          }
+        } else {
+          damageKart(k, p.damage, p.owner);
+          spawnSparks(p.x, p.y, p.z);
+        }
+        hit = true; break;
+      }
+    }
+    // Hit obstacles
+    if(!hit) {
+      const obs = checkObstacleCollision(p.x, p.z, 0.3);
+      if(obs) {
+        if(p.type === 'missile') {
+          spawnExplosion(p.x, p.y, p.z, 12, 0xff4400, 0xffcc00, 0.25, 8);
+          // Destroy crates
+          if(obs.destructible) {
+            obs.hp -= p.damage;
+            if(obs.hp <= 0) { obs.mesh.visible = false; obs.respawnTimer = 15; }
+          }
+        } else {
+          spawnSparks(p.x, p.y || 1, p.z);
+        }
+        hit = true;
+      }
+    }
+    if(hit) { scene.remove(p.mesh); projectiles.splice(i,1); }
+  }
+
+  // Update mines
+  for(let i = mines.length-1; i >= 0; i--) {
+    const m = mines[i];
+    m.life -= dt;
+    m.armTimer -= dt;
+    if(m.life <= 0) { scene.remove(m.mesh); mines.splice(i,1); continue; }
+    // Check kart proximity
+    if(m.armTimer <= 0) {
+      for(const k of karts) {
+        if(!k.alive) continue;
+        if(k === m.owner && m.life > 28) continue; // brief grace period
+        if(Math.hypot(k.x-m.x, k.z-m.z) < 2.5) {
+          damageKart(k, 50, m.owner);
+          spawnExplosion(m.x, 0.5, m.z, 20, 0xff4400, 0xff0000, 0.3, 10);
+          scene.remove(m.mesh); mines.splice(i,1);
+          break;
+        }
+      }
+    }
+    // Pulse
+    m.mesh.position.y = 0.15 + Math.sin(Date.now()*0.005)*0.1;
+  }
+
+  // Update particles
+  for(let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt;
+    if(p.life <= 0) { scene.remove(p.mesh); particles.splice(i,1); continue; }
+    p.mesh.position.x += p.vx * dt;
+    p.mesh.position.y += p.vy * dt;
+    p.mesh.position.z += p.vz * dt;
+    p.vy -= 15 * dt;
+    if(p.shrink) {
+      const s = Math.max(0.01, p.life);
+      p.mesh.scale.setScalar(s);
+    }
+  }
+
+  // Respawn item boxes
+  for(const ib of itemBoxes) {
+    if(!ib.active) {
+      ib.respawnTimer -= dt;
+      if(ib.respawnTimer <= 0) {
+        ib.active = true;
+        ib.mesh.visible = true;
+      }
+    } else {
+      ib.mesh.rotation.y += dt * 1.5;
+      ib.mesh.position.y = 2.2 + Math.sin(Date.now()*0.003 + ib.x)*0.3;
+    }
+  }
+
+  // Respawn destructible obstacles
+  for(const ob of obstacles) {
+    if(ob.destructible && !ob.mesh.visible && ob.respawnTimer > 0) {
+      ob.respawnTimer -= dt;
+      if(ob.respawnTimer <= 0) {
+        ob.mesh.visible = true;
+        ob.hp = 30;
+      }
+    }
+  }
+
+  // Camera
+  if(player.alive) {
+    const camDist = 14, camHeight = 10;
+    // Offset camera toward mouse aim
+    const aimOffsetX = (mouseWorldX - player.x) * 0.15;
+    const aimOffsetZ = (mouseWorldZ - player.z) * 0.15;
+    const idealX = player.x - Math.sin(player.angle) * camDist + aimOffsetX;
+    const idealZ = player.z - Math.cos(player.angle) * camDist + aimOffsetZ;
+    camera.position.x += (idealX - camera.position.x) * 5 * dt;
+    camera.position.z += (idealZ - camera.position.z) * 5 * dt;
+    camera.position.y += (player.y + camHeight - camera.position.y) * 5 * dt;
+    const lookX = player.x + aimOffsetX * 0.5;
+    const lookZ = player.z + aimOffsetZ * 0.5;
+    camera.lookAt(lookX, player.y + 1, lookZ);
+  }
+
+  // Screen shake
+  if(screenShake > 0.01) {
+    camera.position.x += (Math.random()-0.5) * screenShake;
+    camera.position.y += (Math.random()-0.5) * screenShake * 0.5;
+    screenShake *= screenShakeDecay;
+  }
+
+  // Mouse world position (raycast from mouse onto ground plane)
+  updateMouseWorld();
+
+  // Minimap
+  drawMinimap();
+
+  // Render
+  renderer.render(scene, camera);
+}
+
+function updateMouseWorld() {
+  if(!player.alive) return;
+  // Project mouse to a ground plane at y=0
+  const ndc = new THREE.Vector2(mouseX, mouseY);
+  const ray = new THREE.Raycaster();
+  ray.setFromCamera(ndc, camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
+  const target = new THREE.Vector3();
+  ray.ray.intersectPlane(plane, target);
+  if(target) {
+    mouseWorldX = target.x;
+    mouseWorldZ = target.z;
+  }
+}
+
+function drawMinimap() {
+  const c = document.getElementById('minimap-canvas');
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#1a2a1a';
+  ctx.fillRect(0,0,140,140);
+
+  const scale = 130/ARENA_W;
+  const ox = 70, oy = 70;
+
+  // Obstacles
+  ctx.fillStyle = '#555';
+  for(const ob of obstacles) {
+    if(!ob.mesh.visible) continue;
+    if(ob.isRamp) { ctx.fillStyle='#886'; } else if(ob.destructible) { ctx.fillStyle='#964'; } else { ctx.fillStyle='#555'; }
+    const x = ox + ob.x*scale, y = oy + ob.z*scale;
+    const w = Math.max(2, ob.hw*2*scale), h = Math.max(2, ob.hd*2*scale);
+    ctx.fillRect(x-w/2, y-h/2, w, h);
+  }
+
+  // Item boxes
+  ctx.fillStyle = '#ff0';
+  for(const ib of itemBoxes) {
+    if(!ib.active) continue;
+    ctx.fillRect(ox+ib.x*scale-1.5, oy+ib.z*scale-1.5, 3, 3);
+  }
+
+  // Mines
+  ctx.fillStyle = '#f00';
+  for(const m of mines) {
+    ctx.beginPath();
+    ctx.arc(ox+m.x*scale, oy+m.z*scale, 2, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Karts
+  for(const k of karts) {
+    if(!k.alive) continue;
+    const hex = k.color.toString(16).padStart(6,'0');
+    ctx.fillStyle = '#'+hex;
+    ctx.beginPath();
+    ctx.arc(ox+k.x*scale, oy+k.z*scale, k===player?4:3, 0, Math.PI*2);
+    ctx.fill();
+    if(k===player) {
+      ctx.strokeStyle='#fff';
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+  }
+}
+
+// ─── INPUT ───
+document.addEventListener('keydown', e => {
+  keys[e.key.toLowerCase()] = true;
+  if(e.key === ' ') e.preventDefault();
+});
+document.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+  mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+document.addEventListener('mousedown', e => {
+  if(gameState === 'playing' && player && player.weapon) {
+    useWeapon(player);
+  }
+  // Request pointer lock
+  if(gameState === 'playing' && !pointerLocked) {
+    renderer.domElement.requestPointerLock();
+  }
+});
+document.addEventListener('pointerlockchange', () => {
+  pointerLocked = document.pointerLockElement === renderer.domElement;
+});
+
+// Touch controls
+if(isMobile) {
+  const joystickBase = document.getElementById('joystick-base');
+  const joystickStick = document.getElementById('joystick-stick');
+  const jZone = document.getElementById('joystick-zone');
+  let jTouch = null;
+
+  jZone.style.pointerEvents = 'auto';
+  jZone.addEventListener('touchstart', e => {
+    e.preventDefault();
+    jTouch = e.changedTouches[0].identifier;
+    handleJoystick(e.changedTouches[0]);
+  });
+  jZone.addEventListener('touchmove', e => {
+    e.preventDefault();
+    for(const t of e.changedTouches) {
+      if(t.identifier === jTouch) handleJoystick(t);
+    }
+  });
+  jZone.addEventListener('touchend', e => {
+    for(const t of e.changedTouches) {
+      if(t.identifier === jTouch) {
+        jTouch = null;
+        joystickInput.x = 0; joystickInput.y = 0;
+        joystickStick.style.transform = 'translate(-50%,-50%)';
+      }
+    }
+  });
+
+  function handleJoystick(touch) {
+    const rect = joystickBase.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    let dx = touch.clientX - cx, dy = touch.clientY - cy;
+    const dist = Math.hypot(dx, dy);
+    const maxR = rect.width/2;
+    if(dist > maxR) { dx = dx/dist*maxR; dy = dy/dist*maxR; }
+    joystickInput.x = dx/maxR;
+    joystickInput.y = dy/maxR;
+    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  }
+
+  const fireBtn = document.getElementById('fire-btn');
+  fireBtn.style.pointerEvents = 'auto';
+  fireBtn.addEventListener('touchstart', e => { e.preventDefault(); touchFiring = true; });
+  fireBtn.addEventListener('touchend', e => { touchFiring = false; });
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── GAME MANAGEMENT ───
+function startGame() {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('end-screen').style.display = 'none';
+  document.getElementById('hud').style.display = 'block';
+  if(isMobile) document.getElementById('touch-controls').style.display = 'block';
+
+  // Clear old state
+  projectiles.forEach(p => scene.remove(p.mesh));
+  particles.forEach(p => scene.remove(p.mesh));
+  mines.forEach(m => scene.remove(m.mesh));
+  itemBoxes.forEach(ib => scene.remove(ib.mesh));
+  karts.forEach(k => scene.remove(k.mesh));
+  projectiles = []; particles = []; mines = []; itemBoxes = [];
+
+  // Rebuild obstacles visibility
+  obstacles.forEach(ob => {
+    if(ob.destructible) { ob.mesh.visible = true; ob.hp = 30; }
+  });
+
+  // Create karts
+  karts = [];
+  for(let i = 0; i <= BOT_COUNT; i++) {
+    const k = createKart(i);
+    const pos = getSpawnPos();
+    k.x = pos.x; k.z = pos.z;
+    k.angle = Math.random()*Math.PI*2;
+    k.mesh.position.set(k.x, 0, k.z);
+    updateHPBar(k);
+    karts.push(k);
+  }
+  player = karts[0];
+
+  // Camera init
+  camera.position.set(player.x, 12, player.z - 14);
+  camera.lookAt(player.x, 0, player.z);
+
+  spawnItemBoxes();
+
+  gameTimer = GAME_DURATION;
+  gameState = 'playing';
+  killFeedEntries.forEach(e => e.el.remove());
+  killFeedEntries = [];
+  updatePlayerHUD();
+}
+
+function endGame() {
+  gameState = 'ended';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('touch-controls').style.display = 'none';
+  if(document.pointerLockElement) document.exitPointerLock();
+
+  // Sort by kills
+  const sorted = [...karts].sort((a,b) => b.kills - a.kills);
+  let html = '<table><tr><th>#</th><th>Nom</th><th>Kills</th><th>Morts</th></tr>';
+  sorted.forEach((k, i) => {
+    const cls = k===player ? 'player-row' : '';
+    html += `<tr class="${cls}"><td>${i+1}</td><td style="color:#${k.color.toString(16).padStart(6,'0')}">${k.name}</td><td>${k.kills}</td><td>${k.deaths}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('scoreboard').innerHTML = html;
+  document.getElementById('end-screen').style.display = 'flex';
+}
+
+function restartGame() {
+  startGame();
+}
+
+// ─── INIT ───
+initThree();
+buildArena();
+
+// Animation loop (always runs for rendering)
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  if(gameState === 'playing') {
+    update(dt);
+  } else {
+    // Slow rotate camera on menu
+    if(gameState === 'menu' || gameState === 'ended') {
+      const t = Date.now() * 0.0003;
+      camera.position.set(Math.cos(t)*60, 40, Math.sin(t)*60);
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+    }
+  }
+}
+animate();
+</script>
+</body>
+</html>
