@@ -540,24 +540,33 @@ function updateHPBar(kart) {
 // ─── ITEM BOXES ───
 function createItemBox(x, z) {
   const group = new THREE.Group();
-  const box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), toonMat(0xFFCC00));
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), toonMat(0xFFCC00));
   box.castShadow = true;
   group.add(box);
-  // ? mark
+  // ? mark on each face
   const qCanvas = document.createElement('canvas');
   qCanvas.width = 64; qCanvas.height = 64;
   const qctx = qCanvas.getContext('2d');
-  qctx.font = 'bold 50px Arial';
+  qctx.fillStyle = '#FFcc00';
+  qctx.fillRect(0,0,64,64);
+  qctx.font = 'bold 48px Arial';
   qctx.fillStyle = '#fff';
   qctx.textAlign = 'center';
-  qctx.fillText('?', 32, 48);
+  qctx.textBaseline = 'middle';
+  qctx.fillText('?', 32, 32);
   const qTex = new THREE.CanvasTexture(qCanvas);
-  const qSprite = new THREE.Sprite(new THREE.SpriteMaterial({map:qTex, transparent:true}));
-  qSprite.scale.set(1.4, 1.4, 1);
-  qSprite.position.y = 0;
-  group.add(qSprite);
+  const faceMat = new THREE.MeshToonMaterial({map:qTex, gradientMap:toonGradient});
+  const faceGeo = new THREE.PlaneGeometry(0.9, 0.9);
+  // Front, back, left, right, top, bottom
+  const offsets = [[0,0,0.51,0,0,0],[0,0,-0.51,0,Math.PI,0],[-0.51,0,0,0,-Math.PI/2,0],[0.51,0,0,0,Math.PI/2,0],[0,0.51,0,-Math.PI/2,0,0],[0,-0.51,0,Math.PI/2,0,0]];
+  offsets.forEach(([px,py,pz,rx,ry,rz]) => {
+    const face = new THREE.Mesh(faceGeo, faceMat);
+    face.position.set(px,py,pz);
+    face.rotation.set(rx,ry,rz);
+    group.add(face);
+  });
 
-  group.position.set(x, 2.2, z);
+  group.position.set(x, 1.8, z);
   scene.add(group);
   return {mesh:group, x, z, active:true, respawnTimer:0};
 }
@@ -703,8 +712,10 @@ function resolveKartCollision(kart, r) {
       if(overlapX > 0 && overlapZ > 0) {
         if(overlapX < overlapZ) {
           kart.x += (kart.x > ob.x ? 1 : -1) * overlapX;
+          kart.speed *= -0.3; // bounce
         } else {
           kart.z += (kart.z > ob.z ? 1 : -1) * overlapZ;
+          kart.speed *= -0.3; // bounce
         }
       }
     }
@@ -1101,7 +1112,7 @@ function update(dt) {
   }
 
   // Move karts
-  const kartRadius = 1.5;
+  const kartRadius = 1.8;
   for(const k of karts) {
     if(!k.alive) {
       if(k !== player) {
