@@ -79,8 +79,29 @@ canvas { display:block; }
 <div id="title-screen" class="menu-overlay">
   <h1>KART FURY</h1>
   <h2>Combat de Karts en Arene</h2>
-  <button class="menu-btn btn-play" onclick="startGame()">JOUER</button>
+  <button class="menu-btn btn-play" onclick="startGame()">SOLO</button>
+  <button class="menu-btn btn-play" style="background:linear-gradient(180deg,#4a9eff,#2266cc);" onclick="showMultiMenu()">MULTIJOUEUR</button>
   <a href="../index.html" class="menu-btn btn-back">Retour</a>
+</div>
+
+<!-- Multi Menu -->
+<div id="multi-menu" class="menu-overlay" style="display:none;">
+  <h1>MULTIJOUEUR</h1>
+  <button class="menu-btn btn-play" onclick="createMultiLobby()">Créer un salon</button>
+  <div style="margin:15px 0;">
+    <input id="join-code" type="text" maxlength="4" placeholder="CODE" style="width:120px;padding:12px;font-size:1.5rem;text-align:center;border-radius:12px;border:none;text-transform:uppercase;font-weight:900;">
+    <button class="menu-btn btn-play" style="margin-left:8px;display:inline-block;" onclick="joinMultiLobby()">Rejoindre</button>
+  </div>
+  <button class="menu-btn btn-back" onclick="document.getElementById('multi-menu').style.display='none';document.getElementById('title-screen').style.display='flex';">Retour</button>
+</div>
+
+<!-- Multi Lobby -->
+<div id="multi-lobby" class="menu-overlay" style="display:none;">
+  <h1>SALON</h1>
+  <div id="lobby-code" style="font-size:3rem;font-weight:900;color:#ffd700;letter-spacing:8px;margin:10px 0;"></div>
+  <div style="color:#aaa;margin-bottom:10px;">Envoie ce code a ton ami !</div>
+  <div id="lobby-players" style="font-size:1.2rem;margin:10px 0;"></div>
+  <button class="menu-btn btn-play" id="lobby-start-btn" onclick="startMultiGame()" style="display:none;">LANCER</button>
 </div>
 
 <!-- End Screen -->
@@ -112,6 +133,7 @@ canvas { display:block; }
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 // ─── GLOBALS ───
 const ARENA_W = 150, ARENA_H = 150, HALF_W = ARENA_W/2, HALF_H = ARENA_H/2;
@@ -125,6 +147,97 @@ const KART_NAMES = ['Joueur','Bot1','Bot2','Bot3','Bot4','Bot5'];
 
 let scene, camera, renderer, clock;
 let karts = [], projectiles = [], particles = [], itemBoxes = [], mines = [], obstacles = [];
+
+// ─── MULTIPLAYER ───
+let peer = null, connections = [], isHost = false, multiMode = false;
+let myId = Math.random().toString(36).substr(2,6);
+let netPlayers = {}; // id -> {kart index}
+let posTimer = 0;
+
+function generateMultiCode() {
+    const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r='';
+    for(let i=0;i<4;i++) r+=c[Math.floor(Math.random()*c.length)]; return r;
+}
+function showMultiMenu() {
+    document.getElementById('title-screen').style.display='none';
+    document.getElementById('multi-menu').style.display='flex';
+}
+function broadcastMsg(msg) { connections.forEach(c=>{if(c.open)c.send(msg);}); }
+
+function createMultiLobby() {
+    const code = generateMultiCode();
+    document.getElementById('multi-menu').style.display='none';
+    document.getElementById('multi-lobby').style.display='flex';
+    document.getElementById('lobby-code').textContent = code;
+    document.getElementById('lobby-players').textContent = 'Joueurs: 1';
+    isHost = true; multiMode = true;
+    peer = new Peer('kartfury-'+code+'-host');
+    peer.on('open', ()=>{
+        document.getElementById('lobby-start-btn').style.display='inline-block';
+    });
+    peer.on('connection', conn => {
+        connections.push(conn);
+        conn.on('data', msg => handleNetMsg(msg));
+        conn.on('open', ()=>{
+            const idx = connections.length;
+            netPlayers[conn.peer] = {kartIdx: idx};
+            conn.send({type:'welcome', yourIdx: idx, hostId: myId});
+            document.getElementById('lobby-players').textContent = 'Joueurs: '+(connections.length+1);
+            // Relay to others
+            connections.forEach(c2=>{if(c2.open && c2!==conn) c2.send({type:'playerCount',count:connections.length+1});});
+        });
+        conn.on('close',()=>{connections=connections.filter(c=>c!==conn);});
+    });
+}
+function joinMultiLobby() {
+    const code = document.getElementById('join-code').value.toUpperCase().trim();
+    if(code.length!==4) return;
+    document.getElementById('multi-menu').style.display='none';
+    document.getElementById('multi-lobby').style.display='flex';
+    document.getElementById('lobby-code').textContent = code;
+    document.getElementById('lobby-players').textContent = 'Connexion...';
+    multiMode = true;
+    peer = new Peer('kartfury-'+code+'-'+myId);
+    peer.on('open',()=>{
+        const conn = peer.connect('kartfury-'+code+'-host',{reliable:true});
+        connections.push(conn);
+        conn.on('open',()=>{
+            conn.send({type:'join', id:myId});
+            document.getElementById('lobby-players').textContent = 'Connecte !';
+        });
+        conn.on('data', msg => handleNetMsg(msg));
+    });
+    peer.on('error',e=>{ document.getElementById('lobby-players').textContent = 'Erreur: '+e.type; });
+}
+function startMultiGame() {
+    broadcastMsg({type:'startGame'});
+    document.getElementById('multi-lobby').style.display='none';
+    startGame();
+}
+function handleNetMsg(msg) {
+    if(msg.type==='startGame') {
+        document.getElementById('multi-lobby').style.display='none';
+        startGame();
+    } else if(msg.type==='playerCount') {
+        document.getElementById('lobby-players').textContent = 'Joueurs: '+msg.count;
+    } else if(msg.type==='welcome') {
+        // We got assigned a kart index
+    } else if(msg.type==='pos' && karts[msg.idx]) {
+        const k = karts[msg.idx];
+        if(k && k!==karts[0]) {
+            k.mesh.position.x = msg.x;
+            k.mesh.position.z = msg.z;
+            k.mesh.rotation.y = msg.rot;
+            k.hp = msg.hp;
+        }
+    } else if(msg.type==='fire') {
+        // Remote player fired
+    }
+    // Host relays
+    if(isHost) {
+        connections.forEach(c=>{if(c.open) c.send(msg);});
+    }
+}
 let player, gameState = 'menu', gameTimer = GAME_DURATION;
 let keys = {}, mouseX = 0, mouseY = 0, mouseWorldX = 0, mouseWorldZ = 0;
 let killFeedEntries = [], pointerLocked = false;
@@ -891,9 +1004,9 @@ function update(dt) {
   if(player.alive) {
     // Controls
     let accel = 0, turn = 0;
-    if(keys['w']||keys['arrowup']) accel = 1;
+    if(keys['z']||keys['w']||keys['arrowup']) accel = 1;
     if(keys['s']||keys['arrowdown']) accel = -0.6;
-    if(keys['a']||keys['arrowleft']) turn = 1;
+    if(keys['q']||keys['a']||keys['arrowleft']) turn = 1;
     if(keys['d']||keys['arrowright']) turn = -1;
 
     // Mobile joystick
@@ -1448,6 +1561,15 @@ function animate() {
   const dt = clock.getDelta();
   if(gameState === 'playing') {
     update(dt);
+    // Network sync
+    if(multiMode && connections.length > 0) {
+      posTimer += dt;
+      if(posTimer > 0.1) {
+        posTimer = 0;
+        const k = karts[0];
+        broadcastMsg({type:'pos', idx:0, x:k.mesh.position.x, z:k.mesh.position.z, rot:k.mesh.rotation.y, hp:k.hp});
+      }
+    }
   } else {
     // Slow rotate camera on menu
     if(gameState === 'menu' || gameState === 'ended') {
