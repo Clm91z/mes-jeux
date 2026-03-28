@@ -555,7 +555,7 @@ function createItemBox(x, z) {
   qctx.textBaseline = 'middle';
   qctx.fillText('?', 32, 32);
   const qTex = new THREE.CanvasTexture(qCanvas);
-  const faceMat = new THREE.MeshToonMaterial({map:qTex, gradientMap:toonGradient});
+  const faceMat = new THREE.MeshLambertMaterial({map:qTex});
   const faceGeo = new THREE.PlaneGeometry(0.9, 0.9);
   // Front, back, left, right, top, bottom
   const offsets = [[0,0,0.51,0,0,0],[0,0,-0.51,0,Math.PI,0],[-0.51,0,0,0,-Math.PI/2,0],[0.51,0,0,0,Math.PI/2,0],[0,0.51,0,-Math.PI/2,0,0],[0,-0.51,0,Math.PI/2,0,0]];
