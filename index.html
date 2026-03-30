@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a1a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.svg">
+    <link rel="apple-touch-icon" href="icon-192.svg">
     <title>Mes Jeux</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -341,6 +344,10 @@
         span.style.animationDelay = (Math.random() * 10) + 's';
         span.style.width = span.style.height = (1 + Math.random() * 3) + 'px';
         particlesEl.appendChild(span);
+    }
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
     }
     </script>
 </body>
