@@ -432,7 +432,12 @@
         <div class="countdown" id="countdown">00:00:00</div>
         <div class="countdown-label">AVANT LE PROCHAIN DÉFI</div>
     </div>
-    <button class="btn-primary" onclick="openCamera()">PRENDRE LA PHOTO</button>
+    <button class="btn-primary" id="btn-take-photo" onclick="openCamera()">PRENDRE LA PHOTO</button>
+    <div id="my-submission" style="display:none;margin-top:16px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#666;text-transform:uppercase;margin-bottom:8px;">TA PHOTO DU JOUR</div>
+        <img id="my-submission-img" style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.1);" src="" alt="">
+        <div style="text-align:center;margin-top:8px;font-size:11px;color:#444;">En attente des votes...</div>
+    </div>
     <div class="invite-link" onclick="shareApp()">Inviter des potes</div>
 </div>
 
@@ -448,7 +453,7 @@
         <img class="preview-img" id="preview-img" src="" alt="">
         <div class="preview-actions">
             <button class="btn-secondary" onclick="retakePhoto()">REPRENDRE</button>
-            <button class="btn-primary" onclick="submitPhoto()">VALIDER</button>
+            <button class="btn-primary" onclick="submitPhoto()">PUBLIER</button>
         </div>
     </div>
 </div>
@@ -591,6 +596,7 @@ function init() {
     generateFakeSubmissions();
     updateCountdown();
     setInterval(updateCountdown, 1000);
+    showMySubmission();
     renderFeed();
     renderTop();
     updateStats();
@@ -711,7 +717,22 @@ function submitPhoto() {
         cameraStream.getTracks().forEach(t => t.stop());
         cameraStream = null;
     }
-    showScreen('feed');
+    // Show photo on home screen
+    showMySubmission();
+    showScreen('home');
+}
+
+function showMySubmission() {
+    const submissions = JSON.parse(localStorage.getItem('dc_submissions') || '[]');
+    const mySub = submissions.filter(s => s.day === dayOfYear && !s.isFake).pop();
+    if (mySub && mySub.photo) {
+        document.getElementById('my-submission-img').src = mySub.photo;
+        document.getElementById('my-submission').style.display = 'block';
+        document.getElementById('btn-take-photo').textContent = 'REPRENDRE UNE PHOTO';
+    } else {
+        document.getElementById('my-submission').style.display = 'none';
+        document.getElementById('btn-take-photo').textContent = 'PRENDRE LA PHOTO';
+    }
 }
 
 // ─── FAKE SUBMISSIONS ───
