@@ -760,8 +760,8 @@ function generateFakeSubmissions() {
             gradient: DARK_GRADIENTS[gradIdx],
             day: dayOfYear,
             time: Date.now() - hoursAgo * 3600000,
-            votesUp: Math.floor(Math.random() * 8),
-            votesDown: Math.floor(Math.random() * 4),
+            votesUp: 0,
+            votesDown: 0,
             isFake: true
         });
     }
