@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0a0a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Defi du Jour</title>
+    <title>DARE CAM</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -215,7 +215,7 @@
 
 <!-- HEADER -->
 <div class="header" id="main-header">
-    <div class="header-title">🔥 DEFI DU JOUR</div>
+    <div class="header-title">🔥 DARE CAM</div>
 </div>
 
 <!-- HOME SCREEN -->
@@ -289,45 +289,55 @@
 <script>
 // ======================== CHALLENGES ========================
 const CHALLENGES = [
-    {emoji: '🍔', text: 'Prends en photo le plus gros repas que tu vois aujourd\'hui'},
-    {emoji: '😴', text: 'Prends en photo quelqu\'un qui dort dans un endroit bizarre'},
-    {emoji: '🚗', text: 'Prends en photo la voiture la plus moche que tu croises'},
-    {emoji: '👟', text: 'Prends en photo les chaussures les plus moches que tu vois'},
-    {emoji: '🐕', text: 'Prends en photo le chien le plus bizarre que tu croises'},
-    {emoji: '🍕', text: 'Prends en photo la nourriture la plus degueu que tu trouves'},
-    {emoji: '😱', text: 'Prends en photo le truc le plus WTF que tu vois dehors'},
-    {emoji: '👴', text: 'Prends en photo le style vestimentaire le plus fou que tu croises'},
-    {emoji: '🏠', text: 'Prends en photo la maison ou le batiment le plus moche du quartier'},
-    {emoji: '🚌', text: 'Prends en photo la situation la plus drole dans les transports'},
-    {emoji: '🛒', text: 'Prends en photo le caddie le plus rempli que tu vois au supermarche'},
-    {emoji: '📱', text: 'Prends en photo quelqu\'un avec la coque de telephone la plus ridicule'},
-    {emoji: '🎒', text: 'Prends en photo le sac a dos le plus abime que tu vois'},
-    {emoji: '🧢', text: 'Prends en photo le chapeau ou la coiffure la plus bizarre'},
-    {emoji: '🚶', text: 'Prends en photo la demarche la plus drole que tu croises'},
-    {emoji: '🪑', text: 'Prends en photo l\'endroit le plus bizarre ou quelqu\'un s\'assoit'},
-    {emoji: '🗑️', text: 'Prends en photo la poubelle la plus degoutante'},
-    {emoji: '🚪', text: 'Prends en photo la porte la plus bizarre que tu trouves'},
-    {emoji: '🌳', text: 'Prends en photo l\'arbre avec la forme la plus bizarre'},
-    {emoji: '🐈', text: 'Prends en photo un chat dans la position la plus drole'},
-    {emoji: '🧦', text: 'Prends en photo les chaussettes les plus horribles'},
-    {emoji: '🍌', text: 'Prends en photo le fruit ou legume avec la forme la plus bizarre'},
-    {emoji: '📺', text: 'Prends en photo l\'ecran le plus casse que tu vois'},
-    {emoji: '🚲', text: 'Prends en photo le velo le plus pourri'},
-    {emoji: '🧸', text: 'Prends en photo le jouet le plus effrayant que tu trouves'},
-    {emoji: '💇', text: 'Prends en photo la coupe de cheveux la plus originale'},
-    {emoji: '🏪', text: 'Prends en photo le nom de magasin le plus drole'},
-    {emoji: '🪧', text: 'Prends en photo le panneau le plus absurde'},
-    {emoji: '🥿', text: 'Prends en photo la tenue la plus depareillee'},
-    {emoji: '🧽', text: 'Prends en photo l\'objet le plus sale que tu vois'}
+    {emoji: '💀', text: 'Prends en photo la personne avec le PIRE style que tu croises aujourd\'hui'},
+    {emoji: '🤮', text: 'Prends en photo le truc le plus DEGUEULASSE que tu vois dans la rue'},
+    {emoji: '🗑️', text: 'Prends en photo la personne qui a le plus la FLEMME aujourd\'hui'},
+    {emoji: '💩', text: 'Prends en photo les PIRES toilettes publiques que tu trouves'},
+    {emoji: '🤡', text: 'Prends en photo quelqu\'un qui se croit BEAUCOUP trop stylé'},
+    {emoji: '😭', text: 'Prends en photo le plat le plus IMMONDE que tu vois aujourd\'hui'},
+    {emoji: '👹', text: 'Prends en photo la coupe de cheveux la plus RATEE que tu croises'},
+    {emoji: '🚮', text: 'Prends en photo l\'endroit le plus CRADE de ta ville'},
+    {emoji: '😬', text: 'Prends en photo le pire COMBO tenue que tu vois (chaussettes sandales etc)'},
+    {emoji: '🤢', text: 'Prends en photo la bouffe la plus SUSPECTE dans un restaurant ou magasin'},
+    {emoji: '💔', text: 'Prends en photo le couple le plus BIZARRE que tu croises'},
+    {emoji: '🧟', text: 'Prends en photo la personne qui a l\'air le plus en PLS aujourd\'hui'},
+    {emoji: '🦷', text: 'Prends en photo le PIRE sourire que tu vois'},
+    {emoji: '🎪', text: 'Prends en photo le comportement le plus GENANT en public'},
+    {emoji: '🐀', text: 'Prends en photo le truc le plus SALE dans les transports'},
+    {emoji: '👻', text: 'Prends en photo la PIRE vitrine de magasin que tu trouves'},
+    {emoji: '🤦', text: 'Prends en photo le stationnement le plus NUL que tu vois'},
+    {emoji: '🥴', text: 'Prends en photo la PUB la plus CRINGE que tu croises'},
+    {emoji: '💀', text: 'Prends en photo les PIRES chaussures que quelqu\'un porte'},
+    {emoji: '🤮', text: 'Prends en photo le truc le plus RANDOM abandonné dans la rue'},
+    {emoji: '😈', text: 'Prends en photo la PIRE deco interieure que tu vois'},
+    {emoji: '🧠', text: 'Prends en photo le truc le plus ABSURDE écrit quelque part'},
+    {emoji: '💀', text: 'Prends en photo le véhicule le plus DETRUIT qui roule encore'},
+    {emoji: '🤡', text: 'Prends en photo quelqu\'un qui mange un truc IMMONDE en public'},
+    {emoji: '😵', text: 'Prends en photo la FILE D\'ATTENTE la plus RIDICULE'},
+    {emoji: '🫠', text: 'Prends en photo le PIRE maquillage que tu croises'},
+    {emoji: '💩', text: 'Prends en photo l\'objet le plus INUTILE en vente dans un magasin'},
+    {emoji: '🤮', text: 'Prends en photo la PIRE odeur que tu imagines juste en voyant le truc'},
+    {emoji: '😤', text: 'Prends en photo quelqu\'un qui BLOQUE tout le trottoir'},
+    {emoji: '🫣', text: 'Prends en photo le PIRE tatouage que tu aperçois'},
+    {emoji: '💀', text: 'Prends en photo la PIRE terrasse de café que tu trouves'},
+    {emoji: '🤢', text: 'Prends en photo le PIRE menu affiché devant un restaurant'},
+    {emoji: '😱', text: 'Prends en photo le truc qui devrait être INTERDIT mais qui existe'},
+    {emoji: '🤡', text: 'Prends en photo la personne avec le BRONZAGE le plus raté'},
+    {emoji: '💀', text: 'Prends en photo le PIRE graffiti de ta ville'},
+    {emoji: '🫠', text: 'Prends en photo le banc public le plus DESTROY'},
+    {emoji: '🤮', text: 'Prends en photo la PIRE chose dans un rayon de supermarché'},
+    {emoji: '😈', text: 'Prends en photo le truc le plus FLIPPANT que tu croises'},
+    {emoji: '💩', text: 'Prends en photo la POUBELLE la plus débordante'},
+    {emoji: '🤡', text: 'Prends en photo la PIRE pose de quelqu\'un qui se prend en selfie'}
 ];
 
 const FAKE_USERS = [
-    {name: 'KevinDu93', emoji: '🤡'},
-    {name: 'BobLePro', emoji: '😂'},
-    {name: 'JulieSnap', emoji: '📸'},
-    {name: 'MaxFitness', emoji: '💪'},
-    {name: 'SarahStyle', emoji: '💅'},
-    {name: 'TomJerry', emoji: '🐱'},
+    {name: 'LeBGdu93', emoji: '💀'},
+    {name: 'ZakLeRat', emoji: '🐀'},
+    {name: 'MedBroly', emoji: '😈'},
+    {name: 'SkinnyLegend', emoji: '🫠'},
+    {name: 'LaFouine77', emoji: '🤡'},
+    {name: 'DemonSlayer', emoji: '👹'},
     {name: 'LucasGamer', emoji: '🎮'},
     {name: 'EmmaChef', emoji: '👩‍🍳'},
 ];
@@ -488,7 +498,7 @@ function showScreen(name) {
         header.innerHTML = '<button class="back-btn" onclick="closeCamera()">←</button><div class="header-title">📸 PHOTO</div>';
     } else {
         nav.style.display = 'flex';
-        header.innerHTML = '<div class="header-title">🔥 DEFI DU JOUR</div>';
+        header.innerHTML = '<div class="header-title">🔥 DARE CAM</div>';
     }
 
     // Screen-specific init
@@ -740,10 +750,10 @@ function renderTop3() {
 
 // ======================== SHARE ========================
 async function shareApp() {
-    const text = 'Rejoins le Defi du Jour ! 📸🔥 Aujourd\'hui : ' + todayChallenge.emoji + ' ' + todayChallenge.text;
+    const text = 'Rejoins le DARE CAM ! 📸🔥 Aujourd\'hui : ' + todayChallenge.emoji + ' ' + todayChallenge.text;
     if (navigator.share) {
         try {
-            await navigator.share({ title: 'Defi du Jour', text: text, url: location.href });
+            await navigator.share({ title: 'DARE CAM', text: text, url: location.href });
         } catch(e) {}
     } else {
         try {
