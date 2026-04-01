@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>DARE CAM</title>
+    <title>DÉFI DU JOUR</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -251,7 +251,7 @@
             background: #ff0a0a; color: #fff;
         }
 
-        /* ── TOP 3 ── */
+        /* ── PODIUM ── */
         .top-title {
             font-size: 24px; font-weight: 800; letter-spacing: 3px;
             text-transform: uppercase; margin-bottom: 4px;
@@ -260,53 +260,66 @@
             font-size: 12px; color: #666; letter-spacing: 1px;
             margin-bottom: 24px;
         }
-
-        .top-card {
-            display: flex; align-items: center; gap: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px; margin-bottom: 10px;
-            transition: transform 0.12s;
+        .podium {
+            display: flex; align-items: flex-end; justify-content: center;
+            gap: 6px; margin-bottom: 30px; min-height: 320px;
         }
-        .top-card:first-of-type {
-            padding: 20px;
-            border-color: rgba(255,10,10,0.3);
+        .podium-slot {
+            display: flex; flex-direction: column; align-items: center;
+            width: 30%;
         }
-        .top-rank {
-            font-size: 28px; font-weight: 900;
-            color: #333; min-width: 36px; text-align: center;
+        .podium-photo {
+            width: 100%; aspect-ratio: 1; border-radius: 12px;
+            object-fit: cover; margin-bottom: 8px;
+            border: 2px solid #222;
         }
-        .top-card:first-of-type .top-rank {
-            color: #ff0a0a; font-size: 34px;
+        .podium-slot[data-rank="1"] .podium-photo {
+            border-color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.3);
         }
-        .top-photo {
-            width: 56px; height: 56px;
-            border-radius: 8px; object-fit: cover; flex-shrink: 0;
+        .podium-slot[data-rank="2"] .podium-photo {
+            border-color: #aaa;
         }
-        .top-photo-placeholder {
-            width: 56px; height: 56px;
-            border-radius: 8px; flex-shrink: 0;
+        .podium-slot[data-rank="3"] .podium-photo {
+            border-color: #8b5e3c;
         }
-        .top-card:first-of-type .top-photo,
-        .top-card:first-of-type .top-photo-placeholder {
-            width: 72px; height: 72px;
+        .podium-placeholder {
+            width: 100%; aspect-ratio: 1; border-radius: 12px;
+            margin-bottom: 8px; border: 2px solid #222;
         }
-        .top-info { flex: 1; }
-        .top-user {
-            font-size: 14px; font-weight: 800;
-            letter-spacing: 0.5px; margin-bottom: 2px;
+        .podium-name {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+            text-align: center; margin-bottom: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%;
         }
-        .top-votes {
-            font-size: 12px; color: #666;
+        .podium-score {
+            font-size: 10px; color: #666; margin-bottom: 8px;
         }
+        .podium-bar {
+            width: 100%; border-radius: 8px 8px 0 0;
+        }
+        .podium-slot[data-rank="1"] .podium-bar {
+            height: 100px; background: linear-gradient(180deg, #ffd700, #b8860b);
+        }
+        .podium-slot[data-rank="2"] .podium-bar {
+            height: 70px; background: linear-gradient(180deg, #c0c0c0, #888);
+        }
+        .podium-slot[data-rank="3"] .podium-bar {
+            height: 45px; background: linear-gradient(180deg, #cd7f32, #8b5e3c);
+        }
+        .podium-rank {
+            font-size: 22px; font-weight: 900; padding: 6px 0;
+            text-align: center;
+        }
+        .podium-slot[data-rank="1"] .podium-rank { color: #ffd700; }
+        .podium-slot[data-rank="2"] .podium-rank { color: #c0c0c0; }
+        .podium-slot[data-rank="3"] .podium-rank { color: #cd7f32; }
 
         .top-section-label {
             font-size: 11px; font-weight: 800; letter-spacing: 3px;
             text-transform: uppercase; color: #444;
-            margin-top: 32px; margin-bottom: 14px;
+            margin-top: 20px; margin-bottom: 14px;
         }
-
         .top-compact {
             display: flex; align-items: center; gap: 12px;
             padding: 12px 0;
@@ -411,16 +424,16 @@
 <!-- ── HOME ── -->
 <div id="screen-home" class="screen active">
     <button class="settings-icon" onclick="showScreen('profile')">PROFIL</button>
-    <div class="home-title">DARE CAM</div>
+    <div class="home-title">DÉFI DU JOUR</div>
     <div class="challenge-card">
         <div class="challenge-label" id="challenge-label">DEFI #1</div>
         <div class="challenge-text" id="challenge-text"></div>
         <div class="challenge-divider"></div>
         <div class="countdown" id="countdown">00:00:00</div>
-        <div class="countdown-label">AVANT LE PROCHAIN DEFI</div>
+        <div class="countdown-label">AVANT LE PROCHAIN DÉFI</div>
     </div>
     <button class="btn-primary" onclick="openCamera()">PRENDRE LA PHOTO</button>
-    <div class="invite-link" onclick="shareApp()">Inviter</div>
+    <div class="invite-link" onclick="shareApp()">Inviter des potes</div>
 </div>
 
 <!-- ── CAMERA ── -->
@@ -434,21 +447,21 @@
     <div class="preview-overlay" id="preview-overlay">
         <img class="preview-img" id="preview-img" src="" alt="">
         <div class="preview-actions">
-            <button class="btn-secondary" onclick="retakePhoto()">REFAIRE</button>
-            <button class="btn-primary" onclick="submitPhoto()">ENVOYER</button>
+            <button class="btn-secondary" onclick="retakePhoto()">REPRENDRE</button>
+            <button class="btn-primary" onclick="submitPhoto()">VALIDER</button>
         </div>
     </div>
 </div>
 
 <!-- ── FEED ── -->
 <div id="screen-feed" class="screen">
-    <div class="feed-title">FEED</div>
+    <div class="feed-title">GALERIE</div>
     <div id="feed-list"></div>
 </div>
 
 <!-- ── TOP 3 ── -->
 <div id="screen-top" class="screen">
-    <div class="top-title">TOP 3</div>
+    <div class="top-title">PODIUM</div>
     <div class="top-date" id="top-date"></div>
     <div id="top-today"></div>
     <div class="top-section-label">HIER</div>
@@ -483,10 +496,10 @@
 
 <!-- ── Bottom Nav ── -->
 <nav id="navbar">
-    <div class="nav-tab active" onclick="showScreen('home')">DEFI</div>
-    <div class="nav-tab" onclick="openCamera()">SHOOT</div>
-    <div class="nav-tab" onclick="showScreen('feed')">FEED</div>
-    <div class="nav-tab" onclick="showScreen('top')">TOP 3</div>
+    <div class="nav-tab active" onclick="showScreen('home')">DÉFI</div>
+    <div class="nav-tab" onclick="openCamera()">PHOTO</div>
+    <div class="nav-tab" onclick="showScreen('feed')">GALERIE</div>
+    <div class="nav-tab" onclick="showScreen('top')">PODIUM</div>
 </nav>
 
 <script>
@@ -816,21 +829,30 @@ function renderTop() {
 
     const todayContainer = document.getElementById('top-today');
     if (today.length === 0) {
-        todayContainer.innerHTML = '<div class="empty-state">PAS ENCORE DE RESULTATS</div>';
+        todayContainer.innerHTML = '<div class="empty-state">PAS ENCORE DE RÉSULTATS</div>';
     } else {
-        todayContainer.innerHTML = today.map((sub, i) => {
+        // Build podium: order is 2nd, 1st, 3rd
+        const order = [1, 0, 2]; // indices in today[] for 2nd, 1st, 3rd
+        let podiumHtml = '<div class="podium">';
+        order.forEach(idx => {
+            const sub = today[idx];
+            if (!sub) {
+                podiumHtml += '<div class="podium-slot" data-rank="' + (idx+1) + '"><div class="podium-bar"></div><div class="podium-rank">' + (idx+1) + '</div></div>';
+                return;
+            }
             const photoHtml = sub.photo
-                ? '<img class="top-photo" src="' + sub.photo + '" alt="">'
-                : '<div class="top-photo-placeholder" style="background:' + (sub.gradient || '#111') + ';border-radius:8px;"></div>';
-            return '<div class="top-card">'
-                + '<div class="top-rank">' + (i + 1) + '</div>'
+                ? '<img class="podium-photo" src="' + sub.photo + '" alt="">'
+                : '<div class="podium-placeholder" style="background:' + (sub.gradient || '#111') + ';"></div>';
+            podiumHtml += '<div class="podium-slot" data-rank="' + (idx+1) + '">'
                 + photoHtml
-                + '<div class="top-info">'
-                + '<div class="top-user">' + escHtml(sub.user) + '</div>'
-                + '<div class="top-votes">' + sub.score + ' pts</div>'
-                + '</div>'
+                + '<div class="podium-name">' + escHtml(sub.user) + '</div>'
+                + '<div class="podium-score">' + sub.score + ' pts</div>'
+                + '<div class="podium-bar"></div>'
+                + '<div class="podium-rank">#' + (idx+1) + '</div>'
                 + '</div>';
-        }).join('');
+        });
+        podiumHtml += '</div>';
+        todayContainer.innerHTML = podiumHtml;
     }
 
     // Yesterday
