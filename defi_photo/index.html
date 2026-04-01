@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Defi du Jour</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: #0a0a1a; color: #eee;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 500px; margin: 0 auto; min-height: 100vh;
+            overflow-x: hidden; padding-bottom: 70px;
+        }
+        a { color: inherit; text-decoration: none; }
+
+        /* Screens */
+        .screen { display: none; min-height: calc(100vh - 60px); padding: 16px; padding-top: 60px; animation: fadeIn 0.25s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Header */
+        .header {
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 500px; z-index: 100;
+            background: rgba(10,10,26,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 14px 16px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 900; letter-spacing: 1px;
+        }
+        .header .back-btn {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #eee; font-size: 22px; cursor: pointer; padding: 6px;
+        }
+        .header-title { display: flex; align-items: center; gap: 8px; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 500px;
+            background: rgba(10,10,26,0.95); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex; height: 60px; z-index: 100;
+        }
+        .nav-btn {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: none; border: none; color: rgba(255,255,255,0.4); font-size: 10px;
+            cursor: pointer; gap: 3px; transition: color 0.2s;
+        }
+        .nav-btn .nav-icon { font-size: 22px; }
+        .nav-btn.active { color: #ff6b35; }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; margin-bottom: 14px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            display: block; width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #ff6b35, #ff3366);
+            border: none; border-radius: 14px; color: #fff;
+            font-size: 16px; font-weight: 900; letter-spacing: 1px;
+            cursor: pointer; text-align: center; transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-secondary {
+            display: block; width: 100%; padding: 14px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px; color: #eee; font-size: 15px; font-weight: 700;
+            cursor: pointer; text-align: center; transition: transform 0.15s;
+        }
+        .btn-secondary:active { transform: scale(0.97); }
+
+        /* HOME */
+        .challenge-card {
+            background: linear-gradient(145deg, rgba(255,107,53,0.12), rgba(255,51,102,0.08));
+            border: 1px solid rgba(255,107,53,0.25); border-radius: 20px;
+            padding: 28px 20px; text-align: center; margin: 16px 0;
+        }
+        .challenge-emoji { font-size: 64px; margin-bottom: 12px; }
+        .challenge-text { font-size: 18px; font-weight: 700; line-height: 1.5; }
+        .timer-bar {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 14px; color: rgba(255,255,255,0.5); margin: 12px 0 20px;
+        }
+        .timer-bar span { font-variant-numeric: tabular-nums; color: #ff6b35; font-weight: 700; }
+        .home-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .share-btn {
+            margin-top: 8px; background: none; border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px; padding: 12px; color: rgba(255,255,255,0.5);
+            font-size: 14px; cursor: pointer; width: 100%; text-align: center;
+        }
+
+        /* CAMERA */
+        #screen-camera { padding: 0; padding-top: 0; position: relative; background: #000; min-height: 100vh; }
+        #screen-camera .header { background: rgba(0,0,0,0.5); }
+        .camera-viewfinder { width: 100%; height: 100vh; object-fit: cover; display: block; }
+        .camera-controls {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 500px;
+            display: flex; align-items: center; justify-content: center; gap: 40px;
+            z-index: 50;
+        }
+        .capture-btn {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: #fff; border: 4px solid rgba(255,255,255,0.4);
+            cursor: pointer; transition: transform 0.1s;
+        }
+        .capture-btn:active { transform: scale(0.9); }
+        .switch-cam-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); border: none;
+            color: #fff; font-size: 20px; cursor: pointer;
+        }
+        .camera-preview { display: none; position: fixed; inset: 0; z-index: 60; background: #000; flex-direction: column; }
+        .camera-preview.active { display: flex; }
+        .camera-preview img { flex: 1; object-fit: contain; width: 100%; }
+        .preview-buttons { display: flex; gap: 12px; padding: 20px; background: rgba(0,0,0,0.9); }
+        .preview-buttons button { flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; }
+        .btn-retake { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-validate { background: linear-gradient(135deg, #22cc55, #17a34a); color: #fff; }
+
+        /* GALLERY */
+        .photo-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 18px; overflow: hidden; margin-bottom: 16px;
+        }
+        .photo-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1a1a2e; }
+        .photo-card-info { padding: 14px 16px; }
+        .photo-card-user { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .photo-card-user .user-emoji { font-size: 28px; }
+        .photo-card-user .user-name { font-weight: 700; font-size: 15px; }
+        .photo-card-user .photo-time { margin-left: auto; font-size: 12px; color: rgba(255,255,255,0.35); }
+        .vote-row { display: flex; gap: 10px; }
+        .vote-btn {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px; border: none; border-radius: 12px; font-size: 16px; font-weight: 800;
+            cursor: pointer; color: #fff; transition: transform 0.12s, opacity 0.2s;
+        }
+        .vote-btn:active { transform: scale(0.95); }
+        .vote-btn.voted { opacity: 1; }
+        .vote-btn.not-voted { opacity: 0.35; }
+        .vote-up { background: #22cc55; }
+        .vote-down { background: #ff3344; }
+        .vote-count { font-size: 14px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); }
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* TOP 3 */
+        .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; }
+        .podium-slot { flex: 1; max-width: 140px; text-align: center; }
+        .podium-photo { width: 100%; aspect-ratio: 1; border-radius: 14px; object-fit: cover; margin-bottom: 8px; background: #1a1a2e; }
+        .podium-rank { font-size: 28px; margin-bottom: 4px; }
+        .podium-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+        .podium-votes { font-size: 12px; color: rgba(255,255,255,0.4); }
+        .podium-slot.first .podium-photo { border: 2px solid #ffd700; }
+        .podium-slot.second .podium-photo { border: 2px solid #c0c0c0; }
+        .podium-slot.third .podium-photo { border: 2px solid #cd7f32; }
+        .podium-slot.first { order: 2; }
+        .podium-slot.second { order: 1; }
+        .podium-slot.third { order: 3; }
+        .podium-slot.second, .podium-slot.third { margin-bottom: -10px; }
+        .section-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin: 24px 0 12px; }
+
+        /* PROFILE */
+        .profile-header { text-align: center; padding: 20px 0; }
+        .profile-emoji-display { font-size: 64px; cursor: pointer; }
+        .profile-name { font-size: 22px; font-weight: 900; margin-top: 8px; }
+        .profile-edit-name {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px; padding: 12px 16px; color: #eee; font-size: 16px;
+            width: 100%; margin-top: 12px; text-align: center; font-weight: 700;
+        }
+        .emoji-picker {
+            display: none; flex-wrap: wrap; gap: 8px; justify-content: center;
+            padding: 16px; background: rgba(255,255,255,0.05); border-radius: 16px; margin: 12px 0;
+        }
+        .emoji-picker.open { display: flex; }
+        .emoji-option { font-size: 32px; cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.15s; }
+        .emoji-option:hover { background: rgba(255,255,255,0.1); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+        .stat-card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 16px; text-align: center;
+        }
+        .stat-value { font-size: 28px; font-weight: 900; color: #ff6b35; }
+        .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .retour-link {
+            display: inline-flex; align-items: center; gap: 6px; margin-top: 24px;
+            color: rgba(255,255,255,0.4); font-size: 14px; padding: 10px 0;
+        }
+
+        /* Placeholder photos */
+        .placeholder-photo {
+            width: 100%; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
+            font-size: 64px; background: linear-gradient(135deg, var(--ph-c1), var(--ph-c2));
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 0; }
+
+        /* No photos badge */
+        .badge-new {
+            display: inline-block; background: #ff3366; color: #fff; font-size: 10px;
+            font-weight: 800; padding: 2px 8px; border-radius: 20px; margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header" id="main-header">
+    <div class="header-title">🔥 DEFI DU JOUR</div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="screen-home">
+    <div class="challenge-card">
+        <div class="challenge-emoji" id="challenge-emoji"></div>
+        <div class="challenge-text" id="challenge-text"></div>
+    </div>
+    <div class="timer-bar">
+        ⏳ Prochain defi dans <span id="timer">--:--:--</span>
+    </div>
+    <div class="home-buttons">
+        <button class="btn-primary" onclick="showScreen('camera')">📸 PRENDRE LA PHOTO</button>
+        <button class="btn-secondary" onclick="showScreen('gallery')">🖼️ VOIR LES PHOTOS</button>
+        <button class="btn-secondary" onclick="showScreen('top3')">🏆 TOP 3</button>
+        <button class="share-btn" onclick="shareApp()">📤 Inviter des amis</button>
+    </div>
+</div>
+
+<!-- CAMERA SCREEN -->
+<div class="screen" id="screen-camera">
+    <video class="camera-viewfinder" id="camera-video" autoplay playsinline></video>
+    <div class="camera-controls" id="camera-controls">
+        <button class="switch-cam-btn" onclick="switchCamera()">🔄</button>
+        <button class="capture-btn" id="capture-btn" onclick="capturePhoto()"></button>
+        <div style="width:44px"></div>
+    </div>
+    <div class="camera-preview" id="camera-preview">
+        <img id="preview-img" src="" alt="Preview">
+        <div class="preview-buttons">
+            <button class="btn-retake" onclick="retakePhoto()">↩️ REPRENDRE</button>
+            <button class="btn-validate" onclick="validatePhoto()">✅ VALIDER</button>
+        </div>
+    </div>
+</div>
+
+<!-- GALLERY SCREEN -->
+<div class="screen" id="screen-gallery">
+    <div id="gallery-list"></div>
+</div>
+
+<!-- TOP 3 SCREEN -->
+<div class="screen" id="screen-top3">
+    <div id="top3-content"></div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div class="screen" id="screen-profile">
+    <div class="profile-header">
+        <div class="profile-emoji-display" id="profile-emoji" onclick="toggleEmojiPicker()"></div>
+        <div class="emoji-picker" id="emoji-picker"></div>
+        <input class="profile-edit-name" id="profile-name" placeholder="Ton pseudo" maxlength="20" oninput="saveProfile()">
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="stat-photos">0</div><div class="stat-label">Photos</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-votes">0</div><div class="stat-label">Votes</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-top3">0</div><div class="stat-label">Top 3</div></div>
+    </div>
+    <a href="../index.html" class="retour-link">← Retour</a>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" data-screen="home"><div class="nav-icon">🏠</div>Accueil</button>
+    <button class="nav-btn" data-screen="camera"><div class="nav-icon">📸</div>Photo</button>
+    <button class="nav-btn" data-screen="gallery"><div class="nav-icon">🖼️</div>Galerie</button>
+    <button class="nav-btn" data-screen="top3"><div class="nav-icon">🏆</div>Top 3</button>
+    <button class="nav-btn" data-screen="profile"><div class="nav-icon">👤</div>Profil</button>
+</div>
+
+<script>
+// ======================== CHALLENGES ========================
+const CHALLENGES = [
+    {emoji: '🍔', text: 'Prends en photo le plus gros repas que tu vois aujourd\'hui'},
+    {emoji: '😴', text: 'Prends en photo quelqu\'un qui dort dans un endroit bizarre'},
+    {emoji: '🚗', text: 'Prends en photo la voiture la plus moche que tu croises'},
+    {emoji: '👟', text: 'Prends en photo les chaussures les plus moches que tu vois'},
+    {emoji: '🐕', text: 'Prends en photo le chien le plus bizarre que tu croises'},
+    {emoji: '🍕', text: 'Prends en photo la nourriture la plus degueu que tu trouves'},
+    {emoji: '😱', text: 'Prends en photo le truc le plus WTF que tu vois dehors'},
+    {emoji: '👴', text: 'Prends en photo le style vestimentaire le plus fou que tu croises'},
+    {emoji: '🏠', text: 'Prends en photo la maison ou le batiment le plus moche du quartier'},
+    {emoji: '🚌', text: 'Prends en photo la situation la plus drole dans les transports'},
+    {emoji: '🛒', text: 'Prends en photo le caddie le plus rempli que tu vois au supermarche'},
+    {emoji: '📱', text: 'Prends en photo quelqu\'un avec la coque de telephone la plus ridicule'},
+    {emoji: '🎒', text: 'Prends en photo le sac a dos le plus abime que tu vois'},
+    {emoji: '🧢', text: 'Prends en photo le chapeau ou la coiffure la plus bizarre'},
+    {emoji: '🚶', text: 'Prends en photo la demarche la plus drole que tu croises'},
+    {emoji: '🪑', text: 'Prends en photo l\'endroit le plus bizarre ou quelqu\'un s\'assoit'},
+    {emoji: '🗑️', text: 'Prends en photo la poubelle la plus degoutante'},
+    {emoji: '🚪', text: 'Prends en photo la porte la plus bizarre que tu trouves'},
+    {emoji: '🌳', text: 'Prends en photo l\'arbre avec la forme la plus bizarre'},
+    {emoji: '🐈', text: 'Prends en photo un chat dans la position la plus drole'},
+    {emoji: '🧦', text: 'Prends en photo les chaussettes les plus horribles'},
+    {emoji: '🍌', text: 'Prends en photo le fruit ou legume avec la forme la plus bizarre'},
+    {emoji: '📺', text: 'Prends en photo l\'ecran le plus casse que tu vois'},
+    {emoji: '🚲', text: 'Prends en photo le velo le plus pourri'},
+    {emoji: '🧸', text: 'Prends en photo le jouet le plus effrayant que tu trouves'},
+    {emoji: '💇', text: 'Prends en photo la coupe de cheveux la plus originale'},
+    {emoji: '🏪', text: 'Prends en photo le nom de magasin le plus drole'},
+    {emoji: '🪧', text: 'Prends en photo le panneau le plus absurde'},
+    {emoji: '🥿', text: 'Prends en photo la tenue la plus depareillee'},
+    {emoji: '🧽', text: 'Prends en photo l\'objet le plus sale que tu vois'}
+];
+
+const FAKE_USERS = [
+    {name: 'KevinDu93', emoji: '🤡'},
+    {name: 'BobLePro', emoji: '😂'},
+    {name: 'JulieSnap', emoji: '📸'},
+    {name: 'MaxFitness', emoji: '💪'},
+    {name: 'SarahStyle', emoji: '💅'},
+    {name: 'TomJerry', emoji: '🐱'},
+    {name: 'LucasGamer', emoji: '🎮'},
+    {name: 'EmmaChef', emoji: '👩‍🍳'},
+];
+
+const AVATAR_EMOJIS = ['😎','🤡','😂','📸','💪','💅','🐱','🎮','👩‍🍳','🤠','👻','🦊','🐸','🤖','👽','🎭','🦄','🐧','🎃','😈','🤓','🥳','😏','🫠'];
+
+const PLACEHOLDER_COLORS = [
+    ['#e74c3c','#c0392b'], ['#3498db','#2980b9'], ['#2ecc71','#27ae60'],
+    ['#f39c12','#e67e22'], ['#9b59b6','#8e44ad'], ['#1abc9c','#16a085'],
+    ['#e84393','#d63031'], ['#00cec9','#0984e3'],
+];
+
+// ======================== STATE ========================
+let currentScreen = 'home';
+let cameraStream = null;
+let currentFacing = 'environment';
+let capturedDataUrl = null;
+
+function getDayOfYear() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now - start;
+    return Math.floor(diff / 86400000);
+}
+
+const dayOfYear = getDayOfYear();
+const todayChallenge = CHALLENGES[dayOfYear % CHALLENGES.length];
+
+// ======================== PROFILE ========================
+function loadProfile() {
+    let p = null;
+    try { p = JSON.parse(localStorage.getItem('defi_user')); } catch(e) {}
+    if (!p) p = { name: 'Joueur', emoji: '😎', stats: { photos: 0, votes: 0, top3: 0 } };
+    if (!p.stats) p.stats = { photos: 0, votes: 0, top3: 0 };
+    return p;
+}
+
+function saveProfileData(p) {
+    localStorage.setItem('defi_user', JSON.stringify(p));
+}
+
+function saveProfile() {
+    const p = loadProfile();
+    p.name = document.getElementById('profile-name').value || 'Joueur';
+    saveProfileData(p);
+}
+
+function updateProfileUI() {
+    const p = loadProfile();
+    document.getElementById('profile-emoji').textContent = p.emoji;
+    document.getElementById('profile-name').value = p.name;
+    document.getElementById('stat-photos').textContent = p.stats.photos;
+    document.getElementById('stat-votes').textContent = p.stats.votes;
+    document.getElementById('stat-top3').textContent = p.stats.top3;
+}
+
+function toggleEmojiPicker() {
+    document.getElementById('emoji-picker').classList.toggle('open');
+}
+
+function initEmojiPicker() {
+    const container = document.getElementById('emoji-picker');
+    AVATAR_EMOJIS.forEach(em => {
+        const span = document.createElement('span');
+        span.className = 'emoji-option';
+        span.textContent = em;
+        span.onclick = () => {
+            const p = loadProfile();
+            p.emoji = em;
+            saveProfileData(p);
+            document.getElementById('profile-emoji').textContent = em;
+            document.getElementById('emoji-picker').classList.remove('open');
+        };
+        container.appendChild(span);
+    });
+}
+
+// ======================== PHOTOS STORAGE ========================
+function getPhotosKey(day) { return 'defi_photos_' + day; }
+
+function loadPhotos(day) {
+    if (day === undefined) day = dayOfYear;
+    try { return JSON.parse(localStorage.getItem(getPhotosKey(day))) || []; }
+    catch(e) { return []; }
+}
+
+function savePhotos(photos, day) {
+    if (day === undefined) day = dayOfYear;
+    localStorage.setItem(getPhotosKey(day), JSON.stringify(photos));
+}
+
+// Seeded random for deterministic fake data
+function seededRandom(seed) {
+    let s = seed;
+    return function() {
+        s = (s * 16807 + 0) % 2147483647;
+        return (s - 1) / 2147483646;
+    };
+}
+
+function generateFakePhotos(day) {
+    const rng = seededRandom(day * 7919 + 42);
+    const count = 5 + Math.floor(rng() * 3);
+    const photos = [];
+    const challenge = CHALLENGES[day % CHALLENGES.length];
+    for (let i = 0; i < count; i++) {
+        const user = FAKE_USERS[Math.floor(rng() * FAKE_USERS.length)];
+        const colors = PLACEHOLDER_COLORS[Math.floor(rng() * PLACEHOLDER_COLORS.length)];
+        const hour = 8 + Math.floor(rng() * 12);
+        const minute = Math.floor(rng() * 60);
+        const now = new Date();
+        const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute).getTime();
+        const votesUp = Math.floor(rng() * 25) + 1;
+        const votesDown = Math.floor(rng() * 10);
+        photos.push({
+            id: 'fake_' + day + '_' + i,
+            user: user.name,
+            emoji: user.emoji,
+            photo: null,
+            placeholder: { c1: colors[0], c2: colors[1], emoji: challenge.emoji },
+            time: t,
+            votesUp: votesUp,
+            votesDown: votesDown,
+            myVote: null,
+            isFake: true
+        });
+    }
+    return photos;
+}
+
+function ensureFakePhotos(day) {
+    if (day === undefined) day = dayOfYear;
+    let photos = loadPhotos(day);
+    const hasFake = photos.some(p => p.isFake);
+    if (!hasFake) {
+        const fakes = generateFakePhotos(day);
+        photos = fakes.concat(photos);
+        savePhotos(photos, day);
+    }
+    return photos;
+}
+
+// ======================== SCREENS ========================
+function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen-' + name);
+    if (screen) screen.classList.add('active');
+    currentScreen = name;
+
+    // Nav
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+
+    // Bottom nav visibility
+    const nav = document.getElementById('bottom-nav');
+    const header = document.getElementById('main-header');
+    if (name === 'camera') {
+        nav.style.display = 'none';
+        header.innerHTML = '<button class="back-btn" onclick="closeCamera()">←</button><div class="header-title">📸 PHOTO</div>';
+    } else {
+        nav.style.display = 'flex';
+        header.innerHTML = '<div class="header-title">🔥 DEFI DU JOUR</div>';
+    }
+
+    // Screen-specific init
+    if (name === 'camera') openCamera();
+    if (name === 'gallery') renderGallery();
+    if (name === 'top3') renderTop3();
+    if (name === 'profile') updateProfileUI();
+    if (name !== 'camera') stopCamera();
+}
+
+// Nav buttons
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.onclick = () => showScreen(btn.dataset.screen);
+});
+
+// ======================== HOME ========================
+function initHome() {
+    document.getElementById('challenge-emoji').textContent = todayChallenge.emoji;
+    document.getElementById('challenge-text').textContent = todayChallenge.text;
+    updateTimer();
+    setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    const diff = midnight - now;
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+    document.getElementById('timer').textContent = h + ':' + m + ':' + s;
+}
+
+// ======================== CAMERA ========================
+async function openCamera() {
+    const video = document.getElementById('camera-video');
+    document.getElementById('camera-preview').classList.remove('active');
+    document.getElementById('camera-controls').style.display = 'flex';
+    try {
+        if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); }
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: currentFacing, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = cameraStream;
+    } catch(e) {
+        alert('Camera non disponible. Verifie les permissions.');
+        showScreen('home');
+    }
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+    }
+    const video = document.getElementById('camera-video');
+    video.srcObject = null;
+}
+
+function switchCamera() {
+    currentFacing = currentFacing === 'environment' ? 'user' : 'environment';
+    openCamera();
+}
+
+function capturePhoto() {
+    const video = document.getElementById('camera-video');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    capturedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    document.getElementById('preview-img').src = capturedDataUrl;
+    document.getElementById('camera-preview').classList.add('active');
+    document.getElementById('camera-controls').style.display = 'none';
+}
+
+function retakePhoto() {
+    capturedDataUrl = null;
+    document.getElementById('camera-preview').classList.remove('active');
+    document.getElementById('camera-controls').style.display = 'flex';
+}
+
+function validatePhoto() {
+    if (!capturedDataUrl) return;
+    const profile = loadProfile();
+    let photos = ensureFakePhotos();
+    const newPhoto = {
+        id: 'user_' + Date.now(),
+        user: profile.name,
+        emoji: profile.emoji,
+        photo: capturedDataUrl,
+        placeholder: null,
+        time: Date.now(),
+        votesUp: 0,
+        votesDown: 0,
+        myVote: null,
+        isFake: false
+    };
+    photos.push(newPhoto);
+    savePhotos(photos);
+    profile.stats.photos++;
+    saveProfileData(profile);
+    capturedDataUrl = null;
+    stopCamera();
+    showScreen('gallery');
+}
+
+function closeCamera() {
+    stopCamera();
+    showScreen('home');
+}
+
+// ======================== GALLERY ========================
+function renderGallery() {
+    const container = document.getElementById('gallery-list');
+    const photos = ensureFakePhotos();
+    // Sort by time descending
+    const sorted = [...photos].sort((a, b) => b.time - a.time);
+
+    if (sorted.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📷</div><p>Aucune photo pour le moment.<br>Sois le premier a relever le defi !</p></div>';
+        return;
+    }
+
+    let html = '<div style="margin-bottom:12px;text-align:center;"><span style="font-size:13px;color:rgba(255,255,255,0.4);">Defi du jour : </span><span style="font-size:14px;font-weight:700;">' + todayChallenge.emoji + ' ' + todayChallenge.text + '</span></div>';
+
+    sorted.forEach(photo => {
+        const timeStr = new Date(photo.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const imgHtml = photo.photo
+            ? '<img class="photo-card-img" src="' + photo.photo + '" alt="Photo">'
+            : '<div class="placeholder-photo" style="--ph-c1:' + photo.placeholder.c1 + ';--ph-c2:' + photo.placeholder.c2 + ';">' + photo.placeholder.emoji + '</div>';
+
+        const upClass = photo.myVote === 'up' ? 'voted' : (photo.myVote === 'down' ? 'not-voted' : '');
+        const downClass = photo.myVote === 'down' ? 'voted' : (photo.myVote === 'up' ? 'not-voted' : '');
+
+        html += `
+        <div class="photo-card">
+            ${imgHtml}
+            <div class="photo-card-info">
+                <div class="photo-card-user">
+                    <span class="user-emoji">${photo.emoji}</span>
+                    <span class="user-name">${photo.user}</span>
+                    <span class="photo-time">${timeStr}</span>
+                </div>
+                <div class="vote-row">
+                    <button class="vote-btn vote-up ${upClass}" onclick="vote('${photo.id}','up')">
+                        ✅ <span class="vote-count">${photo.votesUp}</span>
+                    </button>
+                    <button class="vote-btn vote-down ${downClass}" onclick="vote('${photo.id}','down')">
+                        ❌ <span class="vote-count">${photo.votesDown}</span>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function vote(photoId, direction) {
+    let photos = loadPhotos();
+    const photo = photos.find(p => p.id === photoId);
+    if (!photo) return;
+
+    // Toggle or change vote
+    if (photo.myVote === direction) {
+        // Un-vote
+        if (direction === 'up') photo.votesUp--;
+        else photo.votesDown--;
+        photo.myVote = null;
+    } else {
+        // Remove previous vote
+        if (photo.myVote === 'up') photo.votesUp--;
+        if (photo.myVote === 'down') photo.votesDown--;
+        // Add new vote
+        if (direction === 'up') photo.votesUp++;
+        else photo.votesDown++;
+        photo.myVote = direction;
+    }
+
+    // Update vote stats for profile
+    const profile = loadProfile();
+    profile.stats.votes++;
+    saveProfileData(profile);
+
+    savePhotos(photos);
+    renderGallery();
+}
+
+// ======================== TOP 3 ========================
+function getTop3(day) {
+    const photos = ensureFakePhotos(day);
+    const scored = photos.map(p => ({ ...p, score: p.votesUp - p.votesDown }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 3);
+}
+
+function renderPodiumSlot(photo, rank) {
+    if (!photo) return '<div class="podium-slot" style="visibility:hidden;"></div>';
+    const rankEmoji = rank === 1 ? '👑' : rank === 2 ? '🥈' : '🥉';
+    const cls = rank === 1 ? 'first' : rank === 2 ? 'second' : 'third';
+    const imgHtml = photo.photo
+        ? '<img class="podium-photo" src="' + photo.photo + '" alt="">'
+        : '<div class="podium-photo" style="display:flex;align-items:center;justify-content:center;font-size:36px;background:linear-gradient(135deg,' + (photo.placeholder ? photo.placeholder.c1 : '#333') + ',' + (photo.placeholder ? photo.placeholder.c2 : '#555') + ');">' + (photo.placeholder ? photo.placeholder.emoji : '?') + '</div>';
+
+    return `<div class="podium-slot ${cls}">
+        <div class="podium-rank">${rankEmoji}</div>
+        ${imgHtml}
+        <div class="podium-name">${photo.emoji} ${photo.user}</div>
+        <div class="podium-votes">✅ ${photo.votesUp} / ❌ ${photo.votesDown}</div>
+    </div>`;
+}
+
+function renderTop3() {
+    const container = document.getElementById('top3-content');
+    const top = getTop3(dayOfYear);
+
+    let html = '<div style="text-align:center;margin-bottom:8px;font-size:14px;color:rgba(255,255,255,0.4);">Classement du jour</div>';
+    html += '<div style="text-align:center;font-size:15px;font-weight:700;margin-bottom:16px;">' + todayChallenge.emoji + ' ' + todayChallenge.text + '</div>';
+
+    if (top.length === 0) {
+        html += '<div class="empty-state"><div class="empty-icon">🏆</div><p>Pas encore de photos aujourd\'hui !</p></div>';
+    } else {
+        html += '<div class="podium">';
+        html += renderPodiumSlot(top[1], 2);
+        html += renderPodiumSlot(top[0], 1);
+        html += renderPodiumSlot(top[2], 3);
+        html += '</div>';
+    }
+
+    // Yesterday's top 3
+    const yesterday = dayOfYear - 1;
+    if (yesterday > 0) {
+        const yesterdayChallenge = CHALLENGES[yesterday % CHALLENGES.length];
+        const yTop = getTop3(yesterday);
+        if (yTop.length > 0) {
+            html += '<div class="section-title">Resultats d\'hier</div>';
+            html += '<div style="text-align:center;font-size:14px;margin-bottom:12px;">' + yesterdayChallenge.emoji + ' ' + yesterdayChallenge.text + '</div>';
+            html += '<div class="podium">';
+            html += renderPodiumSlot(yTop[1], 2);
+            html += renderPodiumSlot(yTop[0], 1);
+            html += renderPodiumSlot(yTop[2], 3);
+            html += '</div>';
+        }
+    }
+
+    container.innerHTML = html;
+}
+
+// ======================== SHARE ========================
+async function shareApp() {
+    const text = 'Rejoins le Defi du Jour ! 📸🔥 Aujourd\'hui : ' + todayChallenge.emoji + ' ' + todayChallenge.text;
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: 'Defi du Jour', text: text, url: location.href });
+        } catch(e) {}
+    } else {
+        try {
+            await navigator.clipboard.writeText(text + '\n' + location.href);
+            showToast('Lien copie !');
+        } catch(e) {
+            alert(text);
+        }
+    }
+}
+
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);padding:10px 24px;border-radius:30px;font-size:14px;font-weight:700;z-index:200;animation:fadeIn 0.3s ease;';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+// ======================== INIT ========================
+function init() {
+    initHome();
+    initEmojiPicker();
+    ensureFakePhotos(dayOfYear);
+    ensureFakePhotos(dayOfYear - 1);
+    updateProfileUI();
+}
+
+init();
+</script>
+</body>
+</html>

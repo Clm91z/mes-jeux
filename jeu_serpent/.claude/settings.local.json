@@ -15,6 +15,9 @@
       "Bash(gh auth:*)",
       "Read(//c/Users/cleme/projets claude/**)",
       "Bash(gh repo:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\cleme\\projets claude"
     ]
   }
 }
